@@ -21,7 +21,7 @@
 """
 
 from euclidwf.framework.workflow_dsl import pipeline
-from SHE_CTE.package_definition import she_fit_psf, she_estimate_shear, she_validate_shear
+from SHE_Pipeline.package_definition import she_fit_psf, she_estimate_shear, she_validate_shear
 
 @pipeline(outputs=('validated_shear_estimates_table'))
 def shear_analysis_pipeline( data_images,
