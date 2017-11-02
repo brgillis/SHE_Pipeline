@@ -1,6 +1,6 @@
 pkgRepository=/home/user/Work/Projects/SHE_Pipeline/SHE_Pipeline/python
 
-pipelineDir=/home/user/Work/Projects/SHE_Pipeline/SHE_Pipeline/python/SHE_CTE_Pipeline
+pipelineDir=/home/user/Work/Projects/SHE_Pipeline/SHE_Pipeline/python/SHE_Pipeline
 
 workdir=tests/she_analysis
 
