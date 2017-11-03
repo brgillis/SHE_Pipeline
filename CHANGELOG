@@ -1,0 +1,35 @@
+Changelog for SHE_Pipeline
+
+Changes prior to v0.2
+=========================
+
+API Changes
+-----------
+
+- Created analysis_pipeline.py pipeline script
+- Created convenience scripts prepare_input_data.sh, run_analysis_pipeline,sh, run_manual_analysis_pipeline.sh
+
+Dependency Changes
+------------------
+
+- Depends on SHE_PPT, SHE_GST, and SHE_CTE
+
+Deprecated Features
+-------------------
+
+
+Bug Fixes
+---------
+
+
+New Features
+------------
+
+
+New config features
+-------------------
+
+
+Miscellaneous
+-------------
+
