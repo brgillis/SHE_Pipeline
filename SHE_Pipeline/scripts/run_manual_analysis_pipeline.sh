@@ -1,24 +1,8 @@
 #!/usr/bin/bash
 
-WORKDIR="/home/user/euclid-ial/workspace/tests/she_analysis"
-LOGDIR=$WORKDIR"/logdir"
+SCRIPTDIR=/home/user/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts
 
-DATA_IM="sim_data_images.json"
-PSF_CAL="mock_psf_calibration_products.json"
-SEG_IM="mock_segmentation_products.json"
-DAL_TAB="mock_details_tables.json"
-DTC_TAB="mock_detections_tables.json"
-AST_PROD="mock_astrometry_products.json"
-AOCS_PROD="mock_aocs_time_series_products.json"
-MT_PROD="mock_mission_time_products.json"
-GP_TAB="mock_galaxy_population_priors_table.fits"
-CAL_PROD="mock_calibration_parameters_product.bin"
-CAL_LF="mock_calibration_parameters_listfile.json"
-SV_TAB="mock_shear_validation_statistics_table.fits"
-PSF_IMTAB="mock_psf_images_and_tables.fits"
-SE_PROD="mock_shear_estimates.bin"
-SE_LF="mock_shear_estimates.json"
-VSE_TAB="mock_validated_shear_estimates.fits"
+source $SCRIPTDIR/prepare_pipeline_envvars.sh
 
 mkdir -p $WORKDIR
 mkdir -p $LOGDIR
