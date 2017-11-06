@@ -23,19 +23,16 @@ from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingReso
 ERun_CTE = "E-Run SHE_CTE 0.2 "
 
 she_prepare_configs = Executable(command=ERun_CTE+"SHE_CTE_PrepareConfigs",
-                                 inputs=[Input("simulation_config_template"),Input("prep_config")],
+                                 inputs=[Input("simulation_config_template"),Input("calibration_plan_product")],
                                  outputs=[Output("simulation_configs_list", mime_type="json", content_type="listfile")])
 
 she_simulate_images = Executable(command=ERun_CTE+"SHE_CTE_SimulateImages",
                                  inputs=[Input("simulation_config"),
-                                         Input("CTI_calibration_parameters_product"),
-                                         Input("PSF_calibration_parameters_product"),
-                                         Input("galaxy_population_priors_table"),
-                                         Input("Euclidised_HST_galaxy_images_product")],
-                                 outputs=[Output("data_image_list", mime_type="json", content_type="listfile"),
-                                          Output("psf_image_list", mime_type="json", content_type="listfile"),
-                                          Output("segmentation_image_list", mime_type="json", content_type="listfile"),
-                                          Output("detections_table_list", mime_type="json", content_type="listfile"),
+                                         Input("galaxy_population_priors_table")],
+                                 outputs=[Output("data_images", mime_type="json", content_type="listfile"),
+                                          Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
+                                          Output("segmentation_images", mime_type="json", content_type="listfile"),
+                                          Output("detections_tables", mime_type="json", content_type="listfile"),
                                           Output("details_table")])
 
 she_fit_psf = Executable(command=ERun_CTE+"SHE_CTE_FitPSFs",
@@ -66,8 +63,8 @@ she_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_ValidateShear",
 
 she_measure_statistics = Executable(command=ERun_CTE+"SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
-                                            Input("shear_measurements_product"),
-                                            Input("bias_measurements_plan_product")],
+                                            Input("shear_estimates_product"),
+                                            Input("shear_estimates_listfile")],
                                     outputs=[Output("estimation_statistics_product"),
                                              Output("partial_validation_statistics_product")])
 
@@ -79,3 +76,29 @@ she_compile_statistics = Executable(command=ERun_CTE+"SHE_CTE_CompileStatistics"
                                      inputs=[Input("shear_measurements_product"),
                                              Input("bias_measurements_product")],
                                      outputs=[Output("validation_statistics_product")])
+
+# Define a body element for the split part of the calibration pipeline
+
+@parallel(iterable="simulation_config")
+def she_simulate_and_measure_bias_statistics( simulation_config, galaxy_population_priors_table ):
+    
+    (data_images,
+     psf_images_and_tables,
+     segmentation_images,
+     detections_tables,
+     details_table) = she_simulate_images( simulation_config = simulation_config,
+                                           galaxy_population_priors_table = galaxy_population_priors_table )
+     
+    (shear_estimates_product,
+     shear_estimates_listfile) = she_estimate_shear( data_images = data_images,
+                                                     psf_images_and_tables = psf_images_and_tables,
+                                                     segmentation_images = segmentation_images,
+                                                     detections_tables = detections_tables,
+                                                     galaxy_population_priors_table = galaxy_population_priors_table, )
+     
+    (estimation_statistics_product,
+     partial_validation_statistics_product) = she_measure_statistics( details_table = details_table,
+                                                                      shear_estimates_product = shear_estimates_product,
+                                                                      shear_estimates_listfile = shear_estimates_listfile )
+     
+    return estimation_statistics_product, partial_validation_statistics_product
