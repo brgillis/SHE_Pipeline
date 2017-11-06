@@ -66,39 +66,19 @@ she_measure_statistics = Executable(command=ERun_CTE+"SHE_CTE_MeasureStatistics"
                                             Input("shear_estimates_product"),
                                             Input("shear_estimates_listfile")],
                                     outputs=[Output("estimation_statistics_product"),
-                                             Output("partial_validation_statistics_product")])
+                                             Output("partial_validation_statistics_product"),
+                                             Output("partial_validation_statistics_listfile")])
 
 she_measure_bias = Executable(command=ERun_CTE+"SHE_CTE_MeasureBias",
-                                 inputs=[Input("estimation_statistics_product_list", content_type="listfile")],
-                                 outputs=[Output("bias_measurements_product")])
+                                 inputs=[Input("estimation_statistics_products", content_type="listfile")],
+                                 outputs=[Output("bias_measurements_product"),
+                                          Output("bias_measurements_listfile")])
 
 she_compile_statistics = Executable(command=ERun_CTE+"SHE_CTE_CompileStatistics",
-                                     inputs=[Input("shear_measurements_product"),
-                                             Input("bias_measurements_product")],
-                                     outputs=[Output("validation_statistics_product")])
+                                     inputs=[Input("partial_validation_statistics_products", content_type="listfile"),
+                                             Input("partial_validation_statistics_listfiles", content_type="listfile"),
+                                             Input("bias_measurements_product"),
+                                             Input("bias_measurements_listfile")],
+                                     outputs=[Output("validation_statistics_product"),
+                                              Output("validation_statistics_listfile")])
 
-# Define a body element for the split part of the calibration pipeline
-
-@parallel(iterable="simulation_config")
-def she_simulate_and_measure_bias_statistics( simulation_config, galaxy_population_priors_table ):
-    
-    (data_images,
-     psf_images_and_tables,
-     segmentation_images,
-     detections_tables,
-     details_table) = she_simulate_images( simulation_config = simulation_config,
-                                           galaxy_population_priors_table = galaxy_population_priors_table )
-     
-    (shear_estimates_product,
-     shear_estimates_listfile) = she_estimate_shear( data_images = data_images,
-                                                     psf_images_and_tables = psf_images_and_tables,
-                                                     segmentation_images = segmentation_images,
-                                                     detections_tables = detections_tables,
-                                                     galaxy_population_priors_table = galaxy_population_priors_table, )
-     
-    (estimation_statistics_product,
-     partial_validation_statistics_product) = she_measure_statistics( details_table = details_table,
-                                                                      shear_estimates_product = shear_estimates_product,
-                                                                      shear_estimates_listfile = shear_estimates_listfile )
-     
-    return estimation_statistics_product, partial_validation_statistics_product
