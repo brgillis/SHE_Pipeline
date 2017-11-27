@@ -7,7 +7,7 @@ source $SCRIPTDIR/set_pipeline_envvars.sh
 mkdir -p $WORKDIR
 mkdir -p $LOGDIR
 
-CMD="rm $WORKDIR/EUC*.bin $WORKDIR/*.fits $WORKDIR/*.json $LOGDIR/*"
+CMD="rm -rf $WORKDIR/EUC*.bin $WORKDIR/*.fits $WORKDIR/*.json $LOGDIR/*"
 
 echo $CMD
 `$CMD`
