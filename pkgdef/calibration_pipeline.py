@@ -19,7 +19,7 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from euclidwf.framework.workflow_dsl import pipeline
-from SHE_Pipeline.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
+from pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
                                              she_measure_statistics, she_measure_bias, she_compile_statistics)
 
 # Define a body element for the split part of the calibration pipeline
