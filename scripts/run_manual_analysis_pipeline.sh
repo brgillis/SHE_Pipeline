@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-SCRIPTDIR=/home/user/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts
+SCRIPTDIR=/home/user/Work/Projects/SHE_Pipeline/scripts
 
 source $SCRIPTDIR/set_pipeline_envvars.sh
 
