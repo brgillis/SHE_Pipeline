@@ -7,7 +7,7 @@ source $SCRIPTDIR/set_analysis_envvars.sh
 mkdir -p $WORKDIR
 mkdir -p $LOGDIR
 
-CMD="E-Run SHE_CTE 0.2 SHE_CTE_MakeMockAnalysisData --psf_calibration_products $PSF_CAL_LF --segmentation_images $SEG_IM_LF --aocs_time_series_products $AOCS_LF --mission_time_products $MT_LF --galaxy_population_priors_table $GP_PROD --calibration_parameters_product $CAL_PROD --calibration_parameters_listfile $CAL_LF --shear_validation_statistics_table $SV_PROD --workdir $WORKDIR --logdir $LOGDIR"
+CMD="E-Run SHE_CTE 0.2 SHE_CTE_MakeMockAnalysisData --psf_calibration_products $PSF_CAL_LF --aocs_time_series_products $AOCS_LF --mission_time_products $MT_LF --galaxy_population_priors_table $GP_PROD --calibration_parameters_product $CAL_PROD --shear_validation_statistics_table $SV_PROD --workdir $WORKDIR --logdir $LOGDIR"
 
 echo "Making mock analysis data with command:"
 echo $CMD
