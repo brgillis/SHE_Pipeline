@@ -11,7 +11,7 @@ CMD="E-Run SHE_CTE 0.2 SHE_CTE_MakeMockAnalysisData --data_images $DATA_IM --psf
 
 echo "Making mock analysis data with command:"
 echo $CMD
-# `$CMD`
+`$CMD`
 
 if [ $? -ne 0 ]; then
     exit
