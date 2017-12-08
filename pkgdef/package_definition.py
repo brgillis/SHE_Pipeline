@@ -20,7 +20,7 @@
 
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
-ERun_CTE = "E-Run SHE_CTE 0.2 "
+ERun_CTE = "E-Run SHE_CTE 0.3 "
 
 she_prepare_configs = Executable(command=ERun_CTE+"SHE_CTE_PrepareConfigs",
                                  inputs=[Input("simulation_config_template"),Input("calibration_plan_product")],
