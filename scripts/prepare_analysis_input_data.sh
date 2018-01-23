@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
     exit
 fi
 
-CMD="E-Run SHE_GST 1.3 GenGalaxyImages --config-file /home/user/Work/Projects/SHE_GST/SHE_GST_GalaxyImageGeneration/conf/SHE_GST_GalaxyImageGeneration/SampleStamps.conf --dithering_scheme 2x2 --data_images $DATA_IM_LF --segmentation_images $SEG_IM_LF --detections_tables $DTC_LF --details_tables $DAL_LF  --psf_images_and_tables $PSF_LF --workdir $WORKDIR --logdir $LOGDIR"
+CMD="E-Run SHE_GST 1.3 GenGalaxyImages --config_files /home/user/Work/Projects/SHE_GST/SHE_GST_GalaxyImageGeneration/conf/SHE_GST_GalaxyImageGeneration/SampleStamps.conf --dithering_scheme 2x2 --data_images $DATA_IM_LF --segmentation_images $SEG_IM_LF --detections_tables $DTC_LF --details_tables $DAL_LF  --psf_images_and_tables $PSF_LF --workdir $WORKDIR --logdir $LOGDIR"
 
 echo "Making simulated galaxy images with command:"
 echo $CMD
