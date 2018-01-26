@@ -11,7 +11,7 @@ CMD="E-Run SHE_CTE 0.3 SHE_CTE_MakeMockAnalysisData --psf_calibration_products $
 
 echo "Making mock analysis data with command:"
 echo $CMD
-`$CMD`
+eval $CMD
 
 if [ $? -ne 0 ]; then
     exit
@@ -21,5 +21,5 @@ CMD="E-Run SHE_GST 1.3 GenGalaxyImages --config_files /home/user/Work/Projects/S
 
 echo "Making simulated galaxy images with command:"
 echo $CMD
-`$CMD`
+eval $CMD
 

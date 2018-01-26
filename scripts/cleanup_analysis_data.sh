@@ -10,5 +10,5 @@ mkdir -p $LOGDIR
 CMD="rm -rf $WORKDIR/EUC*.bin $WORKDIR/*.fits $WORKDIR/*.json $LOGDIR/*"
 
 echo $CMD
-`$CMD`
+eval $CMD
 
