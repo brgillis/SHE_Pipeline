@@ -1,5 +1,38 @@
 Changelog for SHE_Pipeline
 
+Changes from v0.2 to v0.3
+========================
+
+API Changes
+-----------
+
+- Removed use of all listfiles
+- Removed use of astrometry products
+
+Dependency Changes
+------------------
+
+
+Deprecated Features
+-------------------
+
+
+Bug Fixes
+---------
+
+- Specifies mime_type for all outputs
+
+New Features
+------------
+
+
+New config features
+-------------------
+
+
+Miscellaneous
+-------------
+
 Changes prior to v0.2
 =========================
 
