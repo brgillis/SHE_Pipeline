@@ -34,20 +34,17 @@ def she_simulate_and_measure_bias_statistics( simulation_config, galaxy_populati
      details_table) = she_simulate_images( simulation_config = simulation_config,
                                            galaxy_population_priors_table = galaxy_population_priors_table )
      
-    (shear_estimates_product,
-     shear_estimates_listfile) = she_estimate_shear( data_images = data_images,
-                                                     psf_images_and_tables = psf_images_and_tables,
-                                                     segmentation_images = segmentation_images,
-                                                     detections_tables = detections_tables,
-                                                     galaxy_population_priors_table = galaxy_population_priors_table, )
+    shear_estimates_product = she_estimate_shear( data_images = data_images,
+                                                  psf_images_and_tables = psf_images_and_tables,
+                                                  segmentation_images = segmentation_images,
+                                                  detections_tables = detections_tables,
+                                                  galaxy_population_priors_table = galaxy_population_priors_table, )
      
     (estimation_statistics_product,
-     partial_validation_statistics_product,
-     partial_validation_statistics_listfile) = she_measure_statistics( details_table = details_table,
-                                                                       shear_estimates_product = shear_estimates_product,
-                                                                       shear_estimates_listfile = shear_estimates_listfile )
+     partial_validation_statistics_product) = she_measure_statistics( details_table = details_table,
+                                                                       shear_estimates_product = shear_estimates_product )
      
-    return estimation_statistics_product, partial_validation_statistics_product, partial_validation_statistics_listfile
+    return estimation_statistics_product, partial_validation_statistics_product
 
 @pipeline(outputs=('bias_measurements_product','bias_measurements_listfile',
                    'validation_statistics_product','validation_statistics_listfile',))
@@ -59,18 +56,13 @@ def shear_calibration_pipeline( simulation_config_template,
                                                   calibration_plan_product = calibration_plan_product )
     
     (estimation_statistics_product,
-     partial_validation_statistics_product,
-     partial_validation_statistics_listfile) = she_simulate_and_measure_bias_statistics(simulation_config = simulation_configs_list,
+     partial_validation_statistics_product) = she_simulate_and_measure_bias_statistics(simulation_config = simulation_configs_list,
                                                    galaxy_population_priors_table = galaxy_population_priors_table)
     
-    (bias_measurements_product,
-     bias_measurements_listfile) = she_measure_bias( estimation_statistics_products = estimation_statistics_product )
+    bias_measurements_product = she_measure_bias( estimation_statistics_products = estimation_statistics_product )
     
-    (validation_statistics_product,
-     validation_statistics_listfile) = she_compile_statistics( partial_validation_statistics_products = partial_validation_statistics_product,
-                                           partial_validation_statistics_listfiles = partial_validation_statistics_listfile,
-                                           bias_measurements_product = bias_measurements_product,
-                                           bias_measurements_listfile = bias_measurements_listfile )
+    validation_statistics_product = she_compile_statistics( partial_validation_statistics_products = partial_validation_statistics_product,
+                                           bias_measurements_product = bias_measurements_product )
     
     
     

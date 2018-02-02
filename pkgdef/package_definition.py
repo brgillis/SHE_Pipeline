@@ -33,7 +33,7 @@ she_simulate_images = Executable(command=ERun_CTE+"SHE_CTE_SimulateImages",
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
                                           Output("segmentation_images", mime_type="json", content_type="listfile"),
                                           Output("detections_tables", mime_type="json", content_type="listfile"),
-                                          Output("details_table")])
+                                          Output("details_table", mime_type="xml")])
 
 she_fit_psf = Executable(command=ERun_CTE+"SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
@@ -50,35 +50,27 @@ she_estimate_shear = Executable(command=ERun_CTE+"SHE_CTE_EstimateShear",
                                          Input("segmentation_images", content_type="listfile"),
                                          Input("detections_tables", content_type="listfile"),
                                          Input("galaxy_population_priors_table"),
-                                         Input("calibration_parameters_product"),
-                                         Input("calibration_parameters_listfile", content_type="listfile")],
-                                 outputs=[Output("shear_estimates_product"),
-                                          Output("shear_estimates_listfile", mime_type="json", content_type="listfile")])
+                                         Input("calibration_parameters_product")],
+                                 outputs=[Output("shear_estimates_product", mime_type="xml"),])
 
 she_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_ValidateShear",
                                 inputs=[Input("shear_estimates_product"),
                                         Input("shear_estimates_listfile", content_type="listfile"),
                                         Input("shear_validation_statistics_table")],
-                                outputs=[Output("validated_shear_estimates_table")])
+                                outputs=[Output("validated_shear_estimates_table", mime_type="xml")])
 
 she_measure_statistics = Executable(command=ERun_CTE+"SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
-                                            Input("shear_estimates_product"),
-                                            Input("shear_estimates_listfile")],
-                                    outputs=[Output("estimation_statistics_product"),
-                                             Output("partial_validation_statistics_product"),
-                                             Output("partial_validation_statistics_listfile")])
+                                            Input("shear_estimates_product")],
+                                    outputs=[Output("estimation_statistics_product", mime_type="xml"),
+                                             Output("partial_validation_statistics_product", mime_type="json")])
 
 she_measure_bias = Executable(command=ERun_CTE+"SHE_CTE_MeasureBias",
                                  inputs=[Input("estimation_statistics_products", content_type="listfile")],
-                                 outputs=[Output("bias_measurements_product"),
-                                          Output("bias_measurements_listfile")])
+                                 outputs=[Output("bias_measurements_product", mime_type="xml")])
 
 she_compile_statistics = Executable(command=ERun_CTE+"SHE_CTE_CompileStatistics",
                                      inputs=[Input("partial_validation_statistics_products", content_type="listfile"),
-                                             Input("partial_validation_statistics_listfiles", content_type="listfile"),
-                                             Input("bias_measurements_product"),
-                                             Input("bias_measurements_listfile")],
-                                     outputs=[Output("validation_statistics_product"),
-                                              Output("validation_statistics_listfile")])
+                                             Input("bias_measurements_product")],
+                                     outputs=[Output("validation_statistics_product", mime_type="xml")])
 
