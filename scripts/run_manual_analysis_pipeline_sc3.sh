@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-if [ $# -gt 0 ]
+if [ $# -gt 0 ]; then
   SCRIPTDIR=$1
 else
   SCRIPTDIR=/home/user/Work/Projects/SHE_Pipeline/scripts
