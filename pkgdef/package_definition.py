@@ -52,11 +52,9 @@ she_estimate_shear = Executable(command=ERun_CTE+"SHE_CTE_EstimateShear",
                                          Input("calibration_parameters_product")],
                                  outputs=[Output("shear_estimates_product", mime_type="xml"),])
 
-she_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_ValidateShear",
-                                inputs=[Input("shear_estimates_product"),
-                                        Input("shear_estimates_listfile", content_type="listfile"),
-                                        Input("shear_validation_statistics_table")],
-                                outputs=[Output("validated_shear_estimates_table", mime_type="xml")])
+she_cross_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_CrossValidateShear",
+                                      inputs=[Input("shear_estimates_product")],
+                                      outputs=[Output("cross_validated_shear_estimates_table", mime_type="xml")])
 
 she_measure_statistics = Executable(command=ERun_CTE+"SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),

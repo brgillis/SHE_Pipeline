@@ -29,8 +29,7 @@ def shear_analysis_pipeline( data_images,
                              aocs_time_series_products,
                              mission_time_products,
                              galaxy_population_priors_table,
-                             calibration_parameters_product,
-                             shear_validation_statistics_table ):
+                             calibration_parameters_product ):
     
     psf_images_and_tables = she_fit_psf( data_images = data_images, 
                                          detections_tables = detections_tables,
@@ -45,10 +44,9 @@ def shear_analysis_pipeline( data_images,
                                                   galaxy_population_priors_table = galaxy_population_priors_table,
                                                   calibration_parameters_product = calibration_parameters_product )
     
-    validated_shear_estimates_table = she_validate_shear( shear_estimates_product = shear_estimates_product,
-                                                          shear_validation_statistics_table = shear_validation_statistics_table )
+    cross_validated_shear_estimates_table = she_cross_validate_shear( shear_estimates_product = shear_estimates_product )
     
-    return validated_shear_estimates_table
+    return cross_validated_shear_estimates_table
 
 if __name__ == '__main__':
     from euclidwf.framework.graph_builder import build_graph
