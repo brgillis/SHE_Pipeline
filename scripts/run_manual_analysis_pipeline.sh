@@ -24,7 +24,7 @@ if [ $? -ne 0 ]; then
     exit
 fi
 
-CMD="E-Run SHE_CTE 0.3 SHE_CTE_ValidateShear --shear_estimates_product $SE_PROD --shear_validation_statistics_table $SV_PROD --validated_shear_estimates_table $VSE_PROD --workdir $WORKDIR --logdir $LOGDIR"
+CMD="E-Run SHE_CTE 0.3 SHE_CTE_CrossValidateShear --shear_estimates_product $SE_PROD --cross_validated_shear_estimates_table $CVSE_PROD --workdir $WORKDIR --logdir $LOGDIR"
 
 echo "Validating shear with command:"
 echo $CMD
