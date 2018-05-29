@@ -37,11 +37,19 @@ def shear_analysis_pipeline( data_images,
                                          psf_calibration_products = psf_calibration_products, )
     
     shear_estimates_product = she_estimate_shear( data_images = data_images,
+                                                  stacked_image = stacked_image,
                                                   psf_images_and_tables = psf_images_and_tables,
                                                   segmentation_images = segmentation_images,
+                                                  stacked_segmentation_image = stacked_segmentation_image,
                                                   detections_tables = detections_tables,
+                                                  # bfd_training_data = bfd_training_data, # Disabled for now
+                                                  # ksb_training_data = ksb_training_data, # Disabled for now
+                                                  # lensmc_training_data = lensmc_training_data, # Disabled for now
+                                                  # momentsml_training_data = momentsml_training_data, # Disabled for now
+                                                  # regauss_training_data = regauss_training_data, # Disabled for now
                                                   galaxy_population_priors_table = galaxy_population_priors_table,
-                                                  calibration_parameters_product = calibration_parameters_product )
+                                                  # calibration_parameters_product = calibration_parameters_product, # Disabled for now 
+                                                  )
     
     cross_validated_shear_estimates_table = she_cross_validate_shear( shear_estimates_product = shear_estimates_product )
     

@@ -45,11 +45,19 @@ she_fit_psf = Executable(command=ERun_CTE+"SHE_CTE_FitPSFs",
 
 she_estimate_shear = Executable(command=ERun_CTE+"SHE_CTE_EstimateShear",
                                  inputs=[Input("data_images", content_type="listfile"),
+                                         Input("stacked_image", content_type="listfile"),
                                          Input("psf_images_and_tables", content_type="listfile"),
                                          Input("segmentation_images", content_type="listfile"),
+                                         Input("stacked_segmentation_image", content_type="listfile"),
                                          Input("detections_tables", content_type="listfile"),
+                                         # Input("bfd_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("ksb_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("lensmc_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("momentsml_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("regauss_training_data", content_type="listfile"), # Disabled for now
                                          Input("galaxy_population_priors_table"),
-                                         Input("calibration_parameters_product")],
+                                         # Input("calibration_parameters_product"), # Disabled for now
+                                         ],
                                  outputs=[Output("shear_estimates_product", mime_type="xml"),])
 
 she_cross_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_CrossValidateShear",
