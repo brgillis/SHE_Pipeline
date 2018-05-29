@@ -23,13 +23,15 @@ from pkgdef.package_definition import she_fit_psf, she_estimate_shear, she_valid
 
 @pipeline(outputs=('validated_shear_estimates_table'))
 def shear_analysis_pipeline( data_images,
-                             psf_calibration_products,
+                             stacked_image,
                              segmentation_images,
+                             stacked_segmentation_image,
                              detections_tables,
-                             aocs_time_series_products,
-                             mission_time_products,
+                             # aocs_time_series_products, # Disabled for now
+                             # psf_calibration_products, # Disabled for now
                              galaxy_population_priors_table,
-                             calibration_parameters_product ):
+                             # calibration_parameters_product, # Disabled for now
+                              ):
     
     psf_images_and_tables = she_fit_psf( data_images = data_images, 
                                          segmentation_images = segmentation_images,
