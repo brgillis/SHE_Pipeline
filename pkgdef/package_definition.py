@@ -38,9 +38,10 @@ she_simulate_images = Executable(command=ERun_CTE+"SHE_CTE_SimulateImages",
 she_fit_psf = Executable(command=ERun_CTE+"SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
                                  Input("detections_tables", content_type="listfile"),
-                                 Input("aocs_time_series_products", content_type="listfile"),
-                                 Input("mission_time_products", content_type="listfile"),
-                                 Input("psf_calibration_products", content_type="listfile"),],
+                                 Input("segmentation_images", content_type="listfile"),
+                                 # Input("aocs_time_series_products", content_type="listfile"), # Disabled for now
+                                 # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
+                                 ],
                          outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")])
 
 she_estimate_shear = Executable(command=ERun_CTE+"SHE_CTE_EstimateShear",

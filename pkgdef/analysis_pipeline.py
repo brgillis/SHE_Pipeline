@@ -32,9 +32,11 @@ def shear_analysis_pipeline( data_images,
                              calibration_parameters_product ):
     
     psf_images_and_tables = she_fit_psf( data_images = data_images, 
+                                         segmentation_images = segmentation_images,
                                          detections_tables = detections_tables,
-                                         aocs_time_series_products = aocs_time_series_products,
-                                         psf_calibration_products = psf_calibration_products, )
+                                         # aocs_time_series_products = aocs_time_series_products, # Disabled for now
+                                         # psf_calibration_products = psf_calibration_products, # Disabled for now
+                                         )
     
     shear_estimates_product = she_estimate_shear( data_images = data_images,
                                                   stacked_image = stacked_image,
