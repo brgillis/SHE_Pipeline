@@ -38,25 +38,32 @@ she_simulate_images = Executable(command=ERun_CTE+"SHE_CTE_SimulateImages",
 she_fit_psf = Executable(command=ERun_CTE+"SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
                                  Input("detections_tables", content_type="listfile"),
-                                 Input("aocs_time_series_products", content_type="listfile"),
-                                 Input("mission_time_products", content_type="listfile"),
-                                 Input("psf_calibration_products", content_type="listfile"),],
+                                 Input("segmentation_images", content_type="listfile"),
+                                 # Input("aocs_time_series_products", content_type="listfile"), # Disabled for now
+                                 # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
+                                 ],
                          outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")])
 
 she_estimate_shear = Executable(command=ERun_CTE+"SHE_CTE_EstimateShear",
                                  inputs=[Input("data_images", content_type="listfile"),
+                                         Input("stacked_image", content_type="listfile"),
                                          Input("psf_images_and_tables", content_type="listfile"),
                                          Input("segmentation_images", content_type="listfile"),
+                                         Input("stacked_segmentation_image", content_type="listfile"),
                                          Input("detections_tables", content_type="listfile"),
+                                         # Input("bfd_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("ksb_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("lensmc_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("momentsml_training_data", content_type="listfile"), # Disabled for now
+                                         # Input("regauss_training_data", content_type="listfile"), # Disabled for now
                                          Input("galaxy_population_priors_table"),
-                                         Input("calibration_parameters_product")],
+                                         # Input("calibration_parameters_product"), # Disabled for now
+                                         ],
                                  outputs=[Output("shear_estimates_product", mime_type="xml"),])
 
-she_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_ValidateShear",
-                                inputs=[Input("shear_estimates_product"),
-                                        Input("shear_estimates_listfile", content_type="listfile"),
-                                        Input("shear_validation_statistics_table")],
-                                outputs=[Output("validated_shear_estimates_table", mime_type="xml")])
+she_cross_validate_shear = Executable(command=ERun_CTE+"SHE_CTE_CrossValidateShear",
+                                      inputs=[Input("shear_estimates_product")],
+                                      outputs=[Output("cross_validated_shear_estimates_table", mime_type="xml")])
 
 she_measure_statistics = Executable(command=ERun_CTE+"SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
