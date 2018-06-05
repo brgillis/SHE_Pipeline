@@ -8,9 +8,19 @@ fi
 
 source $SCRIPTDIR/set_analysis_envvars_sc3.sh
 
-CMD="E-Run SHE_CTE 0.3 SHE_CTE_FitPSFs --data_images $DATA_IM_LF --detections_tables $DTC_LF --psf_images_and_tables $PSF_LF --workdir $WORKDIR --logdir $LOGDIR"
+CMD="E-Run SHE_CTE 0.3 SHE_CTE_FitPSFs --data_images $DATA_IM_LF --detections_tables $DTC_LF --psf_field_params $PSF_FP --workdir $WORKDIR --logdir $LOGDIR"
 
 echo "Fitting PSFs with command:"
+echo $CMD
+eval $CMD
+
+if [ $? -ne 0 ]; then
+    exit
+fi
+
+CMD="E-Run SHE_CTE 0.3 SHE_CTE_ModelPSFs --data_images $DATA_IM_LF --detections_tables $DTC_LF --psf_field_params $PSF_FP --psf_images_and_tables $PSF_LF --workdir $WORKDIR --logdir $LOGDIR"
+
+echo "Modelling PSFs with command:"
 echo $CMD
 eval $CMD
 
