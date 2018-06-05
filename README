@@ -1,5 +1,5 @@
-SHE_Pipeline
-============
+SHE_Pipeline alpha 0.1
+======================
 
 1) Description
 
@@ -12,13 +12,19 @@ be extracted into the director /home/user/Work/Projects/SHE_Pipeline
 
 3) Dependencies
 
-The following projects must be installed for all operations:
+The pipeline depends upon the following common tools projects (on the Dev branch of cvmfs):
 
-- SHE_PPT
-- SHE_GST
-- SHE_CTE
+- Elements v5.2.2
+- EuclidDmBindings v2.1.0
+- DMTools v2.1.0
+- MDBTools v2.1.0
 
-For the analysis pipeline, the following projects must additionally be installed:
+Additionally, the following projects must be installed to run the analysis pipeline:
 
-- SHE_MomentsML
-- SHE_BFD
+- SHE_PPT v0.6 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT
+- SHE_LensMC v2.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_LensMC
+- SHE_CalibML v1.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CalibML
+- SHE_MomentsML v1.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MomentsML
+- SHE_BFD v0.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_BFD
+- SHE_CTE v0.4 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE
+
