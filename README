@@ -7,8 +7,9 @@ This project contains definitions, configurations, and scripts for running pipel
 
 2) Installation
 
-This project does not need to be built, but for the contained scripts to function without modification, it must
-be extracted into the director /home/user/Work/Projects/SHE_Pipeline
+This project does not need to be built, but for the contained scripts to function most easily, it must
+be extracted into the director /home/user/Work/Projects/SHE_Pipeline, otherwise the manual run scripts
+must be passed the location of the contained scripts directory as the first argument.
 
 3) Dependencies
 
@@ -28,3 +29,24 @@ Additionally, the following projects must be installed to run the analysis pipel
 - SHE_BFD v0.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_BFD
 - SHE_CTE v0.4 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE
 
+4) Execution - Outside Pipeline Runner
+
+Prior to execution, the location of the work directory, including all input files, must be
+pointed to with the proper environmental variable within the file "set_analysis_envvars.sh".
+The names of all input files relative to the work directory must similarly be set up.
+
+The pipeline can be run independent of the pipeline runner by using the bash script
+"run_manual_analysis_pipeline.sh" contained within the scripts directory. If the package is not
+installed in the default location, the location of this scripts directory must be passed as the
+first command-line argument (e.g. as "./run_manual_analysis_pipeline.sh $PWD" if running from
+within it).
+
+5) Execution - With Pipeline Runner
+
+Prior to execution, the file "analysis_isf.txt" within the params directory must be modified to
+point to the location of this project, the work directory, and the names of all input products
+and listfiles. Then, if the project is not installed in the default directory, the file
+"run_analysis_pipeline.sh" in the scripts direcotry must be modified to point to the location of
+analysis_isf.txt. run_analysis_pipeline.sh can then be executed to invoke the pipeline runner.
+(It is also possible to manually invoke the pipeline runner, if you are familiar with the commands
+for it.)
