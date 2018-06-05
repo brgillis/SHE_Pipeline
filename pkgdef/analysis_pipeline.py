@@ -33,12 +33,20 @@ def shear_analysis_pipeline(data_images,
                              # calibration_parameters_product, # Disabled for now
                               ):
 
-    psf_images_and_tables = she_fit_psf(data_images = data_images,
-                                         segmentation_images = segmentation_images,
-                                         detections_tables = detections_tables,
-                                         # aocs_time_series_products = aocs_time_series_products, # Disabled for now
-                                         # psf_calibration_products = psf_calibration_products, # Disabled for now
-                                         )
+    psf_field_params = she_fit_psf(data_images = data_images,
+                                   segmentation_images = segmentation_images,
+                                   detections_tables = detections_tables,
+                                   # aocs_time_series_products = aocs_time_series_products, # Disabled for now
+                                   # psf_calibration_products = psf_calibration_products, # Disabled for now
+                                   )
+
+    psf_images_and_tables = she_model_psf(data_images = data_images,
+                                          segmentation_images = segmentation_images,
+                                          detections_tables = detections_tables,
+                                          # aocs_time_series_products = aocs_time_series_products, # Disabled for now
+                                          # psf_calibration_products = psf_calibration_products, # Disabled for now
+                                          psf_field_params = psf_field_params,
+                                          )
 
     shear_estimates_product = she_estimate_shear(data_images = data_images,
                                                   stacked_image = stacked_image,
@@ -57,7 +65,7 @@ def shear_analysis_pipeline(data_images,
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product = shear_estimates_product)
 
-    return cross_validated_shear_estimates_table
+    return cross_validated_shear_estimates_product
 
 if __name__ == '__main__':
     from euclidwf.framework.graph_builder import build_graph
