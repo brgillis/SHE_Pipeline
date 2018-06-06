@@ -22,12 +22,12 @@ The pipeline depends upon the following common tools projects (on the Dev branch
 
 Additionally, the following projects must be installed to run the analysis pipeline:
 
-- SHE_PPT v0.6 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT
-- SHE_LensMC v2.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_LensMC
-- SHE_CalibML v1.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CalibML
-- SHE_MomentsML v1.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MomentsML
-- SHE_BFD v0.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_BFD
-- SHE_CTE v0.4 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE
+- SHE_PPT v0.6 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT
+- SHE_LensMC v2.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_LensMC
+- SHE_CalibML v1.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CalibML
+- SHE_MomentsML v1.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MomentsML
+- SHE_BFD v0.2  (tag SC4_alpha_0.2)- https://gitlab.euclid-sgs.uk/PF-SHE/SHE_BFD
+- SHE_CTE v0.4 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE
 
 4) Execution - Outside Pipeline Runner
 
