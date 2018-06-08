@@ -47,7 +47,7 @@ within it).
 Prior to execution, the file "analysis_isf.txt" within the params directory must be modified to
 point to the location of this project, the work directory, and the names of all input products
 and listfiles. Then, if the project is not installed in the default directory, the file
-"run_analysis_pipeline.sh" in the scripts direcotry must be modified to point to the location of
+"run_analysis_pipeline.sh" in the scripts directory must be modified to point to the location of
 analysis_isf.txt. run_analysis_pipeline.sh can then be executed to invoke the pipeline runner.
 (It is also possible to manually invoke the pipeline runner, if you are familiar with the commands
 for it.)
