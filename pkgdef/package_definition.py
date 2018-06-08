@@ -20,7 +20,7 @@
 
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
-ERun_CTE = "E-Run SHE_CTE 0.3 "
+ERun_CTE = "E-Run SHE_CTE 0.4 "
 
 she_prepare_configs = Executable(command = ERun_CTE + "SHE_CTE_PrepareConfigs",
                                  inputs = [Input("simulation_config_template"), Input("calibration_plan_product")],
@@ -35,7 +35,7 @@ she_simulate_images = Executable(command = ERun_CTE + "SHE_CTE_SimulateImages",
                                           Output("detections_tables", mime_type = "json", content_type = "listfile"),
                                           Output("details_table", mime_type = "xml")])
 
-she_remap_mosaic = Executable(command = "E-Run SHE_MER 0.1 SHE_MER_RemapMosaic",
+she_remap_mosaic = Executable(command = "E-Run SHE_MER 0.2 SHE_MER_RemapMosaic",
                               inputs = [Input("mer_tile_listfile", content_type= "listfile"),
                                         Input("vis_prod_filename")],
                               outputs = [Output("output_filename", mime_type = 'xml')])
