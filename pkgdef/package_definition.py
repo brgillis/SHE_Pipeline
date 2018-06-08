@@ -35,6 +35,11 @@ she_simulate_images = Executable(command = ERun_CTE + "SHE_CTE_SimulateImages",
                                           Output("detections_tables", mime_type = "json", content_type = "listfile"),
                                           Output("details_table", mime_type = "xml")])
 
+she_remap_mosaic = Executable(command = "E-Run SHE_MER 0.1 SHE_MER_RemapMosaic",
+                              inputs = [Input("mer_tile_listfile", content_type= "listfile"),
+                                        Input("vis_prod_filename")],
+                              outputs = [Output("output_filename", mime_type = 'xml')])
+
 she_fit_psf = Executable(command = ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs = [Input("data_images", content_type = "listfile"),
                                  Input("detections_tables", content_type = "listfile"),

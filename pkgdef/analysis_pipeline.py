@@ -21,17 +21,30 @@
 from euclidwf.framework.workflow_dsl import pipeline
 from pkgdef.package_definition import she_fit_psf, she_estimate_shear, she_validate_shear
 
+@parallel(iterable="vis_prod_filenames")
+def she_remap_mosaics( mer_tile_listfile, vis_prod_filenames ):
+    
+    segmentation_image = she_remap_mosaic(mer_tile_listfile = mer_tile_listfile,
+                                          vis_prod_filename = vis_prod_filenames,)
+    
+    return segmentation_image
+
 @pipeline(outputs = ('validated_shear_estimates_table'))
 def shear_analysis_pipeline(data_images,
                              stacked_image,
-                             segmentation_images,
-                             stacked_segmentation_image,
+                             mer_tiles,
                              detections_tables,
                              # aocs_time_series_products, # Disabled for now
                              # psf_calibration_products, # Disabled for now
                              galaxy_population_priors_table,
                              # calibration_parameters_product, # Disabled for now
                               ):
+    
+    stacked_segmentation_image = she_remap_mosaic(mer_tile_listfile = mer_tiles,
+                                                  vis_prod_filename = stacked_image,)
+    
+    segmentation_images = she_remap_mosaics(mer_tile_listfile = mer_tiles,
+                                            vis_prod_filenames = data_images)
 
     psf_field_params = she_fit_psf(data_images = data_images,
                                    segmentation_images = segmentation_images,
