@@ -8,7 +8,7 @@ This project contains definitions, configurations, and scripts for running pipel
 2) Installation
 
 This project does not need to be built, but for the contained scripts to function most easily, it must
-be extracted into the director /home/user/Work/Projects/SHE_Pipeline, otherwise the manual run scripts
+be extracted into the directory /home/user/Work/Projects/SHE_Pipeline, otherwise the manual run scripts
 must be passed the location of the contained scripts directory as the first argument.
 
 3) Dependencies
