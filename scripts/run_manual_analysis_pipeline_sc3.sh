@@ -10,7 +10,7 @@ source $SCRIPTDIR/set_analysis_envvars_sc3.sh
 
 CMD="E-Run SHE_MER 0.2 SHE_MER_RemapMosaic --vis_prod_filename $DATA_STACK_PROD --mer_tile_listfile $MER_TILES --output_filename $SEG_STACK_F --workdir $WORKDIR --logdir $LOGDIR"
 
-echo "Fitting PSFs with command:"
+echo "Remapping segmentation map with command:"
 echo $CMD
 eval $CMD
 
@@ -20,7 +20,7 @@ fi
 
 CMD="E-Run SHE_MER 0.2 SHE_MER_RemapMosaic --vis_prod_filename $DATA_IM1 --mer_tile_listfile $MER_TILES --output_filename $SEG_F1 --workdir $WORKDIR --logdir $LOGDIR"
 
-echo "Fitting PSFs with command:"
+echo "Remapping segmentation map with command:"
 echo $CMD
 eval $CMD
 
@@ -30,7 +30,7 @@ fi
 
 CMD="E-Run SHE_MER 0.2 SHE_MER_RemapMosaic --vis_prod_filename $DATA_IM2 --mer_tile_listfile $MER_TILES --output_filename $SEG_F2 --workdir $WORKDIR --logdir $LOGDIR"
 
-echo "Fitting PSFs with command:"
+echo "Remapping segmentation map with command:"
 echo $CMD
 eval $CMD
 
@@ -40,7 +40,7 @@ fi
 
 CMD="E-Run SHE_MER 0.2 SHE_MER_RemapMosaic --vis_prod_filename $DATA_IM3 --mer_tile_listfile $MER_TILES --output_filename $SEG_F3 --workdir $WORKDIR --logdir $LOGDIR"
 
-echo "Fitting PSFs with command:"
+echo "Remapping segmentation map with command:"
 echo $CMD
 eval $CMD
 
@@ -50,7 +50,7 @@ fi
 
 CMD="E-Run SHE_MER 0.2 SHE_MER_RemapMosaic --vis_prod_filename $DATA_IM4 --mer_tile_listfile $MER_TILES --output_filename $SEG_F4 --workdir $WORKDIR --logdir $LOGDIR"
 
-echo "Fitting PSFs with command:"
+echo "Remapping segmentation map with command:"
 echo $CMD
 eval $CMD
 
