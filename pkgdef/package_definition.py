@@ -23,11 +23,12 @@ __updated__ = "2018-06-28"
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
 ERun_CTE = "E-Run SHE_CTE 0.5 "
+ERun_GST = "E-Run SHE_CTE 1.5 "
 ERun_MER = "E-Run SHE_MER 0.1 "
 
-she_prepare_configs = Executable(command=ERun_CTE + "SHE_CTE_PrepareConfigs",
-                                 inputs=[Input("simulation_config_template"), Input("calibration_plan_product")],
-                                 outputs=[Output("simulation_configs_list", mime_type="json", content_type="listfile")])
+she_prepare_configs = Executable(command=ERun_GST + "SHE_CTE_PrepareConfigs",
+                                 inputs=[Input("simulation_plan"), Input("config_template")],
+                                 outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
 she_simulate_images = Executable(command=ERun_CTE + "SHE_CTE_SimulateImages",
                                  inputs=[Input("simulation_config"),

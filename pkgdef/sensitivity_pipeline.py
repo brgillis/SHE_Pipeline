@@ -50,11 +50,11 @@ def she_simulate_and_measure_bias_statistics(simulation_config, galaxy_populatio
 
 
 @pipeline(outputs=('bias_measurements_product',))
-def shear_sensitivity_pipeline(simulation_config_template,
-                               calibration_plan_product):
+def shear_sensitivity_pipeline(simulation_plan,
+                               config_template):
 
-    simulation_configs_list = she_prepare_configs(simulation_config_template=simulation_config_template,
-                                                  calibration_plan_product=calibration_plan_product)
+    simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
+                                             config_template=config_template)
 
     (estimation_statistics_products,
      partial_validation_statistics_product) = she_simulate_and_measure_bias_statistics(simulation_config=simulation_configs_list,)
