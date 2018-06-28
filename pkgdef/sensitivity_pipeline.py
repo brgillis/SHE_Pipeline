@@ -1,8 +1,8 @@
-""" @file calibration_pipeline.py
+""" @file sensitivity_pipeline.py
 
-    Created 6 Nov 2017
+    Created 28 Jun 2018
 
-    Pipeline script for the shear calibration pipeline.
+    Pipeline script for the shear sensitivity testing pipeline.
 """
 
 __updated__ = "2018-06-28"
@@ -43,36 +43,28 @@ def she_simulate_and_measure_bias_statistics(simulation_config, galaxy_populatio
                                                  detections_tables=detections_tables,
                                                  galaxy_population_priors_table=galaxy_population_priors_table, )
 
-    (estimation_statistics_product,
-     partial_validation_statistics_product) = she_measure_statistics(details_table=details_table,
-                                                                     shear_estimates_product=shear_estimates_product)
+    estimation_statistics_product = she_measure_statistics(details_table=details_table,
+                                                           shear_estimates_product=shear_estimates_product)
 
     return estimation_statistics_product, partial_validation_statistics_product
 
 
-@pipeline(outputs=('bias_measurements_product', 'bias_measurements_listfile',
-                   'validation_statistics_product', 'validation_statistics_listfile',))
-def shear_calibration_pipeline(simulation_config_template,
-                               calibration_plan_product,
-                               galaxy_population_priors_table):
+@pipeline(outputs=('bias_measurements_product',))
+def shear_sensitivity_pipeline(simulation_config_template,
+                               calibration_plan_product):
 
     simulation_configs_list = she_prepare_configs(simulation_config_template=simulation_config_template,
                                                   calibration_plan_product=calibration_plan_product)
 
-    (estimation_statistics_product,
-     partial_validation_statistics_product) = she_simulate_and_measure_bias_statistics(simulation_config=simulation_configs_list,
-                                                                                       galaxy_population_priors_table=galaxy_population_priors_table)
+    (estimation_statistics_products,
+     partial_validation_statistics_product) = she_simulate_and_measure_bias_statistics(simulation_config=simulation_configs_list,)
 
-    bias_measurements_product = she_measure_bias(estimation_statistics_products=estimation_statistics_product)
+    bias_measurements_product = she_measure_bias(estimation_statistics_products=estimation_statistics_products)
 
-    validation_statistics_product = she_compile_statistics(partial_validation_statistics_products=partial_validation_statistics_product,
-                                                           bias_measurements_product=bias_measurements_product)
-
-    return (bias_measurements_product, bias_measurements_listfile,
-            validation_statistics_product, validation_statistics_listfile)
+    return bias_measurements_product
 
 if __name__ == '__main__':
     from euclidwf.framework.graph_builder import build_graph
     from euclidwf.utilities import visualizer
-    pydron_graph = build_graph(shear_calibration_pipeline)
+    pydron_graph = build_graph(shear_sensitivity_pipeline)
     visualizer.visualize_graph(pydron_graph)

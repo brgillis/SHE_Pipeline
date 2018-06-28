@@ -5,6 +5,8 @@
     Package definition for the OU-SHE pipeline.
 """
 
+__updated__ = "2018-06-28"
+
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
 # This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -21,6 +23,7 @@
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
 ERun_CTE = "E-Run SHE_CTE 0.5 "
+ERun_MER = "E-Run SHE_MER 0.1 "
 
 she_prepare_configs = Executable(command=ERun_CTE + "SHE_CTE_PrepareConfigs",
                                  inputs=[Input("simulation_config_template"), Input("calibration_plan_product")],
@@ -35,7 +38,7 @@ she_simulate_images = Executable(command=ERun_CTE + "SHE_CTE_SimulateImages",
                                           Output("detections_tables", mime_type="json", content_type="listfile"),
                                           Output("details_table", mime_type="xml")])
 
-she_remap_mosaic = Executable(command="E-Run SHE_MER 0.1 SHE_MER_RemapMosaic",
+she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                               inputs=[Input("mer_tile_listfile", content_type="listfile"),
                                       Input("vis_prod_filename")],
                               outputs=[Output("output_filename", mime_type='xml')])
