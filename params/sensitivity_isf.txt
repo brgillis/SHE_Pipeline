@@ -7,4 +7,4 @@ workdir=/home/user/Data/sens_workdir
 logdir=logdir
 
 simulation_plan=SensitivityTestingMiniPlan.fits
-config_template=SensitivityTestingMini.conf
+config_template=AUX/StampsTemplate.conf
