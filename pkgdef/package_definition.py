@@ -78,7 +78,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("momentsml_training_data", content_type="listfile"), # Disabled for now
                                         # Input("regauss_training_data", content_type="listfile"), # Disabled for
                                         # now
-                                        Input("galaxy_population_priors_table"),
+                                        # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ])
