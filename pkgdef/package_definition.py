@@ -26,7 +26,7 @@ ERun_CTE = "E-Run SHE_CTE 0.5 "
 ERun_GST = "E-Run SHE_GST 1.5 "
 ERun_MER = "E-Run SHE_MER 0.1 "
 
-she_prepare_configs = Executable(command=ERun_GST + "SHE_CTE_PrepareConfigs",
+she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"), Input("config_template")],
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
