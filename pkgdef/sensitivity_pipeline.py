@@ -42,9 +42,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
                                          stacked_image=stacked_data_image,
                                          psf_images_and_tables=psf_images_and_tables,
                                          segmentation_images=segmentation_images,
-                                         stacked_segmentation_images=stacked_segmentation_image,
-                                         detections_tables=detections_tables,
-                                         galaxy_population_priors_table=galaxy_population_priors_table, )
+                                         stacked_segmentation_image=stacked_segmentation_image,
+                                         detections_tables=detections_tables, )
 
     shear_bias_statistics = she_measure_statistics(details_table=details_table,
                                                    shear_estimates=shear_estimates)
