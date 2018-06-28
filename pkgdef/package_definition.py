@@ -30,12 +30,14 @@ she_prepare_configs = Executable(command=ERun_GST + "SHE_CTE_PrepareConfigs",
                                  inputs=[Input("simulation_plan"), Input("config_template")],
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
-she_simulate_images = Executable(command=ERun_CTE + "SHE_CTE_SimulateImages",
-                                 inputs=[Input("simulation_config"),
-                                         Input("galaxy_population_priors_table")],
+she_simulate_images = Executable(command=ERun_GST + "GenGalaxyImages",
+                                 inputs=[Input("simulation_config")],
                                  outputs=[Output("data_images", mime_type="json", content_type="listfile"),
+                                          Output("stacked_data_image", mime_type="xml", content_type="listfile"),
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
                                           Output("segmentation_images", mime_type="json", content_type="listfile"),
+                                          Output(
+                                              "stacked_segmentation_image", mime_type="xml", content_type="listfile"),
                                           Output("detections_tables", mime_type="json", content_type="listfile"),
                                           Output("details_table", mime_type="xml")])
 
@@ -87,13 +89,12 @@ she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateS
 
 she_measure_statistics = Executable(command=ERun_CTE + "SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
-                                            Input("shear_estimates_product")],
-                                    outputs=[Output("estimation_statistics_product", mime_type="xml"),
-                                             Output("partial_validation_statistics_product", mime_type="json")])
+                                            Input("shear_estimates")],
+                                    outputs=[Output("shear_bias_statistics", mime_type="xml")])
 
 she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
-                              inputs=[Input("estimation_statistics_products", content_type="listfile")],
-                              outputs=[Output("bias_measurements_product", mime_type="xml")])
+                              inputs=[Input("shear_bias_statistics", content_type="listfile")],
+                              outputs=[Output("shear_bias_measurements", mime_type="xml")])
 
 she_compile_statistics = Executable(command=ERun_CTE + "SHE_CTE_CompileStatistics",
                                     inputs=[Input("partial_validation_statistics_products", content_type="listfile"),

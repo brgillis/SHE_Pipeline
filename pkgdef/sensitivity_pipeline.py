@@ -28,40 +28,42 @@ from pkgdef.package_definition import (she_prepare_configs, she_simulate_images,
 
 
 @parallel(iterable="simulation_config")
-def she_simulate_and_measure_bias_statistics(simulation_config, galaxy_population_priors_table):
+def she_simulate_and_measure_bias_statistics(simulation_config):
 
     (data_images,
+     stacked_data_image,
      psf_images_and_tables,
      segmentation_images,
+     stacked_segmentation_image,
      detections_tables,
-     details_table) = she_simulate_images(simulation_config=simulation_config,
-                                          galaxy_population_priors_table=galaxy_population_priors_table)
+     details_table) = she_simulate_images(simulation_config=simulation_config)
 
-    shear_estimates_product = she_estimate_shear(data_images=data_images,
-                                                 psf_images_and_tables=psf_images_and_tables,
-                                                 segmentation_images=segmentation_images,
-                                                 detections_tables=detections_tables,
-                                                 galaxy_population_priors_table=galaxy_population_priors_table, )
+    shear_estimates = she_estimate_shear(data_images=data_images,
+                                         stacked_image=stacked_data_image,
+                                         psf_images_and_tables=psf_images_and_tables,
+                                         segmentation_images=segmentation_images,
+                                         stacked_segmentation_images=stacked_segmentation_image,
+                                         detections_tables=detections_tables,
+                                         galaxy_population_priors_table=galaxy_population_priors_table, )
 
-    estimation_statistics_product = she_measure_statistics(details_table=details_table,
-                                                           shear_estimates_product=shear_estimates_product)
+    shear_bias_statistics = she_measure_statistics(details_table=details_table,
+                                                   shear_estimates=shear_estimates)
 
-    return estimation_statistics_product, partial_validation_statistics_product
+    return shear_bias_statistics
 
 
-@pipeline(outputs=('bias_measurements_product',))
+@pipeline(outputs=('shear_bias_measurements',))
 def shear_sensitivity_pipeline(simulation_plan,
                                config_template):
 
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
                                              config_template=config_template)
 
-    (estimation_statistics_products,
-     partial_validation_statistics_product) = she_simulate_and_measure_bias_statistics(simulation_config=simulation_configs_list,)
+    shear_bias_statistics = she_simulate_and_measure_bias_statistics(simulation_config=simulation_configs)
 
-    bias_measurements_product = she_measure_bias(estimation_statistics_products=estimation_statistics_products)
+    shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics)
 
-    return bias_measurements_product
+    return shear_bias_measurements
 
 if __name__ == '__main__':
     from euclidwf.framework.graph_builder import build_graph
