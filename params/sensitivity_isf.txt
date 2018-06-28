@@ -1,0 +1,10 @@
+pkgRepository=/home/user/Work/Projects/SHE_Pipeline
+
+pipelineDir=/home/user/Work/Projects/SHE_Pipeline/pkgdef
+
+workdir=/home/user/Data/sens_workdir
+
+logdir=logdir
+
+simulation_plan=SensitivityTestingMiniPlan.fits
+config_template=SensitivityTestingMini.conf
