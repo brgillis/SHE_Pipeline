@@ -36,7 +36,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
      segmentation_images,
      stacked_segmentation_image,
      detections_tables,
-     details_table) = she_simulate_images(simulation_config=simulation_config)
+     details_table) = she_simulate_images(config_files=simulation_config)
 
     shear_estimates = she_estimate_shear(data_images=data_images,
                                          stacked_image=stacked_data_image,

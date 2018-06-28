@@ -31,7 +31,7 @@ she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
 she_simulate_images = Executable(command=ERun_GST + "GenGalaxyImages",
-                                 inputs=[Input("simulation_config")],
+                                 inputs=[Input("config_files")],
                                  outputs=[Output("data_images", mime_type="json", content_type="listfile"),
                                           Output("stacked_data_image", mime_type="xml", content_type="listfile"),
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
