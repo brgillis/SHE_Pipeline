@@ -4,6 +4,9 @@ elements_subdir(SHE_Pipeline)
 # Instruction for Python module installation
 elements_install_python_modules()
 
+# Install python programs
+elements_add_python_program(SHE_Pipeline_Run SHE_Pipeline.RunPipeline)
+
 # Install the configuration files
 # elements_install_conf_files()
 
