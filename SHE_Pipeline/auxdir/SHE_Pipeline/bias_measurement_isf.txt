@@ -1,0 +1,2 @@
+simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMiniPlan.fits
+config_template=AUX/SHE_GST_PrepareConfigs/SensitivityE0P0S0Template.conf
