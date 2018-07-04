@@ -116,8 +116,7 @@ def create_isf(args):
             fo.write("workdir=" + args.workdir + "\n")
             fo.write("logdir=" + args.logdir + "\n")
             fo.write("pkgRepository=" + get_pipeline_dir() + "\n")
-            fo.write(
-                "pipelineDir=" + os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py") + "\n")
+            fo.write("pipelineDir=" + os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef") + "\n")
 
     return qualified_isf_filename
 
