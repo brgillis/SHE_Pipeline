@@ -22,7 +22,7 @@ __updated__ = "2018-07-04"
 
 import os
 
-from SHE_PPT.file_io import find_file, get_allowed_filename
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename
 from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
@@ -50,6 +50,25 @@ def check_args(args):
     logger = getLogger(__name__)
 
     logger.debug('# Entering SHE_Pipeline_Run check_args()')
+
+    # Is a pipeline specified at all?
+    if args.pipeline is None:
+        raise IOError("Pipeline must be specified at command-line, e.g with --pipeline bias_measurement")
+
+    # Does the pipeline we want to run exist?
+    pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py")
+    if not os.path.exists(pipeline_filename):
+        logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
+                     pipeline_filename)
+
+    # If no ISF is specified, check for one in the AUX directory
+    if args.isf is None:
+        try:
+            args.isf = find_aux_file("SHE_Pipeline/" + args.pipeline + "_isf.txt")
+        except Exception:
+            logger.error("No ISF file specified, and cannot find one in default location (" +
+                         "AUX/SHE_Pipeline/" + args.pipeline + "_isf.txt).")
+            raise
 
     # Use the default workdir if necessary
     if args.workdir is None:
@@ -81,12 +100,6 @@ def check_args(args):
         except Exception as e:
             logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
             raise e
-
-    # Does the pipeline we want to run exist?
-    pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py")
-    if not os.path.exists(pipeline_filename):
-        logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
-                     pipeline_filename)
 
     return
 
