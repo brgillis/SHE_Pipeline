@@ -27,7 +27,7 @@ from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
 
-default_workdir = "/home/user/workdir"
+default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
 
 
@@ -59,6 +59,8 @@ def check_args(args):
         # Can we create it?
         try:
             os.mkdir(args.workdir)
+            # Also create a cache directory in it in case we need that too
+            os.mkdir(os.path.join(args.workdir,"cache")
         except Exception as e:
             logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
             raise e
