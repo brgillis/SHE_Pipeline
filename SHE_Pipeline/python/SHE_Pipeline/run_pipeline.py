@@ -110,7 +110,7 @@ def create_isf(args):
                         line[0:6] == "logdir" or
                         line[0:13] == "pkgRepository" or
                         line[0:11] == "pipelineDir" or
-                        len(line.strip() == 0)):
+                        len(line.strip()) == 0):
                     fo.write(line)
             # Write out new workdir and logdir at the end
             fo.write("workdir=" + args.workdir + "\n")
