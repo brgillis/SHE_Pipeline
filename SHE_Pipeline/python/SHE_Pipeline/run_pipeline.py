@@ -35,6 +35,8 @@ def get_pipeline_dir():
     """Gets the directory containing the pipeline packages, using the location of this module.
     """
 
+    logger = getLogger(__name__)
+
     this_file_name = __name__.replace(".", "/") + '.py'
     pipeline_dir = __file__.replace('/' + this_file_name, '')
 
@@ -93,6 +95,8 @@ def create_isf(args):
     """Function to create a new ISF for this run by adjusting workdir and logdir.
     """
 
+    logger = getLogger(__name__)
+
     base_isf = find_file(args.isf, path=".")
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
@@ -120,6 +124,8 @@ def execute_pipeline(pipeline, isf, serverurl):
     """Sets up and calls a command to execute the pipeline.
     """
 
+    logger = getLogger(__name__)
+
     cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
     logger.info("Calling python with command: '" + cmd + "'")
 
@@ -131,6 +137,8 @@ def execute_pipeline(pipeline, isf, serverurl):
 def run_pipeline_from_args(args):
     """Main executable to run pipelines.
     """
+
+    logger = getLogger(__name__)
 
     # Check the arguments
     check_args(args)
