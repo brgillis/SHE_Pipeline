@@ -1,6 +1,6 @@
-pkgRepository=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/SHE_Pipeline
+pkgRepository=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/SHE_Pipeline/0.3/InstallArea/x86_64-co7-gcc48-o2g/python
 
-pipelineDir=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/SHE_Pipeline/pkgdef
+pipelineDir=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/SHE_Pipeline/0.3/InstallArea/x86_64-co7-gcc48-o2g/python/SHE_Pipeline_pkgdef
 
 workdir=/workspace/lodeen/analysis-workdir
 
