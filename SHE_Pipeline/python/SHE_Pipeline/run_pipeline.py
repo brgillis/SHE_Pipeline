@@ -60,7 +60,7 @@ def check_args(args):
         try:
             os.mkdir(args.workdir)
             # Also create a cache directory in it in case we need that too
-            os.mkdir(os.path.join(args.workdir,"cache")
+            os.mkdir(os.path.join(args.workdir, "cache"))
         except Exception as e:
             logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
             raise e
