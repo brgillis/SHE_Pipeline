@@ -109,13 +109,15 @@ def create_isf(args):
                 if not (line[0:7] == "workdir" or
                         line[0:6] == "logdir" or
                         line[0:13] == "pkgRepository" or
-                        line[0:11] == "pipelineDir"):
+                        line[0:11] == "pipelineDir" or
+                        len(line.strip() == 0)):
                     fo.write(line)
             # Write out new workdir and logdir at the end
-            fo.write("workdir=" + args.workdir)
-            fo.write("logdir=" + args.logdir)
-            fo.write("pkgRepository=" + get_pipeline_dir())
-            fo.write("pipelineDir=" + os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py"))
+            fo.write("workdir=" + args.workdir + "\n")
+            fo.write("logdir=" + args.logdir + "\n")
+            fo.write("pkgRepository=" + get_pipeline_dir() + "\n")
+            fo.write(
+                "pipelineDir=" + os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py") + "\n")
 
     return qualified_isf_filename
 
@@ -127,7 +129,7 @@ def execute_pipeline(pipeline, isf, serverurl):
     logger = getLogger(__name__)
 
     cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
-    logger.info("Calling python with command: '" + cmd + "'")
+    logger.info("Calling pipeline with command: '" + cmd + "'")
 
     sbp.call(cmd, shell=True)
 
