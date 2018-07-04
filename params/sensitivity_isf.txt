@@ -1,8 +1,8 @@
-pkgRepository=/home/user/Work/Projects/SHE_Pipeline
+pkgRepository=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/SHE_Pipeline
 
-pipelineDir=/home/user/Work/Projects/SHE_Pipeline/pkgdef
+pipelineDir=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/SHE_Pipeline/pkgdef
 
-workdir=/home/user/Data/sens_workdir
+workdir=/workspace/lodeen/sens-workdir
 
 logdir=logdir
 
