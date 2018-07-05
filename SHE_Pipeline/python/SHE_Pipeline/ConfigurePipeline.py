@@ -49,11 +49,11 @@ def defineSpecificProgramOptions():
                         help='Name of the configuration file to use')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--start', type=bool, action='store_true',
-                        'If set, will start the pipeline run server before configuring')
+                        help='If set, will start the pipeline run server before configuring')
     parser.add_argument('--restart', type=bool, action='store_true',
-                        'If set, will restart the pipeline run server before configuring')
+                        help='If set, will restart the pipeline run server before configuring')
     parser.add_argument('--password', type=str, default='password',
-                        'Root user password, needed if starting/restarting the pipeline server.')
+                        help='Root user password, needed if starting/restarting the pipeline server.')
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
