@@ -49,6 +49,8 @@ def defineSpecificProgramOptions():
     parser.add_argument('--pipeline', type=str,
                         help='Name of the pipeline (e.g. "sensitivity_testing")')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
+    parser.add_argument('--cluster', action='store_true',
+                        help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
