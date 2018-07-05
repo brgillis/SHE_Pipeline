@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-06-29"
+__updated__ = "2018-07-05"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -36,10 +36,21 @@ she_simulate_images = Executable(command=ERun_GST + "GenGalaxyImages",
                                           Output("stacked_data_image", mime_type="xml"),
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
                                           Output("segmentation_images", mime_type="json", content_type="listfile"),
-                                          Output(
-                                              "stacked_segmentation_image", mime_type="xml"),
+                                          Output("stacked_segmentation_image", mime_type="xml"),
                                           Output("detections_tables", mime_type="json", content_type="listfile"),
                                           Output("details_table", mime_type="xml")])
+
+she_cleanup_bias_measurement = Executable(command=ERun_CTE + "CleanupBiasMeasurement",
+                                          inputs=[Input("simulation_config"),
+                                                  Input("data_images"),
+                                                  Input("stacked_data_image"),
+                                                  Input("psf_images_and_tables"),
+                                                  Input("segmentation_images"),
+                                                  Input("segmentation_images"),
+                                                  Input("stacked_segmentation_image"),
+                                                  Input("detections_tables"),
+                                                  Input("details_table"), ],
+                                          outputs=[])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                               inputs=[Input("mer_tile_listfile", content_type="listfile"),
