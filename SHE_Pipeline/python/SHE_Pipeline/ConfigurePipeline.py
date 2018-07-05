@@ -1,8 +1,8 @@
-""" @file RunPipeline.py
+""" @file ConfigurePipeline.py
 
-    Created 4 July 2018
+    Created 5 July 2018
 
-    Main program for calling one of the pipelines.
+    Main program for configuring the pipeline server.
 """
 
 __updated__ = "2018-07-05"
@@ -23,7 +23,8 @@ __updated__ = "2018-07-05"
 import argparse
 
 from ElementsKernel.Logging import getLogger
-from SHE_Pipeline.run_pipeline import run_pipeline_from_args
+from SHE_PPT.file_io import find_file
+import subprocess as sbp
 
 
 def defineSpecificProgramOptions():
@@ -44,11 +45,15 @@ def defineSpecificProgramOptions():
     parser = argparse.ArgumentParser()
 
     # Input arguments
-    parser.add_argument('--isf', type=str,
-                        help='Fully-qualified name of input specification file for the pipeline')
-    parser.add_argument('--pipeline', type=str,
-                        help='Name of the pipeline (e.g. "sensitivity_testing")')
+    parser.add_argument('--config', type=str, default='AUX/SHE_Pipeline/euclid_prs_app_lodeen.cfg',
+                        help='Name of the configuration file to use')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
+    parser.add_argument('--start', type=bool, action='store_true',
+                        'If set, will start the pipeline run server before configuring')
+    parser.add_argument('--restart', type=bool, action='store_true',
+                        'If set, will restart the pipeline run server before configuring')
+    parser.add_argument('--password', type=str, default='password',
+                        'Root user password, needed if starting/restarting the pipeline server.')
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
@@ -74,7 +79,25 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    run_pipeline_from_args(args)
+    # Start/restart if desired
+    if args.start or args.restart:
+        if args.restart:
+            scmd = "restart"
+        else:
+            scmd = "start"
+        cmd = "echo " + args.password + " | sudo -S systemctl " + scmd + " euclid-ial-wfm && sleep 1"
+        logger.info("Starting/restarting pipeline with cmd:")
+        logger.info(cmd)
+        sbp.call(cmd, shell=True)
+
+    # Find the config file
+    config_file = find_file(args.config)
+
+    # Configure the server now
+    cmd = 'pipeline_runner.py --configure --config=' + config_file + ' --serverurl="' + args.serverurl + '"'
+    logger.info("Configuring pipeline with cmd:")
+    logger.info(cmd)
+    sbp.call(cmd, shell=True)
 
     logger.debug('# Exiting SHE_Pipeline_Run mainMethod()')
 
