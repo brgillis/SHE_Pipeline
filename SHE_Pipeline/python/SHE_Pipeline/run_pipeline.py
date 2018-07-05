@@ -29,6 +29,7 @@ import subprocess as sbp
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
+default_cluster_workdir = "/workspace/lodeen/workdir"
 
 
 def get_pipeline_dir():
@@ -73,7 +74,10 @@ def check_args(args):
     # Use the default workdir if necessary
     if args.workdir is None:
         logger.info('No workdir supplied at command-line. Using default workdir: ' + default_workdir)
-        args.workdir = default_workdir
+        if args.cluster:
+            args.workdir = default_cluster_workdir
+        else:
+            args.workdir = default_workdir
 
     # Does the workdir exist?
     if not os.path.exists(args.workdir):
