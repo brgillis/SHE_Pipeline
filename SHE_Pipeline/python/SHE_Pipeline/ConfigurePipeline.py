@@ -48,9 +48,9 @@ def defineSpecificProgramOptions():
     parser.add_argument('--config', type=str, default='AUX/SHE_Pipeline/euclid_prs_app_lodeen.cfg',
                         help='Name of the configuration file to use')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
-    parser.add_argument('--start', type=bool, action='store_true',
+    parser.add_argument('--start', action='store_true',
                         help='If set, will start the pipeline run server before configuring')
-    parser.add_argument('--restart', type=bool, action='store_true',
+    parser.add_argument('--restart', action='store_true',
                         help='If set, will restart the pipeline run server before configuring')
     parser.add_argument('--password', type=str, default='password',
                         help='Root user password, needed if starting/restarting the pipeline server.')
