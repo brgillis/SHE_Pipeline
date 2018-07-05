@@ -84,7 +84,7 @@ def check_args(args):
             logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
             raise e
     if args.cluster:
-        os.chmod(args.workdir, "a+rwx")
+        os.chmod(args.workdir, 0o777)
 
     # Does the cache directory exist within the workdir?
     cache_dir = os.path.join(args.workdir, "cache")
@@ -96,7 +96,7 @@ def check_args(args):
             logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
             raise e
     if args.cluster:
-        os.chmod(cache_dir, "a+rwx")
+        os.chmod(cache_dir, 0o777)
 
     # Use the default logdir if necessary
     if args.logdir is None:
@@ -113,7 +113,7 @@ def check_args(args):
             logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
             raise e
     if args.cluster:
-        os.chmod(qualified_logdir, "a+rwx")
+        os.chmod(qualified_logdir, 0o777)
 
     return
 
