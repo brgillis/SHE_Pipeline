@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-04"
+__updated__ = "2018-07-05"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -80,10 +80,18 @@ def check_args(args):
         # Can we create it?
         try:
             os.mkdir(args.workdir)
-            # Also create a cache directory in it in case we need that too
-            os.mkdir(os.path.join(args.workdir, "cache"))
         except Exception as e:
             logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
+            raise e
+
+    # Does the cache directory exist within the workdir?
+    cache_dir = os.path.join(args.workdir, "cache")
+    if not os.path.exists(cache_dir):
+        # Can we create it?
+        try:
+            os.mkdir(cache_dir)
+        except Exception as e:
+            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
             raise e
 
     # Use the default logdir if necessary
