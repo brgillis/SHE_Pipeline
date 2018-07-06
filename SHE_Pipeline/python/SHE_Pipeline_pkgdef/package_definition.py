@@ -64,7 +64,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")])
 
-she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear --methods KSB LensMC REGAUSS",
+she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
                                         Input("stacked_image", content_type="listfile"),
                                         Input("psf_images_and_tables", content_type="listfile"),
