@@ -5,7 +5,7 @@
     Main program for configuring the pipeline server.
 """
 
-__updated__ = "2018-07-05"
+__updated__ = "2018-07-10"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -91,7 +91,7 @@ def mainMethod(args):
         sbp.call(cmd, shell=True)
 
     # Find the config file
-    config_file = find_file(args.config)
+    config_file = find_file(args.config, path=".")
 
     # Configure the server now
     cmd = 'pipeline_runner.py --configure --config=' + config_file + ' --serverurl="' + args.serverurl + '"'
