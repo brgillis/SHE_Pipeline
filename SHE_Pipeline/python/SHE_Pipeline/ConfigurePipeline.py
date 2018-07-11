@@ -5,7 +5,7 @@
     Main program for configuring the pipeline server.
 """
 
-__updated__ = "2018-07-10"
+__updated__ = "2018-07-11"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -24,6 +24,7 @@ import argparse
 
 from ElementsKernel.Logging import getLogger
 from SHE_PPT.file_io import find_file
+from SHE_PPT.utility import get_arguments_string
 import subprocess as sbp
 
 
@@ -78,6 +79,10 @@ def mainMethod(args):
     logger.debug('#')
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
+    
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Configure")
+    logger.info('Execution command for this step:')
+    logger.info(exec_cmd)
 
     # Start/restart if desired
     if args.start or args.restart:
