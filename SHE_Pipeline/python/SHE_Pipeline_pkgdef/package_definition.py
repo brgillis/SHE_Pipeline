@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-07-06"
+__updated__ = "2018-07-12"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -30,7 +30,7 @@ she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"), Input("config_template")],
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
-she_simulate_images = Executable(command=ERun_GST + "GenGalaxyImages",
+she_simulate_images = Executable(command=ERun_GST + "SHE_GST_GenGalaxyImages",
                                  inputs=[Input("config_files")],
                                  outputs=[Output("data_images", mime_type="json", content_type="listfile"),
                                           Output("stacked_data_image", mime_type="xml"),
@@ -40,7 +40,7 @@ she_simulate_images = Executable(command=ERun_GST + "GenGalaxyImages",
                                           Output("detections_tables", mime_type="json", content_type="listfile"),
                                           Output("details_table", mime_type="xml")])
 
-she_cleanup_bias_measurement = Executable(command=ERun_CTE + "CleanupBiasMeasurement",
+she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBiasMeasurement",
                                           inputs=[Input("simulation_config"),
                                                   Input("data_images"),
                                                   Input("stacked_data_image"),
@@ -76,7 +76,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")])
 
-she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear --methods KSB LensMC REGAUSS",
+she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
                                         Input("stacked_image", content_type="listfile"),
                                         Input("psf_images_and_tables", content_type="listfile"),
