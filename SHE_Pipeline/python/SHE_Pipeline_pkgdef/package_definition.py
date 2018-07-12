@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-07-05"
+__updated__ = "2018-07-06"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #

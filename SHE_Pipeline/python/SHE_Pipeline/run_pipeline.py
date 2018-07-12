@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-05"
+__updated__ = "2018-07-06"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -128,6 +128,7 @@ def create_isf(args):
 
     logger = getLogger(__name__)
 
+    # Find the base ISF we'll be creating a modified copy of
     base_isf = find_file(args.isf, path=".")
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
@@ -178,6 +179,7 @@ def run_pipeline_from_args(args):
     # Create the ISF for this run
     qualified_isf_filename = create_isf(args)
 
+    # Try to call the pipeline
     try:
         execute_pipeline(pipeline=args.pipeline,
                          isf=qualified_isf_filename,
@@ -185,8 +187,7 @@ def run_pipeline_from_args(args):
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:
-            # os.remove(new_isf_filename)
-            pass
+            os.remove(new_isf_filename)
         except Exception:
             pass
         raise e

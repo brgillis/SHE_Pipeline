@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-07-05"
+__updated__ = "2018-07-11"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -23,6 +23,7 @@ __updated__ = "2018-07-05"
 import argparse
 
 from ElementsKernel.Logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
 
@@ -76,6 +77,11 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Run",
+                                    store_true=["profile", "debug", "cluster"])
+    logger.info('Execution command for this step:')
+    logger.info(exec_cmd)
+
     run_pipeline_from_args(args)
 
     logger.debug('# Exiting SHE_Pipeline_Run mainMethod()')
@@ -96,6 +102,7 @@ def main():
     mainMethod(args)
 
     return
+
 
 if __name__ == "__main__":
     main()
