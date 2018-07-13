@@ -70,7 +70,7 @@ def shear_bias_measurement(simulation_plan,
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
                                              config_template=config_template)
 
-    shear_bias_statistics, _she_cleanup_output_tags = she_simulate_and_measure_bias_statistics(
+    shear_bias_statistics = she_simulate_and_measure_bias_statistics(
         simulation_config=simulation_configs)
 
     shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics)
