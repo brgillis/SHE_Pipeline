@@ -50,8 +50,8 @@ she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBia
                                                   Input("detections_tables"),
                                                   Input("details_table"),
                                                   Input("shear_estimates"),
-                                                  Input("shear_bias_statistics"), ],  # Needed to ensure it waits until ready
-                                          outputs=[Output("output_tag", mime_type="xml")])
+                                                  Input("shear_bias_statistics_in"), ],  # Needed to ensure it waits until ready
+                                          outputs=[Output("shear_bias_statistics_out", mime_type="xml")])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                               inputs=[Input("mer_tile_listfile", content_type="listfile"),
