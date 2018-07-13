@@ -5,7 +5,7 @@
     Pipeline script for the shear bias measurement pipeline.
 """
 
-__updated__ = "2018-07-05"
+__updated__ = "2018-07-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -50,7 +50,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
 
     she_cleanup_bias_measurement(simulation_config=simulation_config,
                                  data_images=data_images,
-                                 stacked_image=stacked_data_image,
+                                 stacked_data_image=stacked_data_image,
                                  psf_images_and_tables=psf_images_and_tables,
                                  segmentation_images=segmentation_images,
                                  stacked_segmentation_image=stacked_segmentation_image,
@@ -73,6 +73,7 @@ def shear_bias_measurement(simulation_plan,
     shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics)
 
     return shear_bias_measurements
+
 
 if __name__ == '__main__':
     from euclidwf.framework.graph_builder import build_graph
