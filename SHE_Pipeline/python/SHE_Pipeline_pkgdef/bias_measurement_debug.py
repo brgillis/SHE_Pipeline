@@ -1,8 +1,8 @@
-""" @file bias_measurement.py
+""" @file bias_measurement_debug.py
 
-    Created 28 Jun 2018
+    Created 13 July 2018
 
-    Pipeline script for the shear bias measurement pipeline.
+    Pipeline script for the shear bias measurement pipeline, without cleanup step.
 """
 
 __updated__ = "2018-07-13"
@@ -21,8 +21,7 @@ __updated__ = "2018-07-13"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
-                                                    she_measure_statistics, she_measure_bias, she_compile_statistics,
-                                                    she_cleanup_bias_measurement)
+                                                    she_measure_statistics, she_measure_bias, she_compile_statistics)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
@@ -45,20 +44,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
                                          stacked_segmentation_image=stacked_segmentation_image,
                                          detections_tables=detections_tables, )
 
-    shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
-                                                       shear_estimates=shear_estimates)
-
-    shear_bias_statistics = she_cleanup_bias_measurement(simulation_config=simulation_config,
-                                                         data_images=data_images,
-                                                         stacked_data_image=stacked_data_image,
-                                                         psf_images_and_tables=psf_images_and_tables,
-                                                         segmentation_images=segmentation_images,
-                                                         stacked_segmentation_image=stacked_segmentation_image,
-                                                         detections_tables=detections_tables,
-                                                         details_table=details_table,
-                                                         shear_estimates=shear_estimates,
-                                                         shear_bias_statistics_in=shear_bias_statistics_tmp,  # Needed to ensure it waits until ready
-                                                         )
+    shear_bias_statistics = she_measure_statistics(details_table=details_table,
+                                                   shear_estimates=shear_estimates)
 
     return shear_bias_statistics
 

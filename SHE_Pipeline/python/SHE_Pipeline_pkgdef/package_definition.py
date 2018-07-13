@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-07-06"
+__updated__ = "2018-07-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -39,6 +39,19 @@ she_simulate_images = Executable(command=ERun_GST + "SHE_GST_GenGalaxyImages",
                                           Output("stacked_segmentation_image", mime_type="xml"),
                                           Output("detections_tables", mime_type="json", content_type="listfile"),
                                           Output("details_table", mime_type="xml")])
+
+she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBiasMeasurement",
+                                          inputs=[Input("simulation_config"),
+                                                  Input("data_images"),
+                                                  Input("stacked_data_image"),
+                                                  Input("psf_images_and_tables"),
+                                                  Input("segmentation_images"),
+                                                  Input("stacked_segmentation_image"),
+                                                  Input("detections_tables"),
+                                                  Input("details_table"),
+                                                  Input("shear_estimates"),
+                                                  Input("shear_bias_statistics_in"), ],  # Needed to ensure it waits until ready
+                                          outputs=[Output("shear_bias_statistics_out", mime_type="xml")])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                               inputs=[Input("mer_tile_listfile", content_type="listfile"),
