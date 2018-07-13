@@ -48,18 +48,19 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
     shear_bias_statistics = she_measure_statistics(details_table=details_table,
                                                    shear_estimates=shear_estimates)
 
-    she_cleanup_bias_measurement(simulation_config=simulation_config,
-                                 data_images=data_images,
-                                 stacked_data_image=stacked_data_image,
-                                 psf_images_and_tables=psf_images_and_tables,
-                                 segmentation_images=segmentation_images,
-                                 stacked_segmentation_image=stacked_segmentation_image,
-                                 detections_tables=detections_tables,
-                                 details_table=details_table,
-                                 shear_estimates=shear_estimates,
-                                 shear_bias_statistics=shear_bias_statistics)  # Needed to ensure it waits until ready
+    she_cleanup_output_tag = she_cleanup_bias_measurement(simulation_config=simulation_config,
+                                                          data_images=data_images,
+                                                          stacked_data_image=stacked_data_image,
+                                                          psf_images_and_tables=psf_images_and_tables,
+                                                          segmentation_images=segmentation_images,
+                                                          stacked_segmentation_image=stacked_segmentation_image,
+                                                          detections_tables=detections_tables,
+                                                          details_table=details_table,
+                                                          shear_estimates=shear_estimates,
+                                                          shear_bias_statistics=shear_bias_statistics,  # Needed to ensure it waits until ready
+                                                          )
 
-    return shear_bias_statistics
+    return shear_bias_statistics, she_cleanup_output_tag
 
 
 @pipeline(outputs=('shear_bias_measurements',))
@@ -69,7 +70,8 @@ def shear_bias_measurement(simulation_plan,
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
                                              config_template=config_template)
 
-    shear_bias_statistics = she_simulate_and_measure_bias_statistics(simulation_config=simulation_configs)
+    shear_bias_statistics, _she_cleanup_output_tags = she_simulate_and_measure_bias_statistics(
+        simulation_config=simulation_configs)
 
     shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics)
 
