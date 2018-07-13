@@ -56,7 +56,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
                                  stacked_segmentation_image=stacked_segmentation_image,
                                  detections_tables=detections_tables,
                                  details_table=details_table,
-                                 shear_estimates=shear_estimates)
+                                 shear_estimates=shear_estimates,
+                                 shear_bias_statistics=shear_bias_statistics)  # Needed to ensure it waits until ready
 
     return shear_bias_statistics
 

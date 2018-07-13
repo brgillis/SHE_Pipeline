@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-07-12"
+__updated__ = "2018-07-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -46,10 +46,11 @@ she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBia
                                                   Input("stacked_data_image"),
                                                   Input("psf_images_and_tables"),
                                                   Input("segmentation_images"),
-                                                  Input("segmentation_images"),
                                                   Input("stacked_segmentation_image"),
                                                   Input("detections_tables"),
-                                                  Input("details_table"), ],
+                                                  Input("details_table"),
+                                                  Input("shear_estimates"),
+                                                  Input("shear_bias_statistics"), ],  # Needed to ensure it waits until ready
                                           outputs=[])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
