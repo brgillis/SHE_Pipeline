@@ -71,7 +71,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
                                    Input("detections_tables", content_type="listfile"),
                                    Input("segmentation_images", content_type="listfile"),
-                                   Input("psf_field_params", content_type="listfile")
+                                   Input("psf_field_params")
                                    # Input("aocs_time_series_products", content_type="listfile"), # Disabled for now
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                    ],
@@ -79,10 +79,10 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
 
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
-                                        Input("stacked_image", content_type="listfile"),
+                                        Input("stacked_image"),
                                         Input("psf_images_and_tables", content_type="listfile"),
                                         Input("segmentation_images", content_type="listfile"),
-                                        Input("stacked_segmentation_image", content_type="listfile"),
+                                        Input("stacked_segmentation_image"),
                                         Input("detections_tables", content_type="listfile"),
                                         Input("bfd_training_data"),
                                         Input("ksb_training_data"),
