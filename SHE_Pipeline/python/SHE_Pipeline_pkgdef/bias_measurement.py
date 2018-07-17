@@ -5,7 +5,7 @@
     Pipeline script for the shear bias measurement pipeline.
 """
 
-__updated__ = "2018-07-13"
+__updated__ = "2018-07-17"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -28,7 +28,12 @@ from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 # Define a body element for the split part of the calibration pipeline
 @parallel(iterable="simulation_config")
-def she_simulate_and_measure_bias_statistics(simulation_config):
+def she_simulate_and_measure_bias_statistics(simulation_config,
+                                             bfd_training_data,
+                                             ksb_training_data,
+                                             lensmc_training_data,
+                                             momentsml_training_data,
+                                             regauss_training_data):
 
     (data_images,
      stacked_data_image,
@@ -43,7 +48,12 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
                                          psf_images_and_tables=psf_images_and_tables,
                                          segmentation_images=segmentation_images,
                                          stacked_segmentation_image=stacked_segmentation_image,
-                                         detections_tables=detections_tables, )
+                                         detections_tables=detections_tables,
+                                         bfd_training_data=bfd_training_data,
+                                         ksb_training_data=ksb_training_data,
+                                         lensmc_training_data=lensmc_training_data,
+                                         momentsml_training_data=momentsml_training_data,
+                                         regauss_training_data=regauss_training_data)
 
     shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
                                                        shear_estimates=shear_estimates)
@@ -65,13 +75,23 @@ def she_simulate_and_measure_bias_statistics(simulation_config):
 
 @pipeline(outputs=('shear_bias_measurements',))
 def shear_bias_measurement(simulation_plan,
-                           config_template):
+                           config_template,
+                           bfd_training_data,
+                           ksb_training_data,
+                           lensmc_training_data,
+                           momentsml_training_data,
+                           regauss_training_data):
 
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
                                              config_template=config_template)
 
     shear_bias_statistics = she_simulate_and_measure_bias_statistics(
-        simulation_config=simulation_configs)
+        simulation_config=simulation_configs,
+        bfd_training_data=bfd_training_data,
+        ksb_training_data=ksb_training_data,
+        lensmc_training_data=lensmc_training_data,
+        momentsml_training_data=momentsml_training_data,
+        regauss_training_data=regauss_training_data)
 
     shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics)
 
