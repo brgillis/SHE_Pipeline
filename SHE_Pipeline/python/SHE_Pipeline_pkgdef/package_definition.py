@@ -84,12 +84,11 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("segmentation_images", content_type="listfile"),
                                         Input("stacked_segmentation_image"),
                                         Input("detections_tables", content_type="listfile"),
-                                        # Input("bfd_training_data", content_type="listfile"), # Disabled for now
-                                        # Input("ksb_training_data", content_type="listfile"), # Disabled for now
-                                        # Input("lensmc_training_data", content_type="listfile"), # Disabled for now
-                                        # Input("momentsml_training_data", content_type="listfile"), # Disabled for now
-                                        # Input("regauss_training_data", content_type="listfile"), # Disabled for
-                                        # now
+                                        Input("bfd_training_data"),
+                                        Input("ksb_training_data"),
+                                        Input("lensmc_training_data"),
+                                        Input("momentsml_training_data"),
+                                        Input("regauss_training_data"),
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
