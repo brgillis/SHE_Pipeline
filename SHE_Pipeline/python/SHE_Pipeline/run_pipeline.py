@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-06"
+__updated__ = "2018-07-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -71,6 +71,10 @@ def check_args(args):
                          "AUX/SHE_Pipeline/" + args.pipeline + "_isf.txt).")
             raise
 
+    # Check that we have an even number of ISF arguments
+    if not len(args.args) % 2 == 0:
+        raise ValueError("Invalid values passed to 'args': Must be a set of paired arguments.")
+
     # Use the default workdir if necessary
     if args.workdir is None:
         logger.info('No workdir supplied at command-line. Using default workdir: ' + default_workdir)
@@ -133,22 +137,29 @@ def create_isf(args):
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
+    # Set up the args we'll be replacing or setting
+
+    args_to_set = {}
+    args_to_set["workdir"] = args.workdir
+    args_to_set["logdir"] = args.logdir
+    args_to_set["pkgRepository"] = get_pipeline_dir()
+    args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef")
+
+    arg_i = 0
+    while arg_i < len(args.args):
+        args_to_set[args.args[arg_i]] = args.args[arg_i + 1]
+        arg_i += 2
+
     with open(base_isf, 'r') as fi:
         with open(qualified_isf_filename, 'w') as fo:
             # Check each line to see if values we'll overwrite are specified in it,
             # and only write out lines with other values
             for line in fi:
-                if not (line[0:7] == "workdir" or
-                        line[0:6] == "logdir" or
-                        line[0:13] == "pkgRepository" or
-                        line[0:11] == "pipelineDir" or
-                        len(line.strip()) == 0):
+                if not (line.split('=')[0] in args_to_set):
                     fo.write(line)
-            # Write out new workdir and logdir at the end
-            fo.write("workdir=" + args.workdir + "\n")
-            fo.write("logdir=" + args.logdir + "\n")
-            fo.write("pkgRepository=" + get_pipeline_dir() + "\n")
-            fo.write("pipelineDir=" + os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef") + "\n")
+            # Write out values we want set specifically
+            for arg in args_to_set:
+                fo.write(arg + "=" + args_to_set[arg] + "\n")
 
     return qualified_isf_filename
 

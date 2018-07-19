@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-07-11"
+__updated__ = "2018-07-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -45,10 +45,12 @@ def defineSpecificProgramOptions():
     parser = argparse.ArgumentParser()
 
     # Input arguments
-    parser.add_argument('--isf', type=str,
-                        help='Fully-qualified name of input specification file for the pipeline')
     parser.add_argument('--pipeline', type=str,
                         help='Name of the pipeline (e.g. "sensitivity_testing")')
+    parser.add_argument('--isf', type=str,
+                        help='Fully-qualified name of input specification file for the pipeline')
+    parser.add_argument('--args', type=str, nargs='*',
+                        help='Additional arguments to write to the ISF (must be in pairs of port_name file_name)')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
