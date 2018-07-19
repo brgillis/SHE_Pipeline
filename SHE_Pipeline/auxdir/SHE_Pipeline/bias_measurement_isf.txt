@@ -1,5 +1,5 @@
 simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMiniPlan.fits
-config_template=AUX/SHE_GST_PrepareConfigs/SensitivityE0pPp0Sp0Template.conf
+config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf
 
 bfd_training_data=None
 ksb_training_data=None
