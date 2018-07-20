@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-19"
+__updated__ = "2018-07-20"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -72,6 +72,8 @@ def check_args(args):
             raise
 
     # Check that we have an even number of ISF arguments
+    if args.args is None:
+        args.args = []
     if not len(args.args) % 2 == 0:
         raise ValueError("Invalid values passed to 'args': Must be a set of paired arguments.")
 
