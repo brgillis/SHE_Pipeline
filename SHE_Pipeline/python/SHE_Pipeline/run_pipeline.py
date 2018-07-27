@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-20"
+__updated__ = "2018-07-27"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -107,6 +107,18 @@ def check_args(args):
             raise e
     if args.cluster:
         os.chmod(cache_dir, 0o777)
+
+    # Does the data directory exist within the workdir?
+    data_dir = os.path.join(args.workdir, "data")
+    if not os.path.exists(data_dir):
+        # Can we create it?
+        try:
+            os.mkdir(data_dir)
+        except Exception as e:
+            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(data_dir, 0o777)
 
     # Use the default logdir if necessary
     if args.logdir is None:
