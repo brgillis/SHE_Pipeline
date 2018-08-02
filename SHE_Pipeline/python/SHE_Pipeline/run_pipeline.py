@@ -232,7 +232,7 @@ def create_isf(args):
         # Now, go through each data file of the product and symlink those from the workdir too
 
         # Skip (but warn) if it's not an XML data product
-        if qualified_filename[-4] != ".xml":
+        if qualified_filename[-4:] != ".xml":
             logger.warn("Input file " + filename + " is not an XML data product.")
             continue
 
