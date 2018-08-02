@@ -211,7 +211,7 @@ def create_isf(args):
 
         # Skip (but warn) if it's not an XML data product
         if qualified_filename[-4] != ".xml":
-            loggern.warn("Input file " + filename + " is not an XML data product.")
+            logger.warn("Input file " + filename + " is not an XML data product.")
             continue
 
         p = read_xml_product(qualified_filename)
