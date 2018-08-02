@@ -23,7 +23,7 @@ __updated__ = "2018-08-02"
 import os
 
 from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, load_xml_product
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
 from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
@@ -206,7 +206,7 @@ def create_isf(args):
         args_to_set[input_port_name] = new_filename
 
         # Now, go through each data file of the product and symlink those from the workdir too
-        p = load_xml_product(qualified_filename)
+        p = read_xml_product(qualified_filename)
         if not hasattr(p, "get_all_filenames"):
             raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
                                       "initialized first.")
