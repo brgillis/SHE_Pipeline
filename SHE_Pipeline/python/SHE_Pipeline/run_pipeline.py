@@ -200,14 +200,20 @@ def create_isf(args):
 
         # Symlink the filename from the "data" directory within the workdir
         new_filename = os.path.join("data", os.path.split(filename)[1])
-        if os.path.exists(os.path.join(args.workdir,new_filename)):
-            os.remove(os.path.join(args.workdir,new_filename))
-        os.symlink(qualified_filename, os.path.join(args.workdir,new_filename))
+        if os.path.exists(os.path.join(args.workdir, new_filename)):
+            os.remove(os.path.join(args.workdir, new_filename))
+        os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
         # Update the filename in the args_to_set to the new location
         args_to_set[input_port_name] = new_filename
 
         # Now, go through each data file of the product and symlink those from the workdir too
+
+        # Skip (but warn) if it's not an XML data product
+        if qualified_filename[-4] != ".xml":
+            loggern.warn("Input file " + filename + " is not an XML data product.")
+            continue
+
         p = read_xml_product(qualified_filename)
         if not hasattr(p, "get_all_filenames"):
             raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
@@ -230,9 +236,9 @@ def create_isf(args):
                 raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
-            if os.path.exists(os.path.join(args.workdir,data_filename)):
-                os.remove(os.path.join(args.workdir,data_filename))
-            os.symlink(qualified_data_filename, os.path.join(args.workdir,data_filename))
+            if os.path.exists(os.path.join(args.workdir, data_filename)):
+                os.remove(os.path.join(args.workdir, data_filename))
+            os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 
