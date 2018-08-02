@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-27"
+__updated__ = "2018-08-02"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -30,6 +30,8 @@ import subprocess as sbp
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
+
+non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
 
 
 def get_pipeline_dir():
@@ -151,6 +153,9 @@ def create_isf(args):
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
+    # Keep a list of all product filenames
+    product_filenames = []
+
     # Set up the args we'll be replacing or setting
 
     args_to_set = {}
@@ -165,15 +170,45 @@ def create_isf(args):
         arg_i += 2
 
     with open(base_isf, 'r') as fi:
-        with open(qualified_isf_filename, 'w') as fo:
-            # Check each line to see if values we'll overwrite are specified in it,
-            # and only write out lines with other values
-            for line in fi:
-                if not (line.split('=')[0] in args_to_set):
-                    fo.write(line)
-            # Write out values we want set specifically
-            for arg in args_to_set:
-                fo.write(arg + "=" + args_to_set[arg] + "\n")
+        # Check each line to see if values we'll overwrite are specified in it,
+        # and only write out lines with other values
+        for line in fi:
+            split_line = line.strip().split('=')
+            # Add any new args here to the list of args we want to set
+            if not (split_line[0] in args_to_set):
+                args_to_set[split_line[0]] = split_line[1]
+
+    # Check each filename arg to see if it's already in the workdir, or if we have to move it there
+
+    # Create a search path from the workdir, the root directory (using an empty string), and the current
+    # directory
+    search_path = args_to_set["workdir"] + "::.:"
+
+    for input_port_name in args_to_set:
+
+        # Skip ISF arguments that don't correspond to input ports
+        if input_port_name in non_filename_args:
+            continue
+
+        # Find the qualified location of the filename
+        filename = args_to_set[input_port_name]
+        try:
+            qualified_filename = find_file(filename, path=search_path)
+        except RuntimeError as e:
+            raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
+
+        # Symlink the filename from the "data" directory within the workdir
+        new_filename = os.path.join("data", os.path.split(filename)[1])
+        os.symlink(qualified_filename, new_filename)
+
+        # Update the filename in the args_to_set to the new location
+        args_to_set[input_port_name] = new_filename
+
+    # Write out the new ISF
+    with open(qualified_isf_filename, 'w') as fo:
+        # Write out values we want set specifically
+        for arg in args_to_set:
+            fo.write(arg + "=" + args_to_set[arg] + "\n")
 
     return qualified_isf_filename
 
