@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-07-27"
+__updated__ = "2018-08-02"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -79,63 +79,80 @@ def check_args(args):
 
     # Use the default workdir if necessary
     if args.workdir is None:
-        logger.info('No workdir supplied at command-line. Using default workdir: ' + default_workdir)
         if args.cluster:
             args.workdir = default_cluster_workdir
         else:
             args.workdir = default_workdir
+        logger.info('No workdir supplied at command-line. Using default workdir: ' + args.workdir)
 
-    # Does the workdir exist?
-    if not os.path.exists(args.workdir):
-        # Can we create it?
-        try:
-            os.mkdir(args.workdir)
-        except Exception as e:
-            logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
-            raise e
-    if args.cluster:
-        os.chmod(args.workdir, 0o777)
-
-    # Does the cache directory exist within the workdir?
-    cache_dir = os.path.join(args.workdir, "cache")
-    if not os.path.exists(cache_dir):
-        # Can we create it?
-        try:
-            os.mkdir(cache_dir)
-        except Exception as e:
-            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
-            raise e
-    if args.cluster:
-        os.chmod(cache_dir, 0o777)
-
-    # Does the data directory exist within the workdir?
-    data_dir = os.path.join(args.workdir, "data")
-    if not os.path.exists(data_dir):
-        # Can we create it?
-        try:
-            os.mkdir(data_dir)
-        except Exception as e:
-            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
-            raise e
-    if args.cluster:
-        os.chmod(data_dir, 0o777)
+    # Use the default app_workdir if necessary
+    if args.app_workdir is None:
+        if args.cluster:
+            args.app_workdir = default_cluster_workdir
+        else:
+            args.app_workdir = default_workdir
+        logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
 
     # Use the default logdir if necessary
     if args.logdir is None:
         args.logdir = default_logdir
         logger.info('No logdir supplied at command-line. Using default logdir: ' + args.logdir)
 
-    # Does the logdir exist?
-    qualified_logdir = os.path.join(args.workdir, args.logdir)
-    if not os.path.exists(qualified_logdir):
-        # Can we create it?
-        try:
-            os.mkdir(qualified_logdir)
-        except Exception as e:
-            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
-            raise e
-    if args.cluster:
-        os.chmod(qualified_logdir, 0o777)
+    # Set up the workdir and app_workdir the same way
+
+    if args.workdir == args.app_workdir:
+        workdirs = (args.workdir,)
+    else:
+        workdirs = (args.workdir, args.app_workdir,)
+
+    for workdir in workdirs:
+
+        # Does the workdir exist?
+        if not os.path.exists(workdir):
+            # Can we create it?
+            try:
+                os.mkdir(workdir)
+            except Exception as e:
+                logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(workdir, 0o777)
+
+        # Does the cache directory exist within the workdir?
+        cache_dir = os.path.join(workdir, "cache")
+        if not os.path.exists(cache_dir):
+            # Can we create it?
+            try:
+                os.mkdir(cache_dir)
+            except Exception as e:
+                logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(cache_dir, 0o777)
+
+        # Does the data directory exist within the workdir?
+        data_dir = os.path.join(workdir, "data")
+        if not os.path.exists(data_dir):
+            # Can we create it?
+            try:
+                os.mkdir(data_dir)
+            except Exception as e:
+                logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(data_dir, 0o777)
+
+        # Does the logdir exist?
+        qualified_logdir = os.path.join(workdir, args.logdir)
+        if not os.path.exists(qualified_logdir):
+            # Can we create it?
+            try:
+                os.mkdir(qualified_logdir)
+            except Exception as e:
+                logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(qualified_logdir, 0o777)
 
     return
 
