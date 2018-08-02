@@ -22,7 +22,8 @@ __updated__ = "2018-08-02"
 
 import os
 
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename
+from SHE_PPT import products
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, load_xml_product
 from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
@@ -190,7 +191,7 @@ def create_isf(args):
         if input_port_name in non_filename_args:
             continue
 
-        # Find the qualified location of the filename
+        # Find the qualified location of the file
         filename = args_to_set[input_port_name]
         try:
             qualified_filename = find_file(filename, path=search_path)
@@ -203,6 +204,35 @@ def create_isf(args):
 
         # Update the filename in the args_to_set to the new location
         args_to_set[input_port_name] = new_filename
+
+        # Now, go through each data file of the product and symlink those from the workdir too
+        p = load_xml_product(qualified_filename)
+        if not hasattr(p, "get_all_filenames"):
+            raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
+                                      "initialized first.")
+        data_filenames = p.get_all_filenames()
+        if len(data_filenames) == 0:
+            continue
+
+        # Set up the search path for data files
+        data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                            os.path.split(qualified_filename)[0] + "/../data:" + search_path)
+
+        # Search for and symlink each data file
+        for data_filename in data_filenames:
+
+            # Find the qualified location of the data file
+            try:
+                qualified_data_filename = find_file(data_filename, path=data_search_path)
+            except RuntimeError as e:
+                raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+
+            # Symlink the data file within the workdir
+            os.symlink(qualified_data_filename, data_filename)
+
+        # End loop "for data_filename in data_filenames:"
+
+    # End loop "for input_port_name in args_to_set:"
 
     # Write out the new ISF
     with open(qualified_isf_filename, 'w') as fo:
