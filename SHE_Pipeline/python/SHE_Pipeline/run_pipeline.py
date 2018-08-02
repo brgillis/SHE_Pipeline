@@ -191,8 +191,13 @@ def create_isf(args):
         if input_port_name in non_filename_args:
             continue
 
-        # Find the qualified location of the file
         filename = args_to_set[input_port_name]
+
+        # Skip if None
+        if filename is None or filename == "None":
+            continue
+
+        # Find the qualified location of the file
         try:
             qualified_filename = find_file(filename, path=search_path)
         except RuntimeError as e:
