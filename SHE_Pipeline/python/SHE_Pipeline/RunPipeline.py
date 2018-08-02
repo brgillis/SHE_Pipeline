@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-07-19"
+__updated__ = "2018-08-02"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -54,6 +54,10 @@ def defineSpecificProgramOptions():
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
+
+    parser.add_argument('--app_workdir', type=str,
+                        help="Application work directory. This is the work directory specified in the application " +
+                        "configuration file provided to the pipeline server.")
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
