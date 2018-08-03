@@ -22,7 +22,8 @@ __updated__ = "2018-08-02"
 
 import os
 
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename
+from SHE_PPT import products
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
 from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
@@ -30,6 +31,8 @@ import subprocess as sbp
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
+
+non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
 
 
 def get_pipeline_dir():
@@ -168,6 +171,9 @@ def create_isf(args):
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
+    # Keep a list of all product filenames
+    product_filenames = []
+
     # Set up the args we'll be replacing or setting
 
     args_to_set = {}
@@ -182,15 +188,89 @@ def create_isf(args):
         arg_i += 2
 
     with open(base_isf, 'r') as fi:
-        with open(qualified_isf_filename, 'w') as fo:
-            # Check each line to see if values we'll overwrite are specified in it,
-            # and only write out lines with other values
-            for line in fi:
-                if not (line.split('=')[0] in args_to_set):
-                    fo.write(line)
-            # Write out values we want set specifically
-            for arg in args_to_set:
-                fo.write(arg + "=" + args_to_set[arg] + "\n")
+        # Check each line to see if values we'll overwrite are specified in it,
+        # and only write out lines with other values
+        for line in fi:
+            split_line = line.strip().split('=')
+            # Add any new args here to the list of args we want to set
+            if not (split_line[0] in args_to_set) and len(split_line) > 1:
+                args_to_set[split_line[0]] = split_line[1]
+
+    # Check each filename arg to see if it's already in the workdir, or if we have to move it there
+
+    # Create a search path from the workdir, the root directory (using an empty string), and the current
+    # directory
+    search_path = args_to_set["workdir"] + "::.:"
+
+    for input_port_name in args_to_set:
+
+        # Skip ISF arguments that don't correspond to input ports
+        if input_port_name in non_filename_args:
+            continue
+
+        filename = args_to_set[input_port_name]
+
+        # Skip if None
+        if filename is None or filename == "None":
+            continue
+
+        # Find the qualified location of the file
+        try:
+            qualified_filename = find_file(filename, path=search_path)
+        except RuntimeError as e:
+            raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
+
+        # Symlink the filename from the "data" directory within the workdir
+        new_filename = os.path.join("data", os.path.split(filename)[1])
+        if os.path.exists(os.path.join(args.workdir, new_filename)):
+            os.remove(os.path.join(args.workdir, new_filename))
+        os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+
+        # Update the filename in the args_to_set to the new location
+        args_to_set[input_port_name] = new_filename
+
+        # Now, go through each data file of the product and symlink those from the workdir too
+
+        # Skip (but warn) if it's not an XML data product
+        if qualified_filename[-4:] != ".xml":
+            logger.warn("Input file " + filename + " is not an XML data product.")
+            continue
+
+        p = read_xml_product(qualified_filename)
+        if not hasattr(p, "get_all_filenames"):
+            raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
+                                      "initialized first.")
+        data_filenames = p.get_all_filenames()
+        if len(data_filenames) == 0:
+            continue
+
+        # Set up the search path for data files
+        data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                            os.path.split(qualified_filename)[0] + "/../data:" + search_path)
+
+        # Search for and symlink each data file
+        for data_filename in data_filenames:
+
+            # Find the qualified location of the data file
+            try:
+                qualified_data_filename = find_file(data_filename, path=data_search_path)
+            except RuntimeError as e:
+                raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+
+            # Symlink the data file within the workdir
+            if os.path.exists(os.path.join(args.workdir, data_filename)):
+                os.remove(os.path.join(args.workdir, data_filename))
+            os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+
+        # End loop "for data_filename in data_filenames:"
+
+    # End loop "for input_port_name in args_to_set:"
+
+    # Write out the new ISF
+    with open(qualified_isf_filename, 'w') as fo:
+        # Write out values we want set specifically
+        for arg in args_to_set:
+            fo.write(arg + "=" + args_to_set[arg] + "\n")
 
     return qualified_isf_filename
 
