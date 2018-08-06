@@ -243,6 +243,7 @@ def create_isf(args):
 
         # Set up the search path for data files
         data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                            os.path.split(qualified_filename)[0] + "/..:" +
                             os.path.split(qualified_filename)[0] + "/../data:" + search_path)
 
         # Search for and symlink each data file
