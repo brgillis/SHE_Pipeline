@@ -197,7 +197,7 @@ def create_isf(args):
 
     # Create a search path from the workdir, the root directory (using an empty string), and the current
     # directory
-    search_path = args_to_set["workdir"] + "::" + os.path.abspath(os.path.curdir) + ":"
+    search_path = args_to_set["workdir"] + ":" + os.path.abspath(os.path.curdir) + ":"
 
     for input_port_name in args_to_set:
 
