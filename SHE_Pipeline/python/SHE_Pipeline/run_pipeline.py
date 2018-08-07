@@ -222,7 +222,11 @@ def create_isf(args):
         try:
             os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
         except FileExistsError as e:
-            os.remove(os.path.join(args.workdir, new_filename))
+            try:
+                os.remove(os.path.join(args.workdir, new_filename))
+                os.unlink(os.path.join(args.workdir, new_filename))
+            except Exception as _:
+                pass
             os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
         # Update the filename in the args_to_set to the new location
