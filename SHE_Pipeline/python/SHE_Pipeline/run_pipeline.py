@@ -171,9 +171,6 @@ def create_isf(args):
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
-    # Keep a list of all product filenames
-    product_filenames = []
-
     # Set up the args we'll be replacing or setting
 
     args_to_set = {}
@@ -246,6 +243,7 @@ def create_isf(args):
 
         # Set up the search path for data files
         data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                            os.path.split(qualified_filename)[0] + "/..:" +
                             os.path.split(qualified_filename)[0] + "/../data:" + search_path)
 
         # Search for and symlink each data file
