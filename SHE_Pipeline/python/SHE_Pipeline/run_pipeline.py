@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-02"
+__updated__ = "2018-08-07"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -200,7 +200,7 @@ def create_isf(args):
 
     # Create a search path from the workdir, the root directory (using an empty string), and the current
     # directory
-    search_path = args_to_set["workdir"] + "::.:"
+    search_path = args_to_set["workdir"] + "::" + os.path.abspath(os.path.curdir) + ":"
 
     for input_port_name in args_to_set:
 
