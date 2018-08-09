@@ -5,7 +5,7 @@
     Pipeline script for the shear bias measurement pipeline.
 """
 
-__updated__ = "2018-07-17"
+__updated__ = "2018-08-09"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -33,7 +33,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                              ksb_training_data,
                                              lensmc_training_data,
                                              momentsml_training_data,
-                                             regauss_training_data):
+                                             regauss_training_data,
+                                             pipeline_config):
 
     (data_images,
      stacked_data_image,
@@ -41,7 +42,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
      segmentation_images,
      stacked_segmentation_image,
      detections_tables,
-     details_table) = she_simulate_images(config_files=simulation_config)
+     details_table) = she_simulate_images(config_files=simulation_config,
+                                          pipeline_config=pipeline_config)
 
     shear_estimates = she_estimate_shear(data_images=data_images,
                                          stacked_image=stacked_data_image,
@@ -53,10 +55,12 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                          ksb_training_data=ksb_training_data,
                                          lensmc_training_data=lensmc_training_data,
                                          momentsml_training_data=momentsml_training_data,
-                                         regauss_training_data=regauss_training_data)
+                                         regauss_training_data=regauss_training_data,
+                                         pipeline_config=pipeline_config)
 
     shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
-                                                       shear_estimates=shear_estimates)
+                                                       shear_estimates=shear_estimates,
+                                                       pipeline_config=pipeline_config)
 
     shear_bias_statistics = she_cleanup_bias_measurement(simulation_config=simulation_config,
                                                          data_images=data_images,
@@ -68,6 +72,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                                          details_table=details_table,
                                                          shear_estimates=shear_estimates,
                                                          shear_bias_statistics_in=shear_bias_statistics_tmp,  # Needed to ensure it waits until ready
+                                                         pipeline_config=pipeline_config
                                                          )
 
     return shear_bias_statistics
@@ -80,10 +85,12 @@ def shear_bias_measurement(simulation_plan,
                            ksb_training_data,
                            lensmc_training_data,
                            momentsml_training_data,
-                           regauss_training_data):
+                           regauss_training_data,
+                           pipeline_config=pipeline_config):
 
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
-                                             config_template=config_template)
+                                             config_template=config_template,
+                                             pipeline_config=pipeline_config)
 
     shear_bias_statistics = she_simulate_and_measure_bias_statistics(
         simulation_config=simulation_configs,
@@ -91,9 +98,11 @@ def shear_bias_measurement(simulation_plan,
         ksb_training_data=ksb_training_data,
         lensmc_training_data=lensmc_training_data,
         momentsml_training_data=momentsml_training_data,
-        regauss_training_data=regauss_training_data)
+        regauss_training_data=regauss_training_data,
+        pipeline_config=pipeline_config)
 
-    shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics)
+    shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics,
+                                               pipeline_config=pipeline_config)
 
     return shear_bias_measurements
 
