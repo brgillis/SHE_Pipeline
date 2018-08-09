@@ -5,7 +5,7 @@
     Pipeline script for the shear bias measurement pipeline, without cleanup step.
 """
 
-__updated__ = "2018-07-17"
+__updated__ = "2018-08-09"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -21,7 +21,7 @@ __updated__ = "2018-07-17"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
-                                                    she_measure_statistics, she_measure_bias, she_compile_statistics)
+                                                    she_measure_statistics, she_measure_bias)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
