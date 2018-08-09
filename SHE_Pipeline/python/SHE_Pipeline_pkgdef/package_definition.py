@@ -54,7 +54,7 @@ she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBia
                                                   Input("details_table"),
                                                   Input("shear_estimates"),
                                                   Input("shear_bias_statistics_in"),
-                                         Input("pipeline_config"), ],  # Needed to ensure it waits until ready
+                                                  Input("pipeline_config"), ],  # Needed to ensure it waits until ready
                                           outputs=[Output("shear_bias_statistics_out", mime_type="xml")])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
@@ -92,7 +92,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("ksb_training_data"),
                                         Input("lensmc_training_data"),
                                         Input("momentsml_training_data"),
-                                        Input("regauss_training_data"),,
+                                        Input("regauss_training_data"),
                                         Input("pipeline_config")
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
