@@ -21,7 +21,7 @@ __updated__ = "2018-08-09"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
-                                                    she_measure_statistics, she_measure_bias, she_compile_statistics,
+                                                    she_measure_statistics, she_measure_bias,
                                                     she_cleanup_bias_measurement)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
