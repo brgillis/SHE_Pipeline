@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-07-17"
+__updated__ = "2018-08-09"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,11 +27,14 @@ ERun_GST = "E-Run SHE_GST 1.5 "
 ERun_MER = "E-Run SHE_MER 0.1 "
 
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
-                                 inputs=[Input("simulation_plan"), Input("config_template")],
+                                 inputs=[Input("simulation_plan"),
+                                         Input("config_template"),
+                                         Input("pipeline_config")],
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
 she_simulate_images = Executable(command=ERun_GST + "SHE_GST_GenGalaxyImages",
-                                 inputs=[Input("config_files")],
+                                 inputs=[Input("config_files"),
+                                         Input("pipeline_config")],
                                  outputs=[Output("data_images", mime_type="json", content_type="listfile"),
                                           Output("stacked_data_image", mime_type="xml"),
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
@@ -50,7 +53,8 @@ she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBia
                                                   Input("detections_tables"),
                                                   Input("details_table"),
                                                   Input("shear_estimates"),
-                                                  Input("shear_bias_statistics_in"), ],  # Needed to ensure it waits until ready
+                                                  Input("shear_bias_statistics_in"),
+                                         Input("pipeline_config"), ],  # Needed to ensure it waits until ready
                                           outputs=[Output("shear_bias_statistics_out", mime_type="xml")])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
@@ -88,7 +92,8 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("ksb_training_data"),
                                         Input("lensmc_training_data"),
                                         Input("momentsml_training_data"),
-                                        Input("regauss_training_data"),
+                                        Input("regauss_training_data"),,
+                                        Input("pipeline_config")
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
@@ -100,14 +105,11 @@ she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateS
 
 she_measure_statistics = Executable(command=ERun_CTE + "SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
-                                            Input("shear_estimates")],
+                                            Input("shear_estimates"),
+                                            Input("pipeline_config")],
                                     outputs=[Output("shear_bias_statistics", mime_type="xml")])
 
 she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
-                              inputs=[Input("shear_bias_statistics", content_type="listfile")],
+                              inputs=[Input("shear_bias_statistics", content_type="listfile"),
+                                      Input("pipeline_config")],
                               outputs=[Output("shear_bias_measurements", mime_type="xml")])
-
-she_compile_statistics = Executable(command=ERun_CTE + "SHE_CTE_CompileStatistics",
-                                    inputs=[Input("partial_validation_statistics_products", content_type="listfile"),
-                                            Input("bias_measurements_product")],
-                                    outputs=[Output("validation_statistics_product", mime_type="xml")])

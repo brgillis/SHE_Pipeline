@@ -86,7 +86,7 @@ def shear_bias_measurement(simulation_plan,
                            lensmc_training_data,
                            momentsml_training_data,
                            regauss_training_data,
-                           pipeline_config=pipeline_config):
+                           pipeline_config):
 
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
                                              config_template=config_template,
