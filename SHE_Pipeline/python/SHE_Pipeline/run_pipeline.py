@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-07"
+__updated__ = "2018-08-10"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -32,7 +32,7 @@ default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
-non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
+non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
 
 
 def get_pipeline_dir():
@@ -74,11 +74,26 @@ def check_args(args):
                          "AUX/SHE_Pipeline/" + args.pipeline + "_isf.txt).")
             raise
 
+    # If no config is specified, check for one in the AUX directory
+    if args.config is None:
+        try:
+            args.config = find_aux_file("SHE_Pipeline/" + args.pipeline + "_config.txt")
+        except Exception:
+            logger.error("No config file specified, and cannot find one in default location (" +
+                         "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt).")
+            raise
+
     # Check that we have an even number of ISF arguments
     if args.args is None:
         args.args = []
     if not len(args.args) % 2 == 0:
         raise ValueError("Invalid values passed to 'args': Must be a set of paired arguments.")
+
+    # Check that we have an even number of pipeline_config arguments
+    if args.config_args is None:
+        args.config_args = []
+    if not len(args.config_args) % 2 == 0:
+        raise ValueError("Invalid values passed to 'config_args': Must be a set of paired arguments.")
 
     # Use the default workdir if necessary
     if args.workdir is None:
@@ -160,8 +175,49 @@ def check_args(args):
     return
 
 
-def create_isf(args):
-    """Function to create a new ISF for this run by adjusting workdir and logdir.
+def create_config(args):
+    """Function to create a new pipeline_config file for this run.
+    """
+
+    logger = getLogger(__name__)
+
+    # Find the base config we'll be creating a modified copy of
+    base_config = find_file(args.config, path=".")
+    new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.03")
+    qualified_config_filename = os.path.join(args.workdir, new_config_filename)
+
+    # Set up the args we'll be replacing or setting
+
+    args_to_set = {}
+
+    arg_i = 0
+    while arg_i < len(args.config_args):
+        args_to_set[args.config_args[arg_i]] = args.config_args[arg_i + 1]
+        arg_i += 2
+
+    with open(base_config, 'r') as fi:
+        # Check each line to see if values we'll overwrite are specified in it,
+        # and only write out lines with other values
+        for line in fi:
+            split_line = line.strip().split('=')
+            # Add any new args here to the list of args we want to set
+            key = split_line[0].strip()
+            if not (key in args_to_set) and len(split_line) > 1:
+                args_to_set[key] = split_line[1].strip()
+
+    # Write out the new config
+    with open(qualified_config_filename, 'w') as fo:
+        # Write out values we want set specifically
+        for arg in args_to_set:
+            fo.write(arg + "=" + args_to_set[arg] + "\n")
+
+    return new_config_filename
+
+
+def create_isf(args,
+               config_filename):
+    """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
+       values passed at the command-line.
     """
 
     logger = getLogger(__name__)
@@ -178,6 +234,7 @@ def create_isf(args):
     args_to_set["logdir"] = args.logdir
     args_to_set["pkgRepository"] = get_pipeline_dir()
     args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef")
+    args_to_set["pipeline_config"] = config_filename
 
     arg_i = 0
     while arg_i < len(args.args):
@@ -302,8 +359,11 @@ def run_pipeline_from_args(args):
     # Check the arguments
     check_args(args)
 
+    # Create the pipeline_config for this run
+    config_filename = create_config(args)
+
     # Create the ISF for this run
-    qualified_isf_filename = create_isf(args)
+    qualified_isf_filename = create_isf(args, config_filename)
 
     # Try to call the pipeline
     try:
