@@ -92,7 +92,7 @@ def check_args(args):
     # Check that we have an even number of pipeline_config arguments
     if args.config_args is None:
         args.config_args = []
-    if not len(args.conf_args) % 2 == 0:
+    if not len(args.config_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'config_args': Must be a set of paired arguments.")
 
     # Use the default workdir if necessary
