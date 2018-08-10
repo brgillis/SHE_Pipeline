@@ -32,7 +32,7 @@ default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
-non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
+non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
 
 
 def get_pipeline_dir():
