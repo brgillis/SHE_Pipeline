@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-02"
+__updated__ = "2018-08-10"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,8 +22,9 @@ __updated__ = "2018-08-02"
 
 import argparse
 
-from ElementsKernel.Logging import getLogger
 from SHE_PPT.utility import get_arguments_string
+
+from ElementsKernel.Logging import getLogger
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
 
@@ -51,6 +52,10 @@ def defineSpecificProgramOptions():
                         help='Fully-qualified name of input specification file for the pipeline')
     parser.add_argument('--args', type=str, nargs='*',
                         help='Additional arguments to write to the ISF (must be in pairs of port_name file_name)')
+    parser.add_argument('--config', type=str,
+                        help='Fully-qualified name of pipeline config file for this run')
+    parser.add_argument('--config_args', type=str, nargs='*',
+                        help='Additional arguments to write to the pipeline_config (must be in pairs of key value)')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
