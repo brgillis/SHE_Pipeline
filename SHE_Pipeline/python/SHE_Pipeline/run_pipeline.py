@@ -199,7 +199,7 @@ def create_config(args):
         # Check each line to see if values we'll overwrite are specified in it,
         # and only write out lines with other values
         for line in fi:
-            split_line = line.strip().split('=')
+            split_line = line.strip().split('=').strip()
             # Add any new args here to the list of args we want to set
             if not (split_line[0] in args_to_set) and len(split_line) > 1:
                 args_to_set[split_line[0]] = split_line[1]
