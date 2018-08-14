@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-10"
+__updated__ = "2018-08-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -84,9 +84,9 @@ def check_args(args):
             raise
 
     # Check that we have an even number of ISF arguments
-    if args.args is None:
-        args.args = []
-    if not len(args.args) % 2 == 0:
+    if args.isf_args is None:
+        args.isf_args = []
+    if not len(args.isf_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'args': Must be a set of paired arguments.")
 
     # Check that we have an even number of pipeline_config arguments
@@ -237,8 +237,8 @@ def create_isf(args,
     args_to_set["pipeline_config"] = config_filename
 
     arg_i = 0
-    while arg_i < len(args.args):
-        args_to_set[args.args[arg_i]] = args.args[arg_i + 1]
+    while arg_i < len(args.isf_args):
+        args_to_set[args.isf_args[arg_i]] = args.isf_args[arg_i + 1]
         arg_i += 2
 
     with open(base_isf, 'r') as fi:
