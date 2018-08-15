@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-14"
+__updated__ = "2018-08-15"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -281,7 +281,10 @@ def create_isf(args,
         except FileExistsError as e:
             try:
                 os.remove(os.path.join(args.workdir, new_filename))
-                os.unlink(os.path.join(args.workdir, new_filename))
+                try:
+                    os.unlink(os.path.join(args.workdir, new_filename))
+                except Exception as _:
+                    pass
             except Exception as _:
                 pass
             os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
@@ -321,7 +324,10 @@ def create_isf(args,
             # Symlink the data file within the workdir
             if os.path.exists(os.path.join(args.workdir, data_filename)):
                 os.remove(os.path.join(args.workdir, data_filename))
-                os.unlink(os.path.join(args.workdir, data_filename))
+                try:
+                    os.unlink(os.path.join(args.workdir, data_filename))
+                except Exception as _:
+                    pass
             os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
