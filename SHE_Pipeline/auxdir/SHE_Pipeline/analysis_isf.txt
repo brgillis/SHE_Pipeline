@@ -1,11 +1,3 @@
-pkgRepository=/home/user/Work/Projects/SHE_Pipeline
-
-pipelineDir=/home/user/Work/Projects/SHE_Pipeline/pkgdef
-
-workdir=tests/she_analysis
-
-logdir=logdir
-
 data_images=CalibratedFrames.json
 stacked_image=DpdVisStackedFrame.xml
 mer_tile_listfile=MosaicTiles.json
