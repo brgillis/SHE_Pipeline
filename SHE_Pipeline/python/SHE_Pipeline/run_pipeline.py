@@ -364,6 +364,7 @@ def create_isf(args,
         # Symlink the filename from the "data" directory within the workdir
         new_filename = os.path.join("data", os.path.split(filename)[1])
         try:
+            if not qualified_filename==os.path.join(args.workdir, new_filename)
             os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
         except FileExistsError as e:
             try:
