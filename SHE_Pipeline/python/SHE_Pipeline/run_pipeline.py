@@ -195,7 +195,7 @@ def create_plan(args):
     # Find the base plan we'll be creating a modified copy of
 
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
-    qualified_plan_filename = os.path.join(args.workdir, new_plan_filename)
+    qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
 
     # Check if the plan is in the ISF args first
     plan_filename = None
@@ -227,7 +227,7 @@ def create_plan(args):
         # Couldn't find it
         raise IOError("Cannot determine simulation_plan filename.")
 
-    base_plan = find_file(plan_filename, path=args.workdir)
+    qualified_plan_filename = find_file(plan_filename, path=args.workdir)
 
     # Set up the args we'll be replacing
 
@@ -257,7 +257,7 @@ def create_plan(args):
         simulation_plan_table[key] = args_to_set[key]
 
     # Write out the new plan
-    simulation_plan_table.write(qualified_plan_filename, format="fits")
+    simulation_plan_table.write(qualified_new_plan_filename, format="fits")
 
     return
 
