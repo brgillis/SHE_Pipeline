@@ -364,8 +364,8 @@ def create_isf(args,
         # Symlink the filename from the "data" directory within the workdir
         new_filename = os.path.join("data", os.path.split(filename)[1])
         try:
-            if not qualified_filename==os.path.join(args.workdir, new_filename)
-            os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+            if not qualified_filename == os.path.join(args.workdir, new_filename):
+                os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
         except FileExistsError as e:
             try:
                 os.remove(os.path.join(args.workdir, new_filename))
@@ -375,7 +375,8 @@ def create_isf(args,
                     pass
             except Exception as _:
                 pass
-            os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+            if not qualified_filename == os.path.join(args.workdir, new_filename):
+                os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
         # Update the filename in the args_to_set to the new location
         args_to_set[input_port_name] = new_filename
@@ -416,7 +417,8 @@ def create_isf(args,
                     os.unlink(os.path.join(args.workdir, data_filename))
                 except Exception as _:
                     pass
-            os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+            if not qualified_data_filename == os.path.join(args.workdir, data_filename):
+                os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 
