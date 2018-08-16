@@ -4,6 +4,9 @@ ISF="AUX/SHE_Pipeline/bias_measurement_isf.txt"
 CFG_TEMPLATE_HEAD="AUX/SHE_GST_PrepareConfigs/Sensitivity"
 CFG_TEMPLATE_TAIL="Template.conf"
 
+# WORKSPACE_ROOT="/euclid/workspace_"
+# ARCHIVE_DIR="/mnt/lustre/euclid_archive"
+
 WORKSPACE_ROOT="/home/user/Work/workspace_"
 ARCHIVE_DIR="/home/user/Work/sens_archive"
 
