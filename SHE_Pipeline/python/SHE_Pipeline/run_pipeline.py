@@ -176,7 +176,7 @@ def check_args(args):
     if args.plan_args is None:
         args.plan_args = []
     if len(args.plan_args) > 0:
-        if not args.pipeline == "bias_mesaurement":
+        if not args.pipeline == "bias_measurement":
             raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
