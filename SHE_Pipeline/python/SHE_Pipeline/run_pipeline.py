@@ -25,6 +25,8 @@ import os
 from SHE_PPT import products
 from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
 from SHE_PPT.logging import getLogger
+from astropy.table import Table
+
 import subprocess as sbp
 
 
