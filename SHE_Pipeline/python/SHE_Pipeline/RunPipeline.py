@@ -63,6 +63,10 @@ def defineSpecificProgramOptions():
                         help="Application work directory. This is the work directory specified in the application " +
                         "configuration file provided to the pipeline server.")
 
+    # Input arguments for the bias measurement pipeline
+    parser.add_argument('--plan_args', type=str, nargs='*',
+                        help='Arguments to write to simulation plan (must be in pairs of key value)')
+
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
 
@@ -87,7 +91,7 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.4 SHE_Pipeline_Run",
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.4.3 SHE_Pipeline_Run",
                                     store_true=["profile", "debug", "cluster"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)

@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-15"
+__updated__ = "2018-08-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -25,6 +25,8 @@ import os
 from SHE_PPT import products
 from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
 from SHE_PPT.logging import getLogger
+from astropy.table import Table
+
 import subprocess as sbp
 
 
@@ -172,6 +174,91 @@ def check_args(args):
         if args.cluster:
             os.chmod(qualified_logdir, 0o777)
 
+    # Check that pipeline specific args are only provided for the right pipeline
+    if args.plan_args is None:
+        args.plan_args = []
+    if len(args.plan_args) > 0:
+        if not args.pipeline == "bias_measurement":
+            raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
+    if not len(args.plan_args) % 2 == 0:
+        raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
+
+    return
+
+
+def create_plan(args):
+    """Function to create a new simulation plan for this run.
+    """
+
+    logger = getLogger(__name__)
+
+    # Find the base plan we'll be creating a modified copy of
+
+    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
+    qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
+
+    # Check if the plan is in the ISF args first
+    plan_filename = None
+    if len(args.isf_args) > 0:
+        arg_i = 0
+        while arg_i < len(args.isf_args):
+            if args.isf_args[arg_i] == "simulation_plan":
+                plan_filename = args.isf_args[arg_i + 1]
+                # And replace it here with the new name
+                args.isf_args[arg_i + 1] = new_plan_filename
+                break
+            arg_i += 1
+    if plan_filename is None:
+        # Check for it in the base ISF
+        base_isf = find_file(args.isf, path=args.workdir)
+
+        with open(base_isf, 'r') as fi:
+            # Check each line to see if it's the simulation plan
+            for line in fi:
+                split_line = line.strip().split('=')
+                # Add any new args here to the list of args we want to set
+                if split_line[0].strip() == "simulation_plan":
+                    plan_filename = split_line[1].strip()
+                    # And add it to the end of the isf args
+                    args.isf_args.append("simulation_plan")
+                    args.isf_args.append(new_plan_filename)
+
+    if plan_filename is None:
+        # Couldn't find it
+        raise IOError("Cannot determine simulation_plan filename.")
+
+    qualified_plan_filename = find_file(plan_filename, path=args.workdir)
+
+    # Set up the args we'll be replacing
+
+    args_to_set = {}
+
+    arg_i = 0
+    while arg_i < len(args.plan_args):
+        args_to_set[args.plan_args[arg_i]] = args.plan_args[arg_i + 1]
+        arg_i += 2
+
+    # Read in the plan table
+    simulation_plan_table = None
+    try:
+        simulation_plan_table = Table.read(qualified_plan_filename, format="fits")
+    except Exception as _e2:
+        # Not a known table format, maybe an ascii table?
+        try:
+            simulation_plan_table = Table.read(qualified_plan_filename, format="ascii")
+        except IOError as _e3:
+            pass
+    # If it's still none, we couldn't identify it, so raise the initial exception
+    if simulation_plan_table is None:
+        raise TypeError("Unknown file format for simulation plan table in " + qualified_plan_filename)
+
+    # Overwrite values as necessary
+    for key in args_to_set:
+        simulation_plan_table[key] = args_to_set[key]
+
+    # Write out the new plan
+    simulation_plan_table.write(qualified_new_plan_filename, format="fits")
+
     return
 
 
@@ -182,7 +269,7 @@ def create_config(args):
     logger = getLogger(__name__)
 
     # Find the base config we'll be creating a modified copy of
-    base_config = find_file(args.config, path=".")
+    base_config = find_file(args.config, path=args.workdir)
     new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.03")
     qualified_config_filename = os.path.join(args.workdir, new_config_filename)
 
@@ -223,7 +310,7 @@ def create_isf(args,
     logger = getLogger(__name__)
 
     # Find the base ISF we'll be creating a modified copy of
-    base_isf = find_file(args.isf, path=".")
+    base_isf = find_file(args.isf, path=args.workdir)
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
@@ -277,7 +364,8 @@ def create_isf(args,
         # Symlink the filename from the "data" directory within the workdir
         new_filename = os.path.join("data", os.path.split(filename)[1])
         try:
-            os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+            if not qualified_filename == os.path.join(args.workdir, new_filename):
+                os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
         except FileExistsError as e:
             try:
                 os.remove(os.path.join(args.workdir, new_filename))
@@ -287,7 +375,8 @@ def create_isf(args,
                     pass
             except Exception as _:
                 pass
-            os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+            if not qualified_filename == os.path.join(args.workdir, new_filename):
+                os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
         # Update the filename in the args_to_set to the new location
         args_to_set[input_port_name] = new_filename
@@ -328,7 +417,8 @@ def create_isf(args,
                     os.unlink(os.path.join(args.workdir, data_filename))
                 except Exception as _:
                     pass
-            os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+            if not qualified_data_filename == os.path.join(args.workdir, data_filename):
+                os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 
@@ -365,6 +455,10 @@ def run_pipeline_from_args(args):
 
     # Check the arguments
     check_args(args)
+
+    # If necessary, update the simulation plan
+    if len(args.plan_args) > 0:
+        create_plan(args)
 
     # Create the pipeline_config for this run
     config_filename = create_config(args)
