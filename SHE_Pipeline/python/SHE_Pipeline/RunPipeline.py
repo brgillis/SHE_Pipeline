@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-14"
+__updated__ = "2018-08-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -63,6 +63,10 @@ def defineSpecificProgramOptions():
     parser.add_argument('--app_workdir', type=str,
                         help="Application work directory. This is the work directory specified in the application " +
                         "configuration file provided to the pipeline server.")
+
+    # Input arguments for the bias measurement pipeline
+    parser.add_argument('--plan_args', type=str, nargs='*',
+                        help='Arguments to write to simulation plan (must be in pairs of key value)')
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
