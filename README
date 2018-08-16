@@ -1,4 +1,4 @@
-SHE_Pipeline alpha 0.1
+SHE_Pipeline 0.4.3
 ======================
 
 1) Description
@@ -16,19 +16,15 @@ must be passed the location of the contained scripts directory as the first argu
 The pipeline depends upon the following common tools projects (on the Dev branch of cvmfs):
 
 - Elements v5.2.2
-- EuclidDmBindings v2.1.0
-- DMTools v2.1.0
-- MDBTools v2.1.0
+- EuclidDmBindings v2.2.1
+- DMTools v2.2.1
+- MDBTools v2.2.1
 
 Additionally, the following projects must be installed to run the analysis pipeline:
 
-- SHE_PPT v0.6.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT
-- SHE_MER v0.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MER
-- SHE_LensMC v2.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_LensMC
-- SHE_CalibML v1.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CalibML
-- SHE_MomentsML v1.2.1 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MomentsML
-- SHE_BFD v0.2 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_BFD
-- SHE_CTE v0.4 (tag SC4_alpha_0.2) - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE
+- SHE_PPT v0.8 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT
+- SHE_MER v0.2 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MER
+- SHE_CTE v0.6 - https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE
 
 4) Execution - Outside Pipeline Runner
 
