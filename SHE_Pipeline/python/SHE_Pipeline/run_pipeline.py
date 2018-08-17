@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-08-17"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -35,6 +35,18 @@ default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
+
+known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
+
+                     "SHE_CTE_EstimateShear_methods",
+
+                     "SHE_CTE_MeasureBias_archive_dir",
+                     "SHE_CTE_MeasureBias_webdav_archive",
+                     "SHE_CTE_MeasureBias_webdav_dir",
+
+                     "SHE_CTE_MeasureStatistics_archive_dir",
+                     "SHE_CTE_MeasureStatistics_webdav_archive",
+                     "SHE_CTE_MeasureStatistics_webdav_dir=/mnt/euclid-webdav",)
 
 
 def get_pipeline_dir():
@@ -96,6 +108,13 @@ def check_args(args):
         args.config_args = []
     if not len(args.config_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'config_args': Must be a set of paired arguments.")
+
+    # Check that all config args are recognized
+    for i in range(len(args.config_args) // 2):
+        test_arg = args.config_args[2 * i]
+        if test_arg not in known_config_args:
+            raise ValueError("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: " +
+                             str(known_config_args))
 
     # Use the default workdir if necessary
     if args.workdir is None:
