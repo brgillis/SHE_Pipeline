@@ -25,7 +25,7 @@ import argparse
 from SHE_PPT.utility import get_arguments_string
 
 from ElementsKernel.Logging import getLogger
-from SHE_Pipeline.run_pipeline import run_pipeline_from_args
+from SHE_Pipeline.run_pipeline_parallel import run_pipeline_from_args
 
 
 def defineSpecificProgramOptions():
@@ -71,7 +71,7 @@ def defineSpecificProgramOptions():
     parser.add_argument('--plan_args', type=str, nargs='*',
                         help='Arguments to write to simulation plan (must be in pairs of key value)')
 
-    parser.add_argument('--number_threads',type=int, help="Number of threads to use. This might be curtailed if > number available")
+    parser.add_argument('--number_threads',type=str, help="Number of threads to use. This might be curtailed if > number available")
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
