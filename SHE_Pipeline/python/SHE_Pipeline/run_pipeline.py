@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-17"
+__updated__ = "2018-08-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -46,7 +46,7 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
 
                      "SHE_CTE_MeasureStatistics_archive_dir",
                      "SHE_CTE_MeasureStatistics_webdav_archive",
-                     "SHE_CTE_MeasureStatistics_webdav_dir=/mnt/euclid-webdav",)
+                     "SHE_CTE_MeasureStatistics_webdav_dir",)
 
 
 def get_pipeline_dir():
