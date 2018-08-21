@@ -22,9 +22,12 @@ __updated__ = "2018-08-16"
 
 import os
 import math
+import time
+import numpy
 import multiprocessing
 from collections import namedtuple
 from astropy.table import Table
+from astropy.io import fits
 import subprocess as sbp
 
 
@@ -61,9 +64,9 @@ def check_args(args):
 
     logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
 
- 
+    pipeline='bias_measurement'
     # Does the pipeline we want to run exist?
-    pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py")
+    pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/"+ pipeline + ".py")
     if not os.path.exists(pipeline_filename):
         logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
                      pipeline_filename)
@@ -71,19 +74,19 @@ def check_args(args):
     # If no ISF is specified, check for one in the AUX directory
     if args.isf is None:
         try:
-            args.isf = find_aux_file("SHE_Pipeline/" + args.pipeline + "_isf.txt")
+            args.isf = find_aux_file("SHE_Pipeline/" + pipeline + "_isf.txt")
         except Exception:
             logger.error("No ISF file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + args.pipeline + "_isf.txt).")
+                         "AUX/SHE_Pipeline/" + pipeline + "_isf.txt).")
             raise
 
     # If no config is specified, check for one in the AUX directory
     if args.config is None:
         try:
-            args.config = find_aux_file("SHE_Pipeline/" + args.pipeline + "_config.txt")
+            args.config = find_aux_file("SHE_Pipeline/" + pipeline + "_config.txt")
         except Exception:
             logger.error("No config file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt).")
+                         "AUX/SHE_Pipeline/" + pipeline + "_config.txt).")
             raise
 
     # Check that we have an even number of ISF arguments
@@ -132,14 +135,14 @@ def check_args(args):
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
 
     # @TODO: Be careful, workdir and app_workdir...
-    dirStruct = create_thread_dir_struct(args,workdirs,int(args.number_threads))
+    # make sure number threads is valid 
+    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()-1))
+    
+    dirStruct = create_thread_dir_struct(args,workdirs,int(nThreads))
     
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
-    if len(args.plan_args) > 0:
-        if not args.pipeline == "bias_measurement":
-            raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
     
@@ -154,20 +157,12 @@ def create_plan(args, workdirList):
     """
     # Look through SIM_PLAN
     
-    # Compare number of detectors with number of threads
-    
-    # 1 detector per thread. multiple batches 
-    
-    # ...
-    BatchTuple = namedtuple("Batch","batch_no nThreads")
-
     logger = getLogger(__name__)
 
     # Find the base plan we'll be creating a modified copy of
 
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
     
-    print('NPF: ',new_plan_filename)
     # Check if the plan is in the ISF args first
     plan_filename = None
     if len(args.isf_args) > 0:
@@ -180,7 +175,6 @@ def create_plan(args, workdirList):
                 break
             arg_i += 1
     
-    print("PF: ",plan_filename)
     
     if plan_filename is None:
         # Check for it in the base ISF
@@ -232,37 +226,46 @@ def create_plan(args, workdirList):
         # @TODO: What if key not in table...
         simulation_plan_table[key] = args_to_set[key]
 
+    return 
+
+
+def create_batches(simulation_plan_table,workdirList):
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
     
-    print("SPT",simulation_plan_table)
+    
     #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
     #print("KV: ",keyVals)    
-    number_simulations = ((simulation_plan_table['NSEED_MAX']-
-                           simulation_plan_table['NSEED_MIN'])//
-                          simulation_plan_table['NSEED_STEP'])+1
+    
+    # @TODO: Improve
+    number_simulations = numpy.sum(((simulation_plan_table['NSEED_MAX']-
+                                simulation_plan_table['NSEED_MIN'])//
+                               simulation_plan_table['NSEED_STEP'])+1)
     
     print("NS: ",number_simulations)
     number_batches = math.ceil(number_simulations/len(workdirList))
-    
+    print("NB: ",number_batches)
     batchList=[]
+    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
+
     for batch_no in range(number_batches):
         max_thread_no=len(workdirList)-1
         for thread_no in range(len(workdirList)):
-            detector_no=len(workdirList)*batch_no+thread_no
-            if detector_no<number_detectors:
+            simulation_no=len(workdirList)*batch_no+thread_no
+            if simulation_no<number_simulations:
                 qualified_new_plan_filename=os.path.join(
                     workdirList[thread_no].workdir,
-                    new_plan_filename.replace('.fits','_batch%s.fits' % batch_no)) 
+                    new_plan_filename) 
                 # Update NSEED, MSEED, set NUM_DET=1  
                 # Does this need to be updated?                
-                simultation_plan_table=update_sim_plan_table(
-                    simulation_plan_table,detector_no)
+                batch_simulation_plan_table=update_sim_plan_table(
+                    simulation_plan_table,simulation_no)
+                print("BSPT: ",batch_simulation_plan_table,simulation_plan_table)
                 # Write out the new plan
                 if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
                     os.mkdir(os.path.dirname(qualified_new_plan_filename))
     
-                simulation_plan_table.write(qualified_new_plan_filename, format="fits")
+                batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
             elif detector_no==number_detectors:
                 max_thread_no=thread_no    
         batchList.append(BatchTuple(batch_no,max_thread_no))
@@ -270,13 +273,35 @@ def create_plan(args, workdirList):
 
     return batchList
 
-def update_sim_plan_table(sim_plan_tab,detector_no):
+def update_sim_plan_table(sim_plan_table,simulation_no):
     """
     
-    # Update NSEED, MSEED, set NUM_DET=1  
-                
+    # Update NSEED, MSEED 
     """
-    return sim_plan_tab
+    # Find correct row in table
+    # Update NSEED/MSEED values 
+    number_simulations=0
+    table_row=-1
+    min_mseed=1
+    min_nseed=1
+    for row_id in range(len(sim_plan_table['MSEED_MAX'])):
+        print("ROW: ",sim_plan_table[row_id])
+        ns = ((sim_plan_table['MSEED_MAX'][row_id]-
+                                sim_plan_table['MSEED_MIN'][row_id])//
+                               sim_plan_table['MSEED_STEP'][row_id])+1
+        number_simulations+=ns
+        if simulation_no<=number_simulations and table_row==-1:
+            table_row=row_id
+            min_mseed=sim_plan_table['MSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['MSEED_STEP'][row_id]
+            min_nseed=sim_plan_table['NSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['NSEED_STEP'][row_id]
+            
+    batch_sim_plan_tab=sim_plan_table[table_row]
+    batch_sim_plan_tab['MSEED_MIN']=min_mseed
+    batch_sim_plan_tab['NSEED_MIN']=min_nseed
+    batch_sim_plan_tab['MSEED_MAX']=min_mseed+sim_plan_table['MSEED_STEP']
+    batch_sim_plan_tab['NSEED_MAX']=min_nseed+sim_plan_table['NSEED_STEP']
+    print("BS: ",batch_sim_plan_tab)
+    return batch_sim_plan_tab
 
 def create_config(args, workdir, batch):
     """Function to create a new pipeline_config file for this run.
@@ -348,7 +373,7 @@ def create_isf(args,
     new_isf_filename = get_allowed_filename("ISF", str(os.getpid()),
         extension=".txt", release="00.03")
     qualified_isf_filename = os.path.join(workdir.workdir, 
-        convertToBatchFilename(new_isf_filename,batch))
+        new_isf_filename)
 
     # Set up the args we'll be replacing or setting
 
@@ -362,13 +387,8 @@ def create_isf(args,
 
     arg_i = 0
     while arg_i < len(args.isf_args):
-        # Batch version
-        value = (convertToBatchFilename(args.isf_args[arg_i + 1],batch) 
-                 if isFilename(args.isf_args[arg_i + 1]) 
-                 else args.isf_args[arg_i + 1])
-
-    
-        args_to_set[args.isf_args[arg_i]] = value
+        
+        args_to_set[args.isf_args[arg_i]] = args.isf_args[arg_i + 1]
         arg_i += 2
     
     print("ATS1: ",args_to_set,args.isf_args)
@@ -512,16 +532,6 @@ def create_thread_dir_struct(args,workdirList,number_threads):
     """
     # Creates directory structure
     DirStruct = namedtuple("Directories","workdir logdir app_workdir app_logdir")
-    
-    for thread_no in range(number_threads):
-        workdir = os.path.join(args.workdir,'thread%s' % thread_no)
-        logdir = os.path.join(args.logdir,'thread%s' % thread_no)
-        if not os.path.exists(workdir):
-            os.mkdir(workdir)
-        if not os.path.exists(logdir):
-            os.mkdir(logdir)
-        
-        
     # @FIXME: Do the create multiple threads here
     for workdir_base in workdirList:
 
@@ -535,20 +545,43 @@ def create_thread_dir_struct(args,workdirList,number_threads):
                 raise e
         if args.cluster:
             os.chmod(workdir_base, 0o777)
-        # Now make multiple threads below...
+        # Does the cache directory exist within the workdir?
+        cache_dir = os.path.join(workdir_base, "cache")
+        if not os.path.exists(cache_dir):
+            # Can we create it?
+            try:
+                os.mkdir(cache_dir)
+            except Exception as e:
+                logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(cache_dir, 0o777)
+
+        # Does the data directory exist within the workdir?
+        data_dir = os.path.join(workdir_base, "data")
+        if not os.path.exists(data_dir):
+            # Can we create it?
+            try:
+                os.mkdir(data_dir)
+            except Exception as e:
+                logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(data_dir, 0o777)    
+    
+    # Now make multiple threads below...
         
     directStrList=[]        
     for thread_no in range(number_threads):
         thread_dir_list=[]
         for workdir_base in workdirList:
             workdir=os.path.join(workdir_base,'thread%s' % thread_no) 
-            thread_dir_list.append(workdir)
             if not os.path.exists(workdir):
                 try:
                    os.mkdir(workdir)
                 except Exception as e:
                     logger.error("Workdir thread (" + workdir + ") does not exist and cannot be created.")
-                raise e
+                    raise e
             if args.cluster:
                 os.chmod(workdir, 0o777)
     
@@ -587,10 +620,9 @@ def create_thread_dir_struct(args,workdirList,number_threads):
                     raise e
             if args.cluster:
                 os.chmod(qualified_logdir, 0o777)
-            thread_dir_list.append(workdir,logdir)
-            
+            thread_dir_list.extend((workdir,qualified_logdir))
         if len(workdirList)==1:
-            thread_dir_list.append((None,None))
+            thread_dir_list.extend((None,None))
         directStrList.append(DirStruct(*thread_dir_list))
     return directStrList
     
@@ -601,17 +633,23 @@ def run_pipeline_from_args(args):
     logger = getLogger(__name__)
 
     # Check the arguments
-    rp.check_args(args) # add argument there..
+    workdirList=check_args(args) # add argument there..
+    #if len(args.plan_args) > 0:
+    sim_table=rp.create_plan(args, retTable=True)
+    batchTupleList=create_batches(sim_table,workdirList)
+    print("BTL: ",batchTupleList)
+    exit()
+    # Create the pipeline_config for this run
+    config_filename = rp.create_config(args)
+    
+    # Create the ISF for this run
+    qualified_isf_filename = rp.create_isf(args, config_filename)
 
-    # make sure number threads is valid 
-    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()-1))
-    # Set up workdirs
-    workdirList=create_thread_dir_struct(args,nThreads)
+    print("QISF: ",qualified_isf_filename)
+    exit()
+    # Find how many files in 
     
-    rp.check_plan(args)
-    
-    
-    batches = create_plan(args,workdirList)
+    batches = create_batches(args,workdirList)
     
     for batch in batches:
     
@@ -629,7 +667,7 @@ def run_pipeline_from_args(args):
     
             # @TODO: Do we want serverurl? isf and serverurl
             prodThreads.append(multiprocessing.Process(target=execute_pipeline,
-                args=(args.pipeline,qualified_isf_filename,
+                args=('bias_measurement',qualified_isf_filename,
                     args.serverurl)))
         
         if prodThreads:

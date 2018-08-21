@@ -205,7 +205,7 @@ def check_args(args):
     return
 
 
-def create_plan(args):
+def create_plan(args, retTable=False):
     """Function to create a new simulation plan for this run.
     """
 
@@ -277,9 +277,11 @@ def create_plan(args):
 
     # Write out the new plan
     simulation_plan_table.write(qualified_new_plan_filename, format="fits")
-
-    return
-
+    
+    if retTable:
+        return simulation_plan_table
+    else:
+        return
 
 def create_config(args):
     """Function to create a new pipeline_config file for this run.

@@ -25,7 +25,7 @@ import argparse
 from SHE_PPT.utility import get_arguments_string
 
 from ElementsKernel.Logging import getLogger
-from SHE_Pipeline.run_pipeline_parallel import run_pipeline_from_args
+from SHE_Pipeline.run_bias_pipeline_parallel import run_pipeline_from_args
 
 
 def defineSpecificProgramOptions():
