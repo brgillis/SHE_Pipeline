@@ -46,8 +46,6 @@ def defineSpecificProgramOptions():
     parser = argparse.ArgumentParser()
 
     # Input arguments
-    parser.add_argument('--pipeline', type=str,
-                        help='Name of the pipeline (e.g. "sensitivity_testing")')
     parser.add_argument('--isf', type=str,
                         help='Fully-qualified name of input specification file for the pipeline')
     parser.add_argument('--isf_args', type=str, nargs='*',
@@ -56,7 +54,6 @@ def defineSpecificProgramOptions():
                         help='Fully-qualified name of pipeline config file for this run')
     parser.add_argument('--config_args', type=str, nargs='*',
                         help='Additional arguments to write to the pipeline_config (must be in pairs of key value)')
-    parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
 

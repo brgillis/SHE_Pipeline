@@ -24,14 +24,15 @@ import os
 import math
 import multiprocessing
 from collections import namedtuple
+from astropy.table import Table
+import subprocess as sbp
+
+
 
 from SHE_PPT import products
 from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
 from SHE_PPT.logging import getLogger
-from astropy.table import Table
-
-import subprocess as sbp
-
+import SHE_Pipeline.run_pipeline as rp
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -58,12 +59,9 @@ def check_args(args):
 
     logger = getLogger(__name__)
 
-    logger.debug('# Entering SHE_Pipeline_Run check_args()')
+    logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
 
-    # Is a pipeline specified at all?
-    if args.pipeline is None:
-        raise IOError("Pipeline must be specified at command-line, e.g with --pipeline bias_measurement")
-
+ 
     # Does the pipeline we want to run exist?
     pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py")
     if not os.path.exists(pipeline_filename):
@@ -128,55 +126,14 @@ def check_args(args):
     else:
         workdirs = (args.workdir, args.app_workdir,)
 
-    for workdir in workdirs:
+    if args.number_threads is None:
+        args.number_threads = multiprocessing.cpu_count()-1
+    if not args.number_threads.isdigit():
+        raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
 
-        # Does the workdir exist?
-        if not os.path.exists(workdir):
-            # Can we create it?
-            try:
-                os.mkdir(workdir)
-            except Exception as e:
-                logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(workdir, 0o777)
-
-        # Does the cache directory exist within the workdir?
-        cache_dir = os.path.join(workdir, "cache")
-        if not os.path.exists(cache_dir):
-            # Can we create it?
-            try:
-                os.mkdir(cache_dir)
-            except Exception as e:
-                logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(cache_dir, 0o777)
-
-        # Does the data directory exist within the workdir?
-        data_dir = os.path.join(workdir, "data")
-        if not os.path.exists(data_dir):
-            # Can we create it?
-            try:
-                os.mkdir(data_dir)
-            except Exception as e:
-                logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(data_dir, 0o777)
-
-        # Does the logdir exist?
-        qualified_logdir = os.path.join(workdir, args.logdir)
-        if not os.path.exists(qualified_logdir):
-            # Can we create it?
-            try:
-                os.mkdir(qualified_logdir)
-            except Exception as e:
-                logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(qualified_logdir, 0o777)
-
+    # @TODO: Be careful, workdir and app_workdir...
+    dirStruct = create_thread_dir_struct(args,workdirs,int(args.number_threads))
+    
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
@@ -186,14 +143,10 @@ def check_args(args):
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
     
-    if args.number_threads is None:
-        args.number_threads = multiprocessing.cpu_count()-1
-    if not args.number_threads.isdigit():
-        raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
     
         
 
-    return
+    return dirStruct
 
 
 def create_plan(args, workdirList):
@@ -249,7 +202,6 @@ def create_plan(args, workdirList):
         raise IOError("Cannot determine simulation_plan filename.")
 
     qualified_plan_filename = find_file(plan_filename, path=args.workdir)
-    print("QPF: ",qualified_plan_filename)
     # Set up the args we'll be replacing
 
     args_to_set = {}
@@ -286,9 +238,12 @@ def create_plan(args, workdirList):
     print("SPT",simulation_plan_table)
     #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
     #print("KV: ",keyVals)    
-    number_detectors = simulation_plan_table['NUM_DETECTORS']
-    print("ND: ",number_detectors)
-    number_batches = math.ceil(number_detectors/len(workdirList))
+    number_simulations = ((simulation_plan_table['NSEED_MAX']-
+                           simulation_plan_table['NSEED_MIN'])//
+                          simulation_plan_table['NSEED_STEP'])+1
+    
+    print("NS: ",number_simulations)
+    number_batches = math.ceil(number_simulations/len(workdirList))
     
     batchList=[]
     for batch_no in range(number_batches):
@@ -300,7 +255,7 @@ def create_plan(args, workdirList):
                     workdirList[thread_no].workdir,
                     new_plan_filename.replace('.fits','_batch%s.fits' % batch_no)) 
                 # Update NSEED, MSEED, set NUM_DET=1  
-                                
+                # Does this need to be updated?                
                 simultation_plan_table=update_sim_plan_table(
                     simulation_plan_table,detector_no)
                 # Write out the new plan
@@ -543,18 +498,21 @@ def execute_pipeline(pipeline, isf, serverurl):
     cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
     logger.info("Calling pipeline with command: '" + cmd + "'")
 
+    # Do not use subprocess - replace. 
+    # System call, or pipeline_runner directly run - but pipeline runner seems to be
+    # a python 2.7 code?
+    # What does subprocess.call with shell=True do - env var?
     sbp.call(cmd, shell=True)
 
     return
 
 
-def create_thread_dir_struct(args,number_threads):
+def create_thread_dir_struct(args,workdirList,number_threads):
     """
     """
     # Creates directory structure
-    DirStruct = namedtuple("Directories","workdir logdir")
+    DirStruct = namedtuple("Directories","workdir logdir app_workdir app_logdir")
     
-    directStrList=[]
     for thread_no in range(number_threads):
         workdir = os.path.join(args.workdir,'thread%s' % thread_no)
         logdir = os.path.join(args.logdir,'thread%s' % thread_no)
@@ -562,7 +520,78 @@ def create_thread_dir_struct(args,number_threads):
             os.mkdir(workdir)
         if not os.path.exists(logdir):
             os.mkdir(logdir)
-        directStrList.append(DirStruct(*[workdir,logdir]))
+        
+        
+    # @FIXME: Do the create multiple threads here
+    for workdir_base in workdirList:
+
+        # Does the workdir exist?
+        if not os.path.exists(workdir_base):
+            # Can we create it?
+            try:
+                os.mkdir(workdir_base)
+            except Exception as e:
+                logger.error("Workdir base (" + workdir_base + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(workdir_base, 0o777)
+        # Now make multiple threads below...
+        
+    directStrList=[]        
+    for thread_no in range(number_threads):
+        thread_dir_list=[]
+        for workdir_base in workdirList:
+            workdir=os.path.join(workdir_base,'thread%s' % thread_no) 
+            thread_dir_list.append(workdir)
+            if not os.path.exists(workdir):
+                try:
+                   os.mkdir(workdir)
+                except Exception as e:
+                    logger.error("Workdir thread (" + workdir + ") does not exist and cannot be created.")
+                raise e
+            if args.cluster:
+                os.chmod(workdir, 0o777)
+    
+            # Does the cache directory exist within the workdir?
+            cache_dir = os.path.join(workdir, "cache")
+            if not os.path.exists(cache_dir):
+                # Can we create it?
+                try:
+                    os.mkdir(cache_dir)
+                except Exception as e:
+                    logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+                    raise e
+            if args.cluster:
+                os.chmod(cache_dir, 0o777)
+    
+            # Does the data directory exist within the workdir?
+            data_dir = os.path.join(workdir, "data")
+            if not os.path.exists(data_dir):
+                # Can we create it?
+                try:
+                    os.mkdir(data_dir)
+                except Exception as e:
+                    logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+                    raise e
+            if args.cluster:
+                os.chmod(data_dir, 0o777)
+    
+            # Does the logdir exist?
+            qualified_logdir = os.path.join(workdir, args.logdir)
+            if not os.path.exists(qualified_logdir):
+                # Can we create it?
+                try:
+                    os.mkdir(qualified_logdir)
+                except Exception as e:
+                    logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+                    raise e
+            if args.cluster:
+                os.chmod(qualified_logdir, 0o777)
+            thread_dir_list.append(workdir,logdir)
+            
+        if len(workdirList)==1:
+            thread_dir_list.append((None,None))
+        directStrList.append(DirStruct(*thread_dir_list))
     return directStrList
     
 def run_pipeline_from_args(args):
@@ -572,12 +601,14 @@ def run_pipeline_from_args(args):
     logger = getLogger(__name__)
 
     # Check the arguments
-    check_args(args)
+    rp.check_args(args) # add argument there..
 
     # make sure number threads is valid 
     nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()-1))
     # Set up workdirs
     workdirList=create_thread_dir_struct(args,nThreads)
+    
+    rp.check_plan(args)
     
     
     batches = create_plan(args,workdirList)
@@ -603,10 +634,20 @@ def run_pipeline_from_args(args):
         
         if prodThreads:
             runThreads(prodThreads,logger)
-        
-        mergeOutputs(workdirInfo)   
-        return
+        logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
+        mergeOutputs(workdirList,batch)   
+    
+    # Final merge?
+    
+    return
 
+
+def mergeOutputs(workdirInfo,batch):
+    """ Merge outputs from different threads
+    
+    
+    """
+    pass
 
 def runThreads(threads,logger):
     """ Executes given list of thread processes.
