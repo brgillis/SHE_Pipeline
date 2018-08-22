@@ -158,7 +158,7 @@ def check_args(args):
 def create_batches(simulation_plan_table,workdirList):
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
-    BatchTuple=namedtuple("Batch", "batch_no nthreads")
+    BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no") 
     
     #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
     #print("KV: ",keyVals)    
@@ -170,33 +170,105 @@ def create_batches(simulation_plan_table,workdirList):
     
     number_batches = math.ceil(number_simulations/len(workdirList))
     batchList=[]
-    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
+    
 
     for batch_no in range(number_batches):
+        
         max_thread_no=len(workdirList)-1
-        for thread_no in range(len(workdirList)):
-            simulation_no=len(workdirList)*batch_no+thread_no
-            if simulation_no<number_simulations:
-                # @FIXME: Update with batch no...
-                # thread/batch...
-                qualified_new_plan_filename=os.path.join(
-                    workdirList[thread_no].workdir,
-                    new_plan_filename) 
-                # Update NSEED, MSEED, set NUM_DET=1  
-                # Does this need to be updated?                
-                batch_simulation_plan_table=update_sim_plan_table(
-                    simulation_plan_table,simulation_no)
-                # Write out the new plan
-                if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
-                    os.mkdir(os.path.dirname(qualified_new_plan_filename))
-    
-                batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
-            elif detector_no==number_detectors:
-                max_thread_no=thread_no    
-        batchList.append(BatchTuple(batch_no,max_thread_no))
+        min_sim_no = len(workdirList)*batch_no
+        max_sim_no = len(workdirList)*(batch_no+1)
+        if max_sim_no>number_simulations:
+            max_thread_no = number_simulations-min_sim_no
+            max_sim_no = number_simulations
+            
+        batchList.append(BatchTuple(batch_no,max_thread_no,min_sim_no,max_sim_no))
     
 
     return batchList
+
+
+def insert_data_to_threads(args,batch,workdirList,sim_table):
+    # @FIXME: do this later, at beginning of batch
+    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
+
+    dataFiles = get_data_file_list(args.workdir, new_plan_filename)
+    
+    
+    for thread_no in range(batch.nThreads):
+       
+        # Soft link files from data/cache etc to thread data/cache etc.
+        
+        # But not simulation plan
+        create_soft_links(dataFiles,workdirList[thread_no].workdir)
+       
+        simulation_no=batch.min_sim_no+thread_no
+       
+         
+        # @FIXME: Update with batch no...
+        # thread/batch...
+        qualified_new_plan_filename=os.path.join(
+            workdirList[thread_no].workdir,
+            new_plan_filename) 
+        # Update NSEED, MSEED, set NUM_DET=1  
+        # Does this need to be updated?                
+        batch_simulation_plan_table=update_sim_plan_table(
+            simulation_plan_table,simulation_no)
+        # Write out the new plan
+        if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
+            os.mkdir(os.path.dirname(qualified_new_plan_filename))
+
+        batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
+       
+    
+
+    return 
+
+def get_data_file_list(main_workdir, sim_plan):
+    """ Trawl through directory structure avoiding threads, logdir,
+    simulation_plan
+    
+    """
+    final_file_list=[]
+    directoryList=['']
+    isComplete=False
+    while not isComplete:
+        new_dirs=[]
+        for directory in directoryList:
+            file_list,sub_dirs= process_directory(directory,main_workdir,sim_plan)
+            final_file_list.extend(file_list)
+            new_dirs.extend(sub_dirs)
+        if new_dirs:
+            directoryList=new_dirs
+        else:
+            isComplete=True
+    return final_file_list
+
+def process_directory(directory,main_workdir,sim_plan):   
+    """ Function that returns file_list and sub directories. 
+    """ 
+    file_list=[]
+    sub_dirs=[]
+    main_files = os.listdir(os.path.join(main_workdir,directory))
+    for filename in main_files:
+        if filename.endswith(sim_plan) or filename.startswith('thread'):
+            pass
+        if os.path.isdir(filename):
+            sub_dirs.append(os.path.join(directory,filename))
+        else:
+            file_list.append(os.path.join(directory,filename))
+    return file_list,sub_dirs
+
+
+def create_soft_links(dataFiles,new_workdir):
+    """
+    """
+    for filename in dataFiles:
+        new_filename = os.path.join(new_workdir,filename)
+        #try:
+        os.symlink(filename,new_filename)
+        #except:
+        #   Exce 
+    
 
 def update_sim_plan_table(sim_plan_table,simulation_no):
     """
@@ -314,23 +386,15 @@ def create_isf(args,
         args_to_set[args.isf_args[arg_i]] = args.isf_args[arg_i + 1]
         arg_i += 2
     
-    print("ATS1: ",args_to_set,args.isf_args)
-    print("BASE ISF: ",base_isf)
     with open(base_isf, 'r') as fi:
         # Check each line to see if values we'll overwrite are specified in it,
         # and only write out lines with other values
         for line in fi:
             split_line = line.strip().split('=')
-            print("BISF: ",line,split_line, (split_line[0] in args_to_set))
             # Add any new args here to the list of args we want to set
             if not (split_line[0] in args_to_set) and len(split_line) > 1:
                 args_to_set[split_line[0]] = split_line[1]
-            if len(split_line)>1:
-                print("BISF2: ",args_to_set[split_line[0]],split_line[1])
-            
-
-    print("ATS: ",args_to_set)
-    
+     
 
     # Check each filename arg to see if it's already in the workdir, or if we have to move it there
 
@@ -559,21 +623,19 @@ def run_pipeline_from_args(args):
     workdirList=check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
     sim_table=rp.create_plan(args, retTable=True)
-    batchTupleList=create_batches(sim_table,workdirList)
+    batches=create_batches(sim_table,workdirList)
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
     
     # Create the ISF for this run
     qualified_isf_filename = rp.create_isf(args, config_filename)
 
-    print("QISF: ",qualified_isf_filename)
-    exit()
     # Find how many files in 
     
-    batches = create_batches(args,workdirList)
     
     for batch in batches:
-    
+        insert_data_to_threads(args,batch,workdirList,sim_table)
+        exit()
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
         prodThreads=[]
@@ -595,7 +657,7 @@ def run_pipeline_from_args(args):
             runThreads(prodThreads,logger)
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
         mergeOutputs(workdirList,batch)   
-    
+        cleanup(batch)
     # Final merge?
     
     return
