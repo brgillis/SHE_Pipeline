@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-08-17"
+__updated__ = "2018-08-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -23,7 +23,7 @@ __updated__ = "2018-08-17"
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
 ERun_CTE = "E-Run SHE_CTE 0.6.4 "
-ERun_GST = "E-Run SHE_GST 1.6.2 "
+ERun_GST = "E-Run SHE_GST 1.6.3 "
 ERun_MER = "E-Run SHE_MER 0.2 "
 
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
