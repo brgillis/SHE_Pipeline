@@ -65,25 +65,88 @@ def she_prepare_configs(simulation_plan,config_template,
     sbp.call(cmd,shell=True)
     return
 
-def she_simulate_images(config_files,pipeline_config):
+def she_simulate_images(config_files,pipeline_config,data_images,
+    stacked_data_image, psf_images_and_tables,segmentation_images,
+    stacked_segmentation_image,detections_tables,details_table):
     """
     """
     # ,data_images,
     #    stacked_data_image,psf_images_and_tables,segmentation_images,
     #    stacked_segmentation_image,detection_table,details_table):   
     cmd=(ERun_GST + "SHE_GST_GenGalaxyImages --config_files %s "
-        "--pipeline_config %s" % (config_files,pipeline_config))
-        # --data_images %s --stacked_data_image %s "
-        #"--psf_images_and_tables %s --segmentation_images %s "
-        #"--stacked_segmentation_image %s --detections_tables %s "
-        #"--details_table %s " 
-        #% (config_files,pipeline_config,data_images,
-        #stacked_data_image,psf_images_and_tables,segmentation_images,
-        #stacked_segmentation_image,detection_table,details_table))
+        "--pipeline_config %s --data_images %s --stacked_data_image %s "
+        "--psf_images_and_tables %s --segmentation_images %s "
+        "--stacked_segmentation_image %s --detections_tables %s "
+        "--details_table %s" 
+        % (config_files,pipeline_config,data_images,
+        stacked_data_image,psf_images_and_tables,segmentation_images,
+        stacked_segmentation_image,detections_tables,details_table))
     
     sbp.call(cmd,shell=True)
     return
+ 
+def she_estimate_shear(data_images,stacked_image,
+    psf_images_and_tables, segmentation_images,
+    stacked_segmentation_image, detections_tables,
+    bfd_training_data, ksb_training_data,
+    lensmc_training_data,momentsml_training_data,
+    regauss_training_data, pipeline_config,
+    shear_estimates_product):
+    """
+    """
+    # Optional data???
     
+    cmd=(ERun_CTE + "SHE_CTE_EstimateShear --data_images %s "
+        "--stacked_image %s --psf_images_and_tables %s "
+        "--segmentation_images %s --stacked_segmentation_image %s "
+        "--detections_tables %s --bfd_training_data %s --ksb_training_data %s "
+        "--lensmc_training_data %s --momentsml_training_data %s "
+        "--regauss_training_data %s --pipeline_config %s "
+        "--shear_estimates_product %s" %
+        (data_images,stacked_image,psf_images_and_tables,
+         segmentation_images,   stacked_segmentation_image, detections_tables,
+         bfd_training_data, ksb_training_data, lensmc_training_data,
+         momentsml_training_data,regauss_training_data,pipeline_config,
+         shear_estimates_product))
+     
+    sbp.call(cmd,shell=True)
+    return
+
+def she_measure_statistics(details_table, shear_estimates,
+    pipeline_config,shear_bias_statistics):
+    """
+    
+    """
+    
+    cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
+        "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s"
+        % (details_table, shear_estimates, pipeline_config,shear_bias_statistics))
+    
+    sbp.call(cmd,shell=True)
+    return
+
+def she_cleanup_bias_measurement(simulation_config,data_images, 
+    stacked_data_image, psf_images_and_tables, segmentation_images,
+    stacked_segmentation_image, detections_tables, details_table,
+    shear_estimates, shear_bias_statistics_in, pipeline_config,
+    shear_bias_measurements):
+    
+    cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
+        "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
+        "--segmentation_images %s --stacked_segmentation_image %s "
+        "--detections_tables %s --details_table %s --shear_estimates %s "
+        "--shear_bias_statistics_in %s --pipeline_config %s "
+        "--shear_bias_statistics_out %s" % (simulation_config,data_images, 
+    stacked_data_image, psf_images_and_tables, segmentation_images,
+    stacked_segmentation_image, detections_tables, details_table,
+    shear_estimates, shear_bias_statistics_in, pipeline_config,
+    shear_bias_measurements))
+
+    sbp.call(cmd,shell=True)
+    return
+
+
+
 def get_pipeline_dir():
     """Gets the directory containing the pipeline packages, using the location of this module.
     """
@@ -567,7 +630,6 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
 def create_simulation_config_file(sim_plan_table,config_template,workdir):
     """ Replaces values in template and writes out config file
     """
-    print("SPT: ",sim_plan_table)
     
     
     replaceDict={'SEED':sim_plan_table['MSEED_MIN'][0],
@@ -589,7 +651,6 @@ def create_simulation_config_file(sim_plan_table,config_template,workdir):
             keyVal=[('$REPLACEME_%s' % repKey,replaceDict[repKey]) 
                     for repKey in replaceDict if '$REPLACEME_%s' % repKey in line]
             for key,val in keyVal:
-                print("KV: ",key,val,line)
                 line=line.replace(key,"%s" % val)
                     
         outLines.append(line)
@@ -731,48 +792,66 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                              lensmc_training_data,
                                              momentsml_training_data,
                                              regauss_training_data,
-                                             pipeline_config):
+                                             pipeline_config,workdir):
     
     # several commands...
+    # @FIXME: check None types.
     
-    she_simulate_images(simulation_config, pipeline_config) 
+    data_image_list = os.path.join(workdir,'data','data_images.json')
+    stacked_data_image =  os.path.join(workdir,'data','stacked_image.xml')
+    psf_images_and_tables = os.path.join(workdir,'data','psf_images_and_tables.json')
+    segmentation_images = os.path.join(workdir,'data','segmentation_images.json')
+    stacked_segmentation_image = os.path.join(workdir,'data','stacked_segm_image.xml')
+    detections_tables=os.path.join(workdir,'data','detections_tables.json')
+    details_table=os.path.join(workdir,'data','details_table.xml')
+    
+    she_simulate_images(simulation_config, pipeline_config, data_image_list,
+        stacked_data_image,psf_images_and_tables,segmentation_images,
+        stacked_segmentation_image,detections_tables,details_table) 
     #data_images,stacked_data_image, psf_images_and_tables,
     #segmentation_images, stacked_segmentation_image,
     #detections_tables, details_table)
+    
+    shear_estimates_product = os.path.join(workdir,'data','shear_estimates_product.xml')
+    
+    she_estimate_shear(data_images=data_image_list,
+        stacked_image=stacked_data_image,
+        psf_images_and_tables=psf_images_and_tables,
+        segmentation_images=segmentation_images,
+        stacked_segmentation_image=stacked_segmentation_image,
+        detections_tables=detections_tables,
+        bfd_training_data=bfd_training_data,
+        ksb_training_data=ksb_training_data,
+        lensmc_training_data=lensmc_training_data,
+        momentsml_training_data=momentsml_training_data,
+        regauss_training_data=regauss_training_data,
+        pipeline_config=pipeline_config,
+        shear_estimates_product=shear_estimates_product)
 
 
-def tempFunc():
-    shear_estimates = she_estimate_shear(data_images=data_images,
-                                         stacked_image=stacked_data_image,
-                                         psf_images_and_tables=psf_images_and_tables,
-                                         segmentation_images=segmentation_images,
-                                         stacked_segmentation_image=stacked_segmentation_image,
-                                         detections_tables=detections_tables,
-                                         bfd_training_data=bfd_training_data,
-                                         ksb_training_data=ksb_training_data,
-                                         lensmc_training_data=lensmc_training_data,
-                                         momentsml_training_data=momentsml_training_data,
-                                         regauss_training_data=regauss_training_data,
-                                         pipeline_config=pipeline_config)
+    shear_bias_statistics = os.path.join(workdir,'data','shear_bias_statistics.xml')
+    
+    she_measure_statistics(details_table=details_table,
+        shear_estimates=shear_estimates_product,
+        pipeline_config=pipeline_config,
+        shear_bias_statistics=shear_bias_statistics)
 
-    shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
-                                                       shear_estimates=shear_estimates,
-                                                       pipeline_config=pipeline_config)
+    shear_bias_measurements = os.path.join(workdir,'data','shear_bias_measurements.xml')
+    
+    she_cleanup_bias_measurement(simulation_config=simulation_config,
+        data_images=data_image_list, stacked_data_image=stacked_data_image,
+        psf_images_and_tables=psf_images_and_tables,
+        segmentation_images=segmentation_images,
+        stacked_segmentation_image=stacked_segmentation_image,
+        detections_tables=detections_tables,
+        details_table=details_table,
+        shear_estimates=shear_estimates_product,
+        shear_bias_statistics_in=shear_bias_statistics,  
+        pipeline_config=pipeline_config,
+        shear_bias_measurements=shear_bias_measurements)
+                                                         
 
-    shear_bias_statistics = she_cleanup_bias_measurement(simulation_config=simulation_config,
-                                                         data_images=data_images,
-                                                         stacked_data_image=stacked_data_image,
-                                                         psf_images_and_tables=psf_images_and_tables,
-                                                         segmentation_images=segmentation_images,
-                                                         stacked_segmentation_image=stacked_segmentation_image,
-                                                         detections_tables=detections_tables,
-                                                         details_table=details_table,
-                                                         shear_estimates=shear_estimates,
-                                                         shear_bias_statistics_in=shear_bias_statistics_tmp,  # Needed to ensure it waits until ready
-                                                         pipeline_config=pipeline_config
-                                                         )
-
-    return shear_bias_statistics
+    return 
 
 def run_pipeline_from_args(args):
     """Main executable to run pipelines.
@@ -825,7 +904,8 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.lensmc_training_data,
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
-                      simulate_measure_inputs.pipeline_config)))
+                      simulate_measure_inputs.pipeline_config,
+                      workdir.workdir)))
         
         if prodThreads:
             runThreads(prodThreads,logger)
@@ -868,13 +948,4 @@ def runThreads(threads,logger):
             if threadFail:
                 thread.terminate()
                 thread.join()
-            else:
-                thread.join()
-                threadFail = thread.exitcode
-                if threadFail:
-                    # @FIXME: No - we don't want to do it this way
-                    logger.info("<ERROR> Thread %s failed. Terminating all"
-                                       " other running threads." % ii)
-
-        if threadFail:
-            raise logger.info("Forked processes failed. Please check stdout.")
+   
