@@ -161,7 +161,6 @@ def create_batches(simulation_plan_table,workdirList):
     BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no") 
     
     #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
-    #print("KV: ",keyVals)    
     
     # @TODO: Improve
     number_simulations = numpy.sum(((simulation_plan_table['NSEED_MAX']-
@@ -187,11 +186,17 @@ def create_batches(simulation_plan_table,workdirList):
     return batchList
 
 
-def insert_data_to_threads(args,batch,workdirList,sim_table):
+def get_sim_no(thread_no,batch):
+    """ Returns simulation no.
+    """
+    
+    return batch.min_sim_no+thread_no
+
+def insert_data_to_threads(args,batch,workdirList,sim_plan_table,isfFileName):
     # @FIXME: do this later, at beginning of batch
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
-
-    dataFiles = get_data_file_list(args.workdir, new_plan_filename)
+    
+    dataFiles = get_data_file_list(args.workdir)
     
     
     for thread_no in range(batch.nThreads):
@@ -212,18 +217,20 @@ def insert_data_to_threads(args,batch,workdirList,sim_table):
         # Update NSEED, MSEED, set NUM_DET=1  
         # Does this need to be updated?                
         batch_simulation_plan_table=update_sim_plan_table(
-            simulation_plan_table,simulation_no)
+            sim_plan_table,simulation_no)
         # Write out the new plan
         if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
             os.mkdir(os.path.dirname(qualified_new_plan_filename))
 
         batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
        
-    
+        # copy / modify ISF file
+        
+        
 
     return 
 
-def get_data_file_list(main_workdir, sim_plan):
+def get_data_file_list(main_workdir):
     """ Trawl through directory structure avoiding threads, logdir,
     simulation_plan
     
@@ -234,7 +241,7 @@ def get_data_file_list(main_workdir, sim_plan):
     while not isComplete:
         new_dirs=[]
         for directory in directoryList:
-            file_list,sub_dirs= process_directory(directory,main_workdir,sim_plan)
+            file_list,sub_dirs= process_directory(directory,main_workdir)
             final_file_list.extend(file_list)
             new_dirs.extend(sub_dirs)
         if new_dirs:
@@ -243,16 +250,18 @@ def get_data_file_list(main_workdir, sim_plan):
             isComplete=True
     return final_file_list
 
-def process_directory(directory,main_workdir,sim_plan):   
+def process_directory(directory,main_workdir):   
     """ Function that returns file_list and sub directories. 
     """ 
     file_list=[]
     sub_dirs=[]
     main_files = os.listdir(os.path.join(main_workdir,directory))
     for filename in main_files:
-        if filename.endswith(sim_plan) or filename.startswith('thread'):
-            pass
-        if os.path.isdir(filename):
+        
+        if 'SIM-PLAN' in filename or 'SHE-ISF' in filename or filename.startswith('thread'):
+            continue
+        
+        if os.path.isdir(os.path.join(main_workdir,directory,filename)):
             sub_dirs.append(os.path.join(directory,filename))
         else:
             file_list.append(os.path.join(directory,filename))
@@ -344,18 +353,8 @@ def isFilename(strValue):
     if len(os.path.dirname(strValue))>0:
         return True
     
-def convertToBatchFilename(filename,batch):
-    """
-    """
-    if '_batch%s' % batch.batch_no in filename:
-        return filename
-    parts=filename.split('.')
-    root='.'.join(parts[:-1])
-    ext=parts[-1]
-    return root+'_batch%s.%s' % (batch.batch_no,ext)
 
-def create_isf(args,
-               config_filename,workdir,batch):
+def create_isf(args, config_filename,workdir,sim_plan_table,simulation_no):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -385,6 +384,7 @@ def create_isf(args,
         
         args_to_set[args.isf_args[arg_i]] = args.isf_args[arg_i + 1]
         arg_i += 2
+        
     
     with open(base_isf, 'r') as fi:
         # Check each line to see if values we'll overwrite are specified in it,
@@ -400,18 +400,16 @@ def create_isf(args,
 
     # Create a search path from the workdir, the root directory (using an empty string), and the current
     # directory
-    search_path = args_to_set["workdir"] + ":" + os.path.abspath(
-        os.path.curdir) + ":"
+    search_path = args.workdir
 
-    
     for input_port_name in args_to_set:
-        print("IPN: ",input_port_name,args_to_set[input_port_name], non_filename_args)
         # Skip ISF arguments that don't correspond to input ports
         if input_port_name in non_filename_args:
             continue
-
+        if 'simulation_plan' in input_port_name:
+            continue
+        
         filename = args_to_set[input_port_name]
-        print("FN: ",filename)
         # Skip if None
         if filename is None or filename == "None":
             continue
@@ -486,6 +484,19 @@ def create_isf(args,
         # End loop "for data_filename in data_filenames:"
 
     # End loop "for input_port_name in args_to_set:"
+    
+    # set up SIM-PLAN
+    batch_simulation_plan_table=update_sim_plan_table(
+            sim_plan_table,simulation_no)
+    
+    # Write out the new plan
+    qualified_new_plan_filename = os.path.join(workdir.workdir,
+            args_to_set['simulation_plan'])
+    
+    if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
+        os.mkdir(os.path.dirname(qualified_new_plan_filename))
+    batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
+       
 
     # Write out the new ISF
     with open(qualified_isf_filename, 'w') as fo:
@@ -496,13 +507,13 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline, isf, serverurl):
+def execute_pipeline(pipeline, isf):
     """Sets up and calls a command to execute the pipeline.
     """
 
     logger = getLogger(__name__)
 
-    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
+    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf) # + ' --serverurl="' + serverurl + '"')
     logger.info("Calling pipeline with command: '" + cmd + "'")
 
     # Do not use subprocess - replace. 
@@ -622,41 +633,41 @@ def run_pipeline_from_args(args):
     # Check the arguments
     workdirList=check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
-    sim_table=rp.create_plan(args, retTable=True)
-    batches=create_batches(sim_table,workdirList)
+    sim_plan_table=rp.create_plan(args, retTable=True)
+    batches=create_batches(sim_plan_table,workdirList)
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
     
     # Create the ISF for this run
-    qualified_isf_filename = rp.create_isf(args, config_filename)
-
-    # Find how many files in 
-    
+    #qualified_isf_filename = rp.create_isf(args, config_filename)
     
     for batch in batches:
-        insert_data_to_threads(args,batch,workdirList,sim_table)
-        exit()
+        # Move data to threads
+        #insert_data_to_threads(args,batch,workdirList,sim_table)
+        # Update_isf_...
+        
+        
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
         prodThreads=[]
         for threadNo in range(batch.nThreads):
             workdir = workdirList[threadNo]
             # logdir?
-            config_filename = create_config(args,workdir,batch)
-    
+            simulation_no=get_sim_no(threadNo,batch)
             # Create the ISF for this run
             # @TODO:  do we need multiple versions of this, one for each thread
-            qualified_isf_filename = create_isf(args, config_filename,workdir,batch)
-    
+            qualified_isf_filename = create_isf(args, config_filename,
+                workdir,sim_plan_table,simulation_no)
             # @TODO: Do we want serverurl? isf and serverurl
             prodThreads.append(multiprocessing.Process(target=execute_pipeline,
-                args=('bias_measurement',qualified_isf_filename,
-                    args.serverurl)))
+                args=('bias_measurement',qualified_isf_filename)))
         
         if prodThreads:
             runThreads(prodThreads,logger)
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        mergeOutputs(workdirList,batch)   
+        mergeOutputs(workdirList,batch)
+        # Clean up 
+        logger.info("Cleaning up batch files..")   
         cleanup(batch)
     # Final merge?
     
@@ -669,6 +680,14 @@ def mergeOutputs(workdirInfo,batch):
     
     """
     pass
+
+def cleanup(batch):
+    """
+    Remove sim links and batch setup files ready for the next batch.
+    
+    """
+    pass
+
 
 def runThreads(threads,logger):
     """ Executes given list of thread processes.
