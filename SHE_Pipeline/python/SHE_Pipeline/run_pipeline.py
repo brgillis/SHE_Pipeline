@@ -462,7 +462,7 @@ def execute_pipeline(pipeline, isf, serverurl):
 
     cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
     logger.info("Calling pipeline with command: '" + cmd + "'")
-
+    exit()
     sbp.call(cmd, shell=True)
 
     return
