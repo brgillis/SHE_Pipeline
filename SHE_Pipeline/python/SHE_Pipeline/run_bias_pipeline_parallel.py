@@ -152,87 +152,13 @@ def check_args(args):
     return dirStruct
 
 
-def create_plan(args, workdirList):
-    """Function to create a new simulation plan for this run.
-    """
-    # Look through SIM_PLAN
-    
-    logger = getLogger(__name__)
 
-    # Find the base plan we'll be creating a modified copy of
-
-    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
-    
-    # Check if the plan is in the ISF args first
-    plan_filename = None
-    if len(args.isf_args) > 0:
-        arg_i = 0
-        while arg_i < len(args.isf_args):
-            if args.isf_args[arg_i] == "simulation_plan":
-                plan_filename = args.isf_args[arg_i + 1]
-                # And replace it here with the new name
-                args.isf_args[arg_i + 1] = new_plan_filename
-                break
-            arg_i += 1
-    
-    
-    if plan_filename is None:
-        # Check for it in the base ISF
-        base_isf = find_file(args.isf, path=args.workdir)
-
-        with open(base_isf, 'r') as fi:
-            # Check each line to see if it's the simulation plan
-            for line in fi:
-                split_line = line.strip().split('=')
-                # Add any new args here to the list of args we want to set
-                if split_line[0].strip() == "simulation_plan":
-                    plan_filename = split_line[1].strip()
-                    # And add it to the end of the isf args
-                    args.isf_args.append("simulation_plan")
-                    args.isf_args.append(new_plan_filename)
-
-    if plan_filename is None:
-        # Couldn't find it
-        raise IOError("Cannot determine simulation_plan filename.")
-
-    qualified_plan_filename = find_file(plan_filename, path=args.workdir)
-    # Set up the args we'll be replacing
-
-    args_to_set = {}
-
-    arg_i = 0
-    while arg_i < len(args.plan_args):
-        args_to_set[args.plan_args[arg_i]] = args.plan_args[arg_i + 1]
-        arg_i += 2
-
-    # Read in the plan table
-    simulation_plan_table = None
-    try:
-        simulation_plan_table = Table.read(qualified_plan_filename, format="fits")
-    except Exception as _e2:
-        # Not a known table format, maybe an ascii table?
-        try:
-            simulation_plan_table = Table.read(qualified_plan_filename, format="ascii")
-        except IOError as _e3:
-            pass
-    # If it's still none, we couldn't identify it, so raise the initial exception
-    if simulation_plan_table is None:
-        raise TypeError("Unknown file format for simulation plan table in " + qualified_plan_filename)
-
-    
-    # Create multiple batch files in each thread directory?
-    
-    for key in args_to_set:
-        # @TODO: What if key not in table...
-        simulation_plan_table[key] = args_to_set[key]
-
-    return 
 
 
 def create_batches(simulation_plan_table,workdirList):
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
-    
+    BatchTuple=namedtuple("Batch", "batch_no nthreads")
     
     #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
     #print("KV: ",keyVals)    
@@ -242,9 +168,7 @@ def create_batches(simulation_plan_table,workdirList):
                                 simulation_plan_table['NSEED_MIN'])//
                                simulation_plan_table['NSEED_STEP'])+1)
     
-    print("NS: ",number_simulations)
     number_batches = math.ceil(number_simulations/len(workdirList))
-    print("NB: ",number_batches)
     batchList=[]
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
 
@@ -253,6 +177,8 @@ def create_batches(simulation_plan_table,workdirList):
         for thread_no in range(len(workdirList)):
             simulation_no=len(workdirList)*batch_no+thread_no
             if simulation_no<number_simulations:
+                # @FIXME: Update with batch no...
+                # thread/batch...
                 qualified_new_plan_filename=os.path.join(
                     workdirList[thread_no].workdir,
                     new_plan_filename) 
@@ -260,7 +186,6 @@ def create_batches(simulation_plan_table,workdirList):
                 # Does this need to be updated?                
                 batch_simulation_plan_table=update_sim_plan_table(
                     simulation_plan_table,simulation_no)
-                print("BSPT: ",batch_simulation_plan_table,simulation_plan_table)
                 # Write out the new plan
                 if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
                     os.mkdir(os.path.dirname(qualified_new_plan_filename))
@@ -285,7 +210,6 @@ def update_sim_plan_table(sim_plan_table,simulation_no):
     min_mseed=1
     min_nseed=1
     for row_id in range(len(sim_plan_table['MSEED_MAX'])):
-        print("ROW: ",sim_plan_table[row_id])
         ns = ((sim_plan_table['MSEED_MAX'][row_id]-
                                 sim_plan_table['MSEED_MIN'][row_id])//
                                sim_plan_table['MSEED_STEP'][row_id])+1
@@ -295,12 +219,11 @@ def update_sim_plan_table(sim_plan_table,simulation_no):
             min_mseed=sim_plan_table['MSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['MSEED_STEP'][row_id]
             min_nseed=sim_plan_table['NSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['NSEED_STEP'][row_id]
             
-    batch_sim_plan_tab=sim_plan_table[table_row]
+    batch_sim_plan_tab=sim_plan_table[table_row:table_row+1]
     batch_sim_plan_tab['MSEED_MIN']=min_mseed
     batch_sim_plan_tab['NSEED_MIN']=min_nseed
     batch_sim_plan_tab['MSEED_MAX']=min_mseed+sim_plan_table['MSEED_STEP']
     batch_sim_plan_tab['NSEED_MAX']=min_nseed+sim_plan_table['NSEED_STEP']
-    print("BS: ",batch_sim_plan_tab)
     return batch_sim_plan_tab
 
 def create_config(args, workdir, batch):
@@ -637,8 +560,6 @@ def run_pipeline_from_args(args):
     #if len(args.plan_args) > 0:
     sim_table=rp.create_plan(args, retTable=True)
     batchTupleList=create_batches(sim_table,workdirList)
-    print("BTL: ",batchTupleList)
-    exit()
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
     
