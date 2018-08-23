@@ -6,7 +6,7 @@
 """
 import os
 
-from Cython import Runtime
+from time import sleep
 from astropy.table import Table
 
 from SHE_PPT import products
@@ -497,15 +497,15 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait=False):
         
         # Periodically poll for the status
         max_wait = 7200 # two hours
-        poll_interval = 30
+        poll_interval = 1
         
         time_elapsed = 0
         while time_elapsed < max_wait:
             sleep(poll_interval)
             time_elapsed += poll_interval
             
-            status_line=subprocess.run(['curl -H','"Accept: application/json"','"localhost:50000/runs/'+run_id+'"'],
-                                       stdout=subprocess.PIPE).stdout.decode('utf-8')
+            status_line=sbp.run(['curl -H','"Accept: application/json"','"localhost:50000/runs/'+run_id+'"'],
+                                stdout=subprocess.PIPE).stdout.decode('utf-8')
             logger.debug("Full status is: " + status_line)
             state = dict(status_line)["executionStatus"]
             if state=="COMPLETED":
