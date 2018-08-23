@@ -139,8 +139,8 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s --details_table %s --shear_estimates %s "
-        "--shear_bias_statistics_in %s --pipeline_config %s --workdir %s"
-        "--shear_bias_statistics_out %s" % (simulation_config,data_images, 
+        "--shear_bias_statistics_in %s --pipeline_config %s "
+        "--shear_bias_statistics_out %s --workdir %s" % (simulation_config,data_images, 
     stacked_data_image, psf_images_and_tables, segmentation_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
