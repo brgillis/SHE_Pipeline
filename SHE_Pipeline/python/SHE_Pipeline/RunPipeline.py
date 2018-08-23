@@ -80,6 +80,12 @@ def defineSpecificProgramOptions():
     # Input arguments for when called by a meta pipeline
     parser.add_argument('--pickled_args', type=str, default=None,
                         help="Pickled file of arguments for this task. If supplied, will override all other arguments.")
+    parser.add_argument('--parent_workdir', type=str, default=None,
+                        help="Work directory of the parent pipeline.")
+    
+    # Output arguments for when called by a meta pipeline
+    parser.add_argument('--pipeline_output', type=str, default=None,
+                        help="Desired filename of output from pipeline")
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)

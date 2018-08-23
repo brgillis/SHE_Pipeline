@@ -23,12 +23,12 @@ __updated__ = "2018-08-23"
 from SHE_Pipeline_pkgdef.package_definition import she_run_bias_pipeline
 from euclidwf.framework.workflow_dsl import pipeline
 
-@pipeline(outputs=('shear_bias_measurements',))
+@pipeline(outputs=('pipeline_output',))
 def meta_shear_bias_measurement(pickled_args):
 
-    shear_bias_measurements = she_run_bias_pipeline(pickled_args=pickled_args)
+    pipeline_output = she_run_bias_pipeline(pickled_args=pickled_args)
 
-    return shear_bias_measurements
+    return pipeline_output
 
 
 if __name__ == '__main__':

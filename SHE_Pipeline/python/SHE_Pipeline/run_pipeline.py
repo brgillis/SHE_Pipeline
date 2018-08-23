@@ -24,6 +24,7 @@ __updated__ = "2018-08-23"
 import ast
 from copy import deepcopy
 import os
+from shutil import copyfile
 from time import sleep
 
 from astropy.table import Table
@@ -51,6 +52,8 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
                      "SHE_CTE_MeasureStatistics_archive_dir",
                      "SHE_CTE_MeasureStatistics_webdav_archive",
                      "SHE_CTE_MeasureStatistics_webdav_dir",)
+
+known_output_filenames = {"bias_measurement":"she_measure_bias/shear_bias_measurements.xml"}
 
 
 def get_pipeline_dir():
@@ -541,6 +544,7 @@ def create_pickled_args(args):
     
     # Set up the args we'll want for the local run
     local_args.workdir = args.local_workdir
+    local_args.parent_workdir = args.workdir
     local_args.serverurl = args.local_serverurl
     local_args.wait = True
     local_args.pipeline = args.pipeline.replace("meta_","")
@@ -600,5 +604,15 @@ def run_pipeline_from_args(args):
         except Exception:
             pass
         raise e
+    
+    # Rename output if desired
+    if args.pipeline_output is not None:
+        expected_output_filename = os.path.join(args.workdir,output_filenames[args.pipeline])
+        
+        if not os.path.exists(expected_output_filename):
+            raise RuntimeError("Expected output file " + expected_output_filename + " does not exist.")
+        
+        # Copy it to the output for this pipeline - note that 
+        copyfile(expected_output_filename, os.path.join(args.parent_workdir,args.pipeline_output))
 
     return
