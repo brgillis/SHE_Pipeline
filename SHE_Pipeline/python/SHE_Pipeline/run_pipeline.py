@@ -30,7 +30,8 @@ from time import sleep
 from astropy.table import Table
 
 from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product, read_pickled_product
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
+                             read_pickled_product, write_pickled_product)
 from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
@@ -551,6 +552,8 @@ def create_pickled_args(args):
     
     pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
                                                               extension=".bin", release="00.03"))
+    
+    write_pickled_product(local_args, pickled_args_filename)
     
     return pickled_args_filename
 
