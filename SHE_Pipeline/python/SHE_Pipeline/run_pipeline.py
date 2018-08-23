@@ -606,18 +606,8 @@ def run_pipeline_from_args(args):
         # Cleanup the ISF on non-exit exceptions
         try:
             os.remove(new_isf_filename)
-        except Exception:
-            pass
-        raise e
-    
-    # Rename output if desired
-    if args.pipeline_output is not None:
-        expected_output_filename = os.path.join(args.workdir,output_filenames[args.pipeline])
-        
-        if not os.path.exists(expected_output_filename):
-            raise RuntimeError("Expected output file " + expected_output_filename + " does not exist.")
-        
-        # Copy it to the output for this pipeline - note that 
-        copyfile(expected_output_filename, os.path.join(args.parent_workdir,args.pipeline_output))
+        except Exception as e:
+            logger.warn("Failsafe exception block triggered with exception: " + str(e))
+        raise
 
     return
