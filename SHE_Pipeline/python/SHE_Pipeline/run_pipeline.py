@@ -4,17 +4,6 @@
 
     Main executable for running pipelines.
 """
-import ast
-import os
-from time import sleep
-
-from astropy.table import Table
-
-from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
-from SHE_PPT.logging import getLogger
-import subprocess as sbp
-
 
 __updated__ = "2018-08-23"
 
@@ -32,7 +21,16 @@ __updated__ = "2018-08-23"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 
+import ast
+import os
+from time import sleep
 
+from astropy.table import Table
+
+from SHE_PPT import products
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
+from SHE_PPT.logging import getLogger
+import subprocess as sbp
 
 
 default_workdir = "/home/user/Work/workspace"
