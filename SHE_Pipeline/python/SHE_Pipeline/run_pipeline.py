@@ -459,7 +459,7 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline, isf, serverurl, workdir, wait=False):
+def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_interval):
     """Sets up and calls a command to execute the pipeline.
     """
 
@@ -497,15 +497,13 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait=False):
                 logger.info("Run id is '" + run_id + "'")
         
         # Periodically poll for the status
-        max_wait = 7200 # two hours
-        poll_interval = 30
         
         time_elapsed = 0
         while time_elapsed < max_wait:
             sleep(poll_interval)
             time_elapsed += poll_interval
             
-            cmd = 'curl -H "Accept: application/json" "localhost:50000/runs/'+run_id+'/status"'
+            cmd = 'curl -H "Accept: application/json" "'+serverurl+'/runs/'+run_id+'/status"'
             logger.debug('Polling with command: ' + cmd)
             status_line=sbp.run(cmd,shell=True,stdout=sbp.PIPE).stdout.decode('utf-8')
             logger.debug("Full status is: " + status_line)
@@ -544,7 +542,9 @@ def run_pipeline_from_args(args):
                          isf=qualified_isf_filename,
                          serverurl=args.serverurl,
                          workdir=args.workdir,
-                         wait=args.wait)
+                         wait=args.wait,
+                         max_wait=args.max_wait,
+                         poll_interval=args.poll_interval)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:

@@ -45,8 +45,6 @@ def defineSpecificProgramOptions():
     parser = argparse.ArgumentParser()
 
     # Input arguments
-    parser.add_argument('--wait', action='store_true',
-                        help='If set, will wait to complete until the pipeline has finished executing.')
     parser.add_argument('--pipeline', type=str,
                         help='Name of the pipeline (e.g. "sensitivity_testing")')
     parser.add_argument('--isf', type=str,
@@ -60,6 +58,12 @@ def defineSpecificProgramOptions():
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
+    parser.add_argument('--wait', action='store_true',
+                        help='If set, will wait to complete until the pipeline has finished executing.')
+    parser.add_argument('--max_wait', type=float, default=7200,
+                        help='Maximum time to wait to finish execution, in seconds')
+    parser.add_argument('--poll_interval', type=float, default=30,
+                        help='Time to wait between polls for completion, in seconds')
 
     parser.add_argument('--app_workdir', type=str,
                         help="Application work directory. This is the work directory specified in the application " +
