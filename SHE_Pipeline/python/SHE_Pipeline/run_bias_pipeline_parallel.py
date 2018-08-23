@@ -67,7 +67,8 @@ def she_prepare_configs(simulation_plan,config_template,
 
 def she_simulate_images(config_files,pipeline_config,data_images,
     stacked_data_image, psf_images_and_tables,segmentation_images,
-    stacked_segmentation_image,detections_tables,details_table):
+    stacked_segmentation_image,detections_tables,details_table,
+    workdir):
     """
     """
     # ,data_images,
@@ -77,10 +78,11 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s" 
+        "--details_table %s --workdir %s" 
         % (config_files,pipeline_config,data_images,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table))
+        stacked_segmentation_image,detections_tables,details_table,
+        workdir))
     
     sbp.call(cmd,shell=True)
     return
@@ -91,7 +93,7 @@ def she_estimate_shear(data_images,stacked_image,
     bfd_training_data, ksb_training_data,
     lensmc_training_data,momentsml_training_data,
     regauss_training_data, pipeline_config,
-    shear_estimates_product):
+    shear_estimates_product,workdir):
     """
     """
     # Optional data???
@@ -102,25 +104,27 @@ def she_estimate_shear(data_images,stacked_image,
         "--detections_tables %s --bfd_training_data %s --ksb_training_data %s "
         "--lensmc_training_data %s --momentsml_training_data %s "
         "--regauss_training_data %s --pipeline_config %s "
-        "--shear_estimates_product %s" %
+        "--shear_estimates_product %s --workdir %s" %
         (data_images,stacked_image,psf_images_and_tables,
          segmentation_images,   stacked_segmentation_image, detections_tables,
          bfd_training_data, ksb_training_data, lensmc_training_data,
          momentsml_training_data,regauss_training_data,pipeline_config,
-         shear_estimates_product))
+         shear_estimates_product,workdir))
      
     sbp.call(cmd,shell=True)
     return
 
 def she_measure_statistics(details_table, shear_estimates,
-    pipeline_config,shear_bias_statistics):
+    pipeline_config,shear_bias_statistics,workdir):
     """
     
     """
     
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
-        "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s"
-        % (details_table, shear_estimates, pipeline_config,shear_bias_statistics))
+        "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
+        "--workdir %s"
+        % (details_table, shear_estimates, pipeline_config,shear_bias_statistics,
+           workdir))
     
     sbp.call(cmd,shell=True)
     return
@@ -129,18 +133,18 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     stacked_data_image, psf_images_and_tables, segmentation_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements):
+    shear_bias_measurements,workdir):
     
     cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s --details_table %s --shear_estimates %s "
-        "--shear_bias_statistics_in %s --pipeline_config %s "
+        "--shear_bias_statistics_in %s --pipeline_config %s --workdir %s"
         "--shear_bias_statistics_out %s" % (simulation_config,data_images, 
     stacked_data_image, psf_images_and_tables, segmentation_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements))
+    shear_bias_measurements,workdir))
 
     sbp.call(cmd,shell=True)
     return
@@ -802,13 +806,11 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table) 
+        stacked_segmentation_image,detections_tables,details_table,workdir) 
     #data_images,stacked_data_image, psf_images_and_tables,
     #segmentation_images, stacked_segmentation_image,
     #detections_tables, details_table)
-    return
 
-def tempFunc():    
     shear_estimates_product = os.path.join(workdir,'data','shear_estimates_product.xml')
     
     she_estimate_shear(data_images=data_image_list,
@@ -823,7 +825,8 @@ def tempFunc():
         momentsml_training_data=momentsml_training_data,
         regauss_training_data=regauss_training_data,
         pipeline_config=pipeline_config,
-        shear_estimates_product=shear_estimates_product)
+        shear_estimates_product=shear_estimates_product,
+        workdir=workdir)
 
 
     shear_bias_statistics = os.path.join(workdir,'data','shear_bias_statistics.xml')
@@ -845,7 +848,8 @@ def tempFunc():
         shear_estimates=shear_estimates_product,
         shear_bias_statistics_in=shear_bias_statistics,  
         pipeline_config=pipeline_config,
-        shear_bias_measurements=shear_bias_measurements)
+        shear_bias_measurements=shear_bias_measurements,
+        workdir=workdir)
                                                          
 
     return 
