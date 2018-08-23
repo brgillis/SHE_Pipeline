@@ -511,6 +511,9 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
             if state=="COMPLETED":
                 logger.info("Pipeline execution completed.")
                 break
+            elif state=="ERROR":
+                logger.error("Pipeline ended in error")
+                break
             else:
                 logger.debug("Pipeline in state: " + state)
 
