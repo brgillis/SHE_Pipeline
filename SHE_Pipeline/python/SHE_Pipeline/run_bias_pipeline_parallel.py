@@ -806,7 +806,9 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     #data_images,stacked_data_image, psf_images_and_tables,
     #segmentation_images, stacked_segmentation_image,
     #detections_tables, details_table)
-    
+    return
+
+def tempFunc():    
     shear_estimates_product = os.path.join(workdir,'data','shear_estimates_product.xml')
     
     she_estimate_shear(data_images=data_image_list,
