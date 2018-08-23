@@ -514,6 +514,9 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
                 break
             else:
                 logger.debug("Pipeline in state: " + state)
+                
+        if time_elapsed >= max_wait:
+            logger.error("Pipeline timed out.")
 
     return
 
