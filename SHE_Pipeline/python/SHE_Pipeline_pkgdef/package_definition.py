@@ -117,4 +117,5 @@ she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
 
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
                                    inputs=[Input("pickled_args")],
-                                   outputs=[Output("pipeline_output", mime_type="xml")],)
+                                   outputs=[Output("pipeline_output", mime_type="xml")],
+                                   resource=ComputingResources(cores=0,ram=0.1,walltime=1.0))
