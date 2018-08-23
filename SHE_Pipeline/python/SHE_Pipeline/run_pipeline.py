@@ -547,6 +547,7 @@ def create_pickled_args(args):
     local_args.workdir = args.local_workdir
     local_args.parent_workdir = args.workdir
     local_args.serverurl = args.local_serverurl
+    local_args.isf = args.local_isf
     local_args.wait = True
     local_args.pipeline = args.pipeline.replace("meta_","")
     

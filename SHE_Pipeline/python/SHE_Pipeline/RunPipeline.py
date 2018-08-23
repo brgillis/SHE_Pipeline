@@ -78,6 +78,8 @@ def defineSpecificProgramOptions():
                         help="Work directory to be used by the pipeline this calls")
     parser.add_argument('--local_serverurl', type=str, default="http://localhost:50000",
                         help="Server URL for the local pipeline")
+    parser.add_argument('--local_isf', type=str, default=None,
+                        help="ISF for the local pipeline run.")
     
     # Input arguments for when called by a meta pipeline
     parser.add_argument('--pickled_args', type=str, default=None,
