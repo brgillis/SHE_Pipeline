@@ -5,7 +5,7 @@
     Pipeline script for the shear bias measurement pipeline.
 """
 
-__updated__ = "2018-08-09"
+__updated__ = "2018-08-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #

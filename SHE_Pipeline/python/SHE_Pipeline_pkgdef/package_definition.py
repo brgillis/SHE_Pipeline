@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-08-09"
+__updated__ = "2018-08-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -25,6 +25,7 @@ from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingReso
 ERun_CTE = "E-Run SHE_CTE 0.5 "
 ERun_GST = "E-Run SHE_GST 1.5 "
 ERun_MER = "E-Run SHE_MER 0.1 "
+ERun_Pipeline = "E-Run SHE_Pipeline 0.3 "
 
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"),
@@ -113,3 +114,7 @@ she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
                               inputs=[Input("shear_bias_statistics", content_type="listfile"),
                                       Input("pipeline_config")],
                               outputs=[Output("shear_bias_measurements", mime_type="xml")])
+
+she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_run --pipeline bias_measurement --wait",
+                                   inputs=[Input("pickled_args")],
+                                   outputs=[Output("shear_bias_measurements", mime_type="xml")],)
