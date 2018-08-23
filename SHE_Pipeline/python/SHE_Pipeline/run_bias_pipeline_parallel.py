@@ -67,7 +67,8 @@ def she_prepare_configs(simulation_plan,config_template,
 
 def she_simulate_images(config_files,pipeline_config,data_images,
     stacked_data_image, psf_images_and_tables,segmentation_images,
-    stacked_segmentation_image,detections_tables,details_table):
+    stacked_segmentation_image,detections_tables,details_table,
+    workdir):
     """
     """
     # ,data_images,
@@ -77,10 +78,11 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s" 
+        "--details_table %s --workdir %s" 
         % (config_files,pipeline_config,data_images,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table))
+        stacked_segmentation_image,detections_tables,details_table,
+        workdir))
     
     sbp.call(cmd,shell=True)
     return
@@ -802,7 +804,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table) 
+        stacked_segmentation_image,detections_tables,details_table,workdir) 
     #data_images,stacked_data_image, psf_images_and_tables,
     #segmentation_images, stacked_segmentation_image,
     #detections_tables, details_table)
