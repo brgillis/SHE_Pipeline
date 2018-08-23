@@ -690,6 +690,8 @@ def execute_pipeline(pipeline, isf):
 def create_thread_dir_struct(args,workdirList,number_threads):
     """
     """
+    logger = getLogger(__name__)
+
     # Creates directory structure
     DirStruct = namedtuple("Directories","workdir logdir app_workdir app_logdir")
     # @FIXME: Do the create multiple threads here
