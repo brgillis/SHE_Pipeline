@@ -834,7 +834,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     she_measure_statistics(details_table=details_table,
         shear_estimates=shear_estimates_product,
         pipeline_config=pipeline_config,
-        shear_bias_statistics=shear_bias_statistics)
+        shear_bias_statistics=shear_bias_statistics,
+        workdir=workdir)
 
     shear_bias_measurements = os.path.join(workdir,'data','shear_bias_measurements.xml')
     
