@@ -1,4 +1,4 @@
-simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMiniPlan.fits
+simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMedPlan.fits
 config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf
 
 bfd_training_data=None
