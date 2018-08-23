@@ -145,7 +145,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
     shear_bias_measurements,workdir))
-    logger.info(cmd)
+    print(cmd)
     return
     #sbp.call(cmd,shell=True)
     #return
