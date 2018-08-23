@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-08-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,9 +22,8 @@ __updated__ = "2018-08-16"
 
 import argparse
 
-from SHE_PPT.utility import get_arguments_string
-
 from ElementsKernel.Logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
 
@@ -46,6 +45,8 @@ def defineSpecificProgramOptions():
     parser = argparse.ArgumentParser()
 
     # Input arguments
+    parser.add_argument('--wait', action='store_true',
+                        help='If set, will wait to complete until the pipeline has finished executing.')
     parser.add_argument('--pipeline', type=str,
                         help='Name of the pipeline (e.g. "sensitivity_testing")')
     parser.add_argument('--isf', type=str,
@@ -93,7 +94,7 @@ def mainMethod(args):
     logger.debug('#')
 
     exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Run",
-                                    store_true=["profile", "debug", "cluster"])
+                                    store_true=["profile", "debug", "cluster", "wait"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
