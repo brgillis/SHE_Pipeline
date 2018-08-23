@@ -212,13 +212,6 @@ def check_args(args):
             args.workdir = default_workdir
         logger.info('No workdir supplied at command-line. Using default workdir: ' + args.workdir)
 
-    # Use the default app_workdir if necessary
-    if args.app_workdir is None:
-        if args.cluster:
-            args.app_workdir = default_cluster_workdir
-        else:
-            args.app_workdir = default_workdir
-        logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
 
     # Use the default logdir if necessary
     if args.logdir is None:
@@ -227,10 +220,10 @@ def check_args(args):
 
     # Set up the workdir and app_workdir the same way
 
-    if args.workdir == args.app_workdir:
-        workdirs = (args.workdir,)
-    else:
-        workdirs = (args.workdir, args.app_workdir,)
+    #if args.workdir == args.app_workdir:
+    workdirs = (args.workdir,)
+    #else:
+    #    workdirs = (args.workdir), args.app_workdir,)
 
     if args.number_threads is None:
         args.number_threads = multiprocessing.cpu_count()-1
@@ -688,7 +681,7 @@ def execute_pipeline(pipeline, isf):
 
 
 def create_thread_dir_struct(args,workdirList,number_threads):
-    """
+    """ @obsolete ???
     """
     logger = getLogger(__name__)
 
