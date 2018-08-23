@@ -549,7 +549,7 @@ def create_pickled_args(args):
     local_args.wait = True
     local_args.pipeline = args.pipeline.replace("meta_","")
     
-    pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PIP-PICKLED-ARGS", str(os.getpid()),
+    pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
                                                               extension=".bin", release="00.03"))
     
     return pickled_args_filename
