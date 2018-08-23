@@ -4,8 +4,18 @@
 
     Main executable for running pipelines.
 """
+import os
 
-__updated__ = "2018-08-21"
+from Cython import Runtime
+from astropy.table import Table
+
+from SHE_PPT import products
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
+from SHE_PPT.logging import getLogger
+import subprocess as sbp
+
+
+__updated__ = "2018-08-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,14 +30,8 @@ __updated__ = "2018-08-21"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
 
-from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
-from SHE_PPT.logging import getLogger
-from astropy.table import Table
 
-import subprocess as sbp
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -454,15 +458,61 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline, isf, serverurl):
+def execute_pipeline(pipeline, isf, serverurl, workdir, wait=False):
     """Sets up and calls a command to execute the pipeline.
     """
 
     logger = getLogger(__name__)
+    
+    # If we're waiting, we'll need to store the output in a temporary file
+    if wait:
+        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.03")
+        qualified_output_filename = os.path.join(workdir,output_filename)
+        output_tail = " > " + qualified_output_filename
+    else:
+        output_tail = ""
 
-    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
+    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"'
+           + output_tail)
     logger.info("Calling pipeline with command: '" + cmd + "'")
     sbp.call(cmd, shell=True)
+    
+    # If we're waiting, print the output for records, then poll for when it's finished
+    if wait:
+        cmd = "cat " + qualified_output_filename
+        sbp.call(cmd, shell=True)
+        
+        # Get the run ID
+        ex_head = "Run submitted to server with id "
+        with open(qualified_output_filename,'r') as fo:
+            run_id = None
+            for line in fo:
+                if ex_head in line:
+                    run_id = line.replace(ex_head,"").strip()[0:-1]
+                    break
+            if run_id is None:
+                raise RuntimeError("Cannot determine runid from output in " + qualified_output_filename)
+            else:
+                logger.info("Run id is '" + run_id + "'")
+        
+        # Periodically poll for the status
+        max_wait = 7200 # two hours
+        poll_interval = 30
+        
+        time_elapsed = 0
+        while time_elapsed < max_wait:
+            sleep(poll_interval)
+            time_elapsed += poll_interval
+            
+            status_line=subprocess.run(['curl -H','"Accept: application/json"','"localhost:50000/runs/'+run_id+'"'],
+                                       stdout=subprocess.PIPE).stdout.decode('utf-8')
+            logger.debug("Full status is: " + status_line)
+            state = dict(status_line)["executionStatus"]
+            if state=="COMPLETED":
+                logger.info("Pipeline execution completed.")
+                break
+            else:
+                logger.debug("Pipeline in state: " + state)
 
     return
 
@@ -490,7 +540,9 @@ def run_pipeline_from_args(args):
     try:
         execute_pipeline(pipeline=args.pipeline,
                          isf=qualified_isf_filename,
-                         serverurl=args.serverurl)
+                         serverurl=args.serverurl,
+                         workdir=args.workdir,
+                         wait=args.wait)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:
