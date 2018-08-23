@@ -549,7 +549,7 @@ def create_pickled_args(args):
     local_args.serverurl = args.local_serverurl
     local_args.isf = args.local_isf
     local_args.config = args.local_config
-    local_args.wait = True
+    local_args.wait = not args.no_local_wait
     local_args.pipeline = args.pipeline.replace("meta_","")
     
     pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PICKLED-ARGS", str(os.getpid()),

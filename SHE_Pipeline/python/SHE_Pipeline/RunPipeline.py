@@ -82,6 +82,8 @@ def defineSpecificProgramOptions():
                         help="ISF for the local pipeline run.")
     parser.add_argument('--local_config', type=str, default=None,
                         help="Pipeline config for the local pipeline run.")
+    parser.add_argument('--no_local_wait', action='store_true',
+                        help="Disable waiting for local pipeline run.")
     
     # Input arguments for when called by a meta pipeline
     parser.add_argument('--pickled_args', type=str, default=None,
@@ -118,7 +120,7 @@ def mainMethod(args):
     logger.debug('#')
 
     exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Run",
-                                    store_true=["profile", "debug", "cluster", "wait"])
+                                    store_true=["profile", "debug", "cluster", "wait", "no_local_wait"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
