@@ -22,13 +22,14 @@ __updated__ = "2018-08-23"
 
 
 import ast
+from copy import deepcopy
 import os
 from time import sleep
 
 from astropy.table import Table
 
 from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
+from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product, read_pickled_product
 from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
@@ -134,6 +135,14 @@ def check_args(args):
         else:
             args.app_workdir = default_workdir
         logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
+
+    # Use the default local_workdir if necessary
+    if args.local_workdir is None:
+        if args.cluster:
+            args.local_workdir = default_cluster_workdir
+        else:
+            args.local_workdir = default_workdir
+        logger.info('No local_workdir supplied at command-line. Using default local_workdir: ' + args.local_workdir)
 
     # Use the default logdir if necessary
     if args.logdir is None:
@@ -326,7 +335,8 @@ def create_config(args):
 
 
 def create_isf(args,
-               config_filename):
+               config_filename,
+               pickled_args_filename):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -345,7 +355,10 @@ def create_isf(args,
     args_to_set["logdir"] = args.logdir
     args_to_set["pkgRepository"] = get_pipeline_dir()
     args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef")
-    args_to_set["pipeline_config"] = config_filename
+    if config_filename is not None:
+        args_to_set["pipeline_config"] = config_filename
+    if pickled_args_filename is not None:
+        args_to_set["pickled_args"] = pickled_args_filename
 
     arg_i = 0
     while arg_i < len(args.isf_args):
@@ -520,25 +533,56 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
 
     return
 
+def create_pickled_args(args):
+    """Function to create pickled args for when calling a meta pipeline.
+    """
+    
+    local_args = deepcopy(args)
+    
+    # Set up the args we'll want for the local run
+    local_args.workdir = args.local_workdir
+    local_args.serverurl = args.local_serverurl
+    local_args.wait = True
+    local_args.pipeline = args.pipeline.replace("meta_","")
+    
+    pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PIP-PICKLED-ARGS", str(os.getpid()),
+                                                              extension=".bin", release="00.03"))
+    
+    return pickled_args_filename
 
 def run_pipeline_from_args(args):
     """Main executable to run pipelines.
     """
 
     logger = getLogger(__name__)
+    
+    # Check for pickled arguments, and override if found
+    if args.pickled_args is not None:
+        qualified_pickled_args_filename = find_file(args.pickled_args,args.workdir)
+        args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     check_args(args)
+    
+    # Are we doing a meta run?
+    meta_run = args.pipeline[0:4]=="meta"
+    if meta_run:
+        config_filename = None
+        
+        pickled_args_filename = create_pickled_args(args)
+    else:
 
-    # If necessary, update the simulation plan
-    if len(args.plan_args) > 0:
-        create_plan(args)
-
-    # Create the pipeline_config for this run
-    config_filename = create_config(args)
+        # If necessary, update the simulation plan
+        if len(args.plan_args) > 0:
+            create_plan(args)
+    
+        # Create the pipeline_config for this run
+        config_filename = create_config(args)
+        
+        pickled_args_filename = None
 
     # Create the ISF for this run
-    qualified_isf_filename = create_isf(args, config_filename)
+    qualified_isf_filename = create_isf(args, config_filename, pickled_args_filename)
 
     # Try to call the pipeline
     try:
