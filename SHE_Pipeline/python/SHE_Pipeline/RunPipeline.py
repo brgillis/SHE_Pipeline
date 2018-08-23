@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-08-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,9 +22,8 @@ __updated__ = "2018-08-16"
 
 import argparse
 
-from SHE_PPT.utility import get_arguments_string
-
 from ElementsKernel.Logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
 
@@ -59,6 +58,12 @@ def defineSpecificProgramOptions():
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
+    parser.add_argument('--wait', action='store_true',
+                        help='If set, will wait to complete until the pipeline has finished executing.')
+    parser.add_argument('--max_wait', type=float, default=7200,
+                        help='Maximum time to wait to finish execution, in seconds')
+    parser.add_argument('--poll_interval', type=float, default=30,
+                        help='Time to wait between polls for completion, in seconds')
 
     parser.add_argument('--app_workdir', type=str,
                         help="Application work directory. This is the work directory specified in the application " +
@@ -93,7 +98,7 @@ def mainMethod(args):
     logger.debug('#')
 
     exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Run",
-                                    store_true=["profile", "debug", "cluster"])
+                                    store_true=["profile", "debug", "cluster", "wait"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
