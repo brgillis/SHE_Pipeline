@@ -505,7 +505,7 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait=False):
             time_elapsed += poll_interval
             
             status_line=sbp.run(['curl -H','"Accept: application/json"','"localhost:50000/runs/'+run_id+'"'],
-                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+                                stdout=sbp.PIPE).stdout.decode('utf-8')
             logger.debug("Full status is: " + status_line)
             state = dict(status_line)["executionStatus"]
             if state=="COMPLETED":
