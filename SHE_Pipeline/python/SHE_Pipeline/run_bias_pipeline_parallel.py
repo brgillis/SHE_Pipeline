@@ -145,10 +145,8 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
     shear_bias_measurements,workdir))
-    print(cmd)
+    sbp.call(cmd,shell=True)
     return
-    #sbp.call(cmd,shell=True)
-    #return
 
 
 
@@ -259,32 +257,48 @@ def check_args(args):
 def create_batches(simulation_plan_table,workdirList):
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
-    BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no") 
+    BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no")
+    SimPlanSimNoTuple=namedtuple("SimPlanSimNo","mseed nseed table_row") 
     
     #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
     
     # @TODO: Improve
-    number_simulations = numpy.sum(((simulation_plan_table['NSEED_MAX']-
-                                simulation_plan_table['NSEED_MIN'])//
-                               simulation_plan_table['NSEED_STEP'])+1)
+    number_simulations_tr = numpy.array((simulation_plan_table['MSEED_MAX']+1-
+                                simulation_plan_table['MSEED_MIN'])//
+                               simulation_plan_table['MSEED_STEP'])
+    number_simulations=numpy.sum(number_simulations_tr)
     
     number_batches = math.ceil(number_simulations/len(workdirList))
     batchList=[]
     
-
+                  
+    mseed=numpy.reshape(numpy.arange(simulation_plan_table['MSEED_MIN'],
+        simulation_plan_table['MSEED_MAX']+1,simulation_plan_table['MSEED_STEP']),
+        [1,number_simulations])[0]
+    nseed=numpy.reshape(numpy.arange(simulation_plan_table['NSEED_MIN'],
+        simulation_plan_table['NSEED_MAX']+1,simulation_plan_table['NSEED_STEP']),
+        [1,number_simulations])[0]
+    
+    tableRow=numpy.zeros([number_simulations]).astype(numpy.int32)
+    startIdx=0
+    for ii in range(number_simulations_tr.size):
+        tableRow[startIdx:startIdx+number_simulations_tr[ii]]=ii*numpy.ones(number_simulations_tr[ii])
+        startIdx+=number_simulations_tr[ii]
+    
+    simPlanSimNo=SimPlanSimNoTuple(*[mseed,nseed,tableRow])
     for batch_no in range(number_batches):
         
-        max_thread_no=len(workdirList)-1
+        nThreads=len(workdirList)
         min_sim_no = len(workdirList)*batch_no
         max_sim_no = len(workdirList)*(batch_no+1)
         if max_sim_no>number_simulations:
-            max_thread_no = number_simulations-min_sim_no
+            nThreads = number_simulations-min_sim_no
             max_sim_no = number_simulations
             
-        batchList.append(BatchTuple(batch_no,max_thread_no,min_sim_no,max_sim_no))
+        batchList.append(BatchTuple(batch_no,nThreads,min_sim_no,max_sim_no))
     
 
-    return batchList
+    return batchList,simPlanSimNo
 
 
 def get_sim_no(thread_no,batch):
@@ -380,33 +394,32 @@ def create_soft_links(dataFiles,new_workdir):
         #   Exce 
     
 
-def update_sim_plan_table(sim_plan_table,simulation_no):
+def get_seeds(sim_plan_table,simulation_no):
     """
     
-    # Update NSEED, MSEED 
+     
     """
+    # @FIXME: Inefficient. 
+    # Do most of this once - create batches..
+    # look up simumation_no --> tableRow,seeds...
+    
     # Find correct row in table
     # Update NSEED/MSEED values 
     number_simulations=0
     table_row=-1
-    min_mseed=1
-    min_nseed=1
+    mseed=1
+    nseed=1
     for row_id in range(len(sim_plan_table['MSEED_MAX'])):
         ns = ((sim_plan_table['MSEED_MAX'][row_id]-
                                 sim_plan_table['MSEED_MIN'][row_id])//
                                sim_plan_table['MSEED_STEP'][row_id])+1
+        nsimul_prev_rows= number_simulations
         number_simulations+=ns
         if simulation_no<=number_simulations and table_row==-1:
             table_row=row_id
-            min_mseed=sim_plan_table['MSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['MSEED_STEP'][row_id]
-            min_nseed=sim_plan_table['NSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['NSEED_STEP'][row_id]
-            
-    batch_sim_plan_tab=sim_plan_table[table_row:table_row+1]
-    batch_sim_plan_tab['MSEED_MIN']=min_mseed
-    batch_sim_plan_tab['NSEED_MIN']=min_nseed
-    batch_sim_plan_tab['MSEED_MAX']=min_mseed+sim_plan_table['MSEED_STEP']
-    batch_sim_plan_tab['NSEED_MAX']=min_nseed+sim_plan_table['NSEED_STEP']
-    return batch_sim_plan_tab
+            mseed=sim_plan_table['MSEED_MIN'][row_id]+(simulation_no-nsimul_prev_rows)*sim_plan_table['MSEED_STEP'][row_id]
+            nseed=sim_plan_table['NSEED_MIN'][row_id]+(simulation_no-nsimul_prev_rows)*sim_plan_table['NSEED_STEP'][row_id]
+    return mseed,nseed,table_row
 
 def create_config(args, workdir, batch):
     """Function to create a new pipeline_config file for this run.
@@ -455,7 +468,8 @@ def isFilename(strValue):
         return True
     
 
-def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,simulation_no):
+def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
+        simulation_no,simPlanSimNo):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -507,20 +521,20 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
     # directory
     
     # set up SIM-PLAN
-    batch_simulation_plan_table=update_sim_plan_table(
-            sim_plan_table,simulation_no)
+    
+    
     
     # Write out the new plan
-    qualified_new_plan_filename = os.path.join(workdir.workdir,
-            args_to_set['simulation_plan'])
+    #qualified_new_plan_filename = os.path.join(workdir.workdir,
+    #        args_to_set['simulation_plan'])
     
-    if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
-        os.mkdir(os.path.dirname(qualified_new_plan_filename))
-    batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
+    #if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
+    #    os.mkdir(os.path.dirname(qualified_new_plan_filename))
+    #batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
     
     simulation_config=create_simulation_config_file(
-        batch_simulation_plan_table,find_file(args_to_set['config_template'],args.workdir),
-        workdir.workdir)
+        sim_plan_table,find_file(args_to_set['config_template'],args.workdir),
+        workdir.workdir,simulation_no,simPlanSimNo)
     
     
     search_path = args.workdir
@@ -625,17 +639,21 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
 
     return simulateInputs
 
-def create_simulation_config_file(sim_plan_table,config_template,workdir):
+def create_simulation_config_file(sim_plan_table,config_template,workdir,
+        simulation_no,simPlanSimNo):
     """ Replaces values in template and writes out config file
     """
+
+    mseed=simPlanSimNo.mseed[simulation_no]
+    nseed=simPlanSimNo.nseed[simulation_no]
+    tableRow=simPlanSimNo.table_row[simulation_no]
     
-    
-    replaceDict={'SEED':sim_plan_table['MSEED_MIN'][0],
-                 'NOISESEED':sim_plan_table['NSEED_MIN'][0],
-                 'SUPPRESSNOISE':sim_plan_table['SUP_NOISE'][0],
-                 'NUMDETECTORS':sim_plan_table['NUM_DETECTORS'][0],
-                 'NUMGALAXIES':sim_plan_table['NUM_GALAXIES'][0],
-                 'RENDERBACKGROUND':sim_plan_table['RENDER_BKG'][0],
+    replaceDict={'SEED':mseed,
+                 'NOISESEED':nseed,
+                 'SUPPRESSNOISE':sim_plan_table['SUP_NOISE'][tableRow],
+                 'NUMDETECTORS':sim_plan_table['NUM_DETECTORS'][tableRow],
+                 'NUMGALAXIES':sim_plan_table['NUM_GALAXIES'][tableRow],
+                 'RENDERBACKGROUND':sim_plan_table['RENDER_BKG'][tableRow],
                  }
     
 
@@ -811,9 +829,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
         stacked_segmentation_image,detections_tables,details_table,workdir) 
-    #data_images,stacked_data_image, psf_images_and_tables,
-    #segmentation_images, stacked_segmentation_image,
-    #detections_tables, details_table)
+    
 
     shear_estimates_product = os.path.join(workdir,'data','shear_estimates_product.xml')
     
@@ -843,19 +859,30 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
 
     shear_bias_measurements = os.path.join(workdir,'data','shear_bias_measurements.xml')
     
-    she_cleanup_bias_measurement(simulation_config=simulation_config,
-        data_images=data_image_list, stacked_data_image=stacked_data_image,
-        psf_images_and_tables=psf_images_and_tables,
-        segmentation_images=segmentation_images,
-        stacked_segmentation_image=stacked_segmentation_image,
-        detections_tables=detections_tables,
-        details_table=details_table,
-        shear_estimates=shear_estimates_product,
-        shear_bias_statistics_in=shear_bias_statistics,  
-        pipeline_config=pipeline_config,
-        shear_bias_measurements=shear_bias_measurements,
-        workdir=workdir)
     
+    ii=0
+    maxNTries=5
+    hasRun = False
+    while not hasRun and ii<maxNTries:
+        if os.path.exists(shear_bias_statistics):
+    
+            she_cleanup_bias_measurement(simulation_config=simulation_config,
+                data_images=data_image_list, stacked_data_image=stacked_data_image,
+                psf_images_and_tables=psf_images_and_tables,
+                segmentation_images=segmentation_images,
+                stacked_segmentation_image=stacked_segmentation_image,
+                detections_tables=detections_tables,
+                details_table=details_table,
+                shear_estimates=shear_estimates_product,
+                shear_bias_statistics_in=shear_bias_statistics,  
+                pipeline_config=pipeline_config,
+                shear_bias_measurements=shear_bias_measurements,
+                workdir=workdir)
+            hasRun=True
+        else:
+            time.sleep(60)
+        ii+=1
+            
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")                                                     
 
     return 
@@ -870,7 +897,8 @@ def run_pipeline_from_args(args):
     workdirList=check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
     sim_plan_table=rp.create_plan(args, retTable=True)
-    batches=create_batches(sim_plan_table,workdirList)
+    batches,simPlanSimNo=create_batches(sim_plan_table,workdirList)
+    
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
     
@@ -893,11 +921,12 @@ def run_pipeline_from_args(args):
             # Create the ISF for this run
             # @TODO:  do we need multiple versions of this, one for each thread
             
-            # Modify...
-            
+            # @FIXME: Don't really need ISF - that is for the pipeline runner..
             simulate_measure_inputs = create_simulate_measure_inputs(args, config_filename,
-                workdir,sim_plan_table,simulation_no)
-            # @TODO: Do we want serverurl? isf and serverurl
+                workdir,sim_plan_table,simulation_no,simPlanSimNo)
+            
+            
+            
             
             
             #simulation_config =
