@@ -33,7 +33,8 @@ import subprocess as sbp
 
 
 from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, 
+                             read_xml_product, read_listfile)
 from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
 #from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
@@ -53,14 +54,15 @@ ERun_MER = "E-Run SHE_MER 0.1 "
 
 
 def she_prepare_configs(simulation_plan,config_template,
-        pipeline_config,simulation_configs):
+        pipeline_config,simulation_configs,workdir):
     """
     """
     
     cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
-            "--config_template %s --pipeline_config %s --simulation_configs %s"
+            "--config_template %s --pipeline_config %s --simulation_configs %s "
+            "--workdir %s"
             % (simulation_plan,config_template,
-        pipeline_config,simulation_configs))
+        pipeline_config,simulation_configs,workdir))
     
     sbp.call(cmd,shell=True)
     return
@@ -134,6 +136,8 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
     shear_bias_measurements,workdir):
+    """
+    """
     
     cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
@@ -149,6 +153,17 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     return
 
 
+def she_measure_bias(shear_bias_measurement_list,pipeline_config,
+    shear_bias_measurement_final,workdir):
+    """
+    """
+    cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
+        "--pipeline_config %s --shear_bias_measurements %s --workdir %s" 
+        % (shear_bias_measurement_list,pipeline_config,
+           shear_bias_measurement_final,workdir))
+    
+    sbp.call(cmd,shell=True)
+    return
 
 def get_pipeline_dir():
     """Gets the directory containing the pipeline packages, using the location of this module.
@@ -229,7 +244,7 @@ def check_args(args):
     #    workdirs = (args.workdir), args.app_workdir,)
 
     if args.number_threads is None:
-        args.number_threads = multiprocessing.cpu_count()-1
+        args.number_threads = str(multiprocessing.cpu_count()-1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
 
@@ -254,38 +269,19 @@ def check_args(args):
 
 
 
-def create_batches(simulation_plan_table,workdirList):
+def create_batches(args,sim_config_list,workdirList):
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
     BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no")
-    SimPlanSimNoTuple=namedtuple("SimPlanSimNo","mseed nseed table_row") 
     
-    #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
-    
-    # @TODO: Improve
-    number_simulations_tr = numpy.array((simulation_plan_table['MSEED_MAX']+1-
-                                simulation_plan_table['MSEED_MIN'])//
-                               simulation_plan_table['MSEED_STEP'])
-    number_simulations=numpy.sum(number_simulations_tr)
+    sim_config_list=read_listfile(os.path.join(args.workdir,sim_config_list))
+    number_simulations=len(sim_config_list)
     
     number_batches = math.ceil(number_simulations/len(workdirList))
     batchList=[]
     
                   
-    mseed=numpy.reshape(numpy.arange(simulation_plan_table['MSEED_MIN'],
-        simulation_plan_table['MSEED_MAX']+1,simulation_plan_table['MSEED_STEP']),
-        [1,number_simulations])[0]
-    nseed=numpy.reshape(numpy.arange(simulation_plan_table['NSEED_MIN'],
-        simulation_plan_table['NSEED_MAX']+1,simulation_plan_table['NSEED_STEP']),
-        [1,number_simulations])[0]
     
-    tableRow=numpy.zeros([number_simulations]).astype(numpy.int32)
-    startIdx=0
-    for ii in range(number_simulations_tr.size):
-        tableRow[startIdx:startIdx+number_simulations_tr[ii]]=ii*numpy.ones(number_simulations_tr[ii])
-        startIdx+=number_simulations_tr[ii]
-    
-    simPlanSimNo=SimPlanSimNoTuple(*[mseed,nseed,tableRow])
     for batch_no in range(number_batches):
         
         nThreads=len(workdirList)
@@ -298,7 +294,7 @@ def create_batches(simulation_plan_table,workdirList):
         batchList.append(BatchTuple(batch_no,nThreads,min_sim_no,max_sim_no))
     
 
-    return batchList,simPlanSimNo
+    return batchList
 
 
 def get_sim_no(thread_no,batch):
@@ -468,8 +464,8 @@ def isFilename(strValue):
         return True
     
 
-def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
-        simulation_no,simPlanSimNo):
+def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list,
+        simulation_no):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -532,19 +528,26 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
     #    os.mkdir(os.path.dirname(qualified_new_plan_filename))
     #batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
     
-    simulation_config=create_simulation_config_file(
-        sim_plan_table,find_file(args_to_set['config_template'],args.workdir),
-        workdir.workdir,simulation_no,simPlanSimNo)
+    #simulation_config=create_simulation_config_file(
+    #    sim_plan_table,find_file(args_to_set['config_template'],args.workdir),
+    #   workdir.workdir,simulation_no,simPlanSimNo)
     
+    simulation_config = read_listfile(os.path.join(
+        args.workdir,sim_config_list))[simulation_no]
+    args_to_set['simulation_config']=simulation_config
     
     search_path = args.workdir
-    simulateInputs = InputsTuple(*[simulation_config,
+    simulateInputs = InputsTuple(*[
+        os.path.join(workdir.workdir,args_to_set['simulation_config']),
         os.path.join(workdir.workdir,args_to_set['bfd_training_data']),
         os.path.join(workdir.workdir,args_to_set['ksb_training_data']),
         os.path.join(workdir.workdir,args_to_set['lensmc_training_data']),
         os.path.join(workdir.workdir,args_to_set['momentsml_training_data']),
         os.path.join(workdir.workdir,args_to_set['regauss_training_data']),
         os.path.join(workdir.workdir,args_to_set['pipeline_config'])])
+    
+    print("ATS: ",args_to_set)
+    
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
         if input_port_name in non_filename_args:
@@ -556,6 +559,13 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
         # Skip if None
         if filename is None or filename == "None":
             continue
+
+        if 'TEST-%s' % simulation_no in filename:
+            # File for this simulation
+            pass
+        elif 'TEST-' in filename:
+            continue
+
 
         # Find the qualified location of the file
         try:
@@ -810,7 +820,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                              lensmc_training_data,
                                              momentsml_training_data,
                                              regauss_training_data,
-                                             pipeline_config,workdir):
+                                             pipeline_config,workdir,
+                                             simulation_no):
     
     # several commands...
     # @FIXME: check None types.
@@ -857,31 +868,32 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_bias_statistics=shear_bias_statistics,
         workdir=workdir)
 
-    shear_bias_measurements = os.path.join(workdir,'data','shear_bias_measurements.xml')
+    shear_bias_measurements = os.path.join(workdir,'data',
+        'shear_bias_measurements_sim%s.xml' % simulation_no)
     
     
-    ii=0
-    maxNTries=5
-    hasRun = False
-    while not hasRun and ii<maxNTries:
-        if os.path.exists(shear_bias_statistics):
+    #ii=0
+    #maxNTries=5
+    #hasRun = False
+    #while not hasRun and ii<maxNTries:
+    #    if os.path.exists(shear_bias_statistics):
     
-            she_cleanup_bias_measurement(simulation_config=simulation_config,
-                data_images=data_image_list, stacked_data_image=stacked_data_image,
-                psf_images_and_tables=psf_images_and_tables,
-                segmentation_images=segmentation_images,
-                stacked_segmentation_image=stacked_segmentation_image,
-                detections_tables=detections_tables,
-                details_table=details_table,
-                shear_estimates=shear_estimates_product,
-                shear_bias_statistics_in=shear_bias_statistics,  
-                pipeline_config=pipeline_config,
-                shear_bias_measurements=shear_bias_measurements,
-                workdir=workdir)
-            hasRun=True
-        else:
-            time.sleep(60)
-        ii+=1
+    she_cleanup_bias_measurement(simulation_config=simulation_config,
+        data_images=data_image_list, stacked_data_image=stacked_data_image,
+        psf_images_and_tables=psf_images_and_tables,
+        segmentation_images=segmentation_images,
+        stacked_segmentation_image=stacked_segmentation_image,
+        detections_tables=detections_tables,
+        details_table=details_table,
+        shear_estimates=shear_estimates_product,
+        shear_bias_statistics_in=shear_bias_statistics,  
+        pipeline_config=pipeline_config,
+        shear_bias_measurements=shear_bias_measurements,
+        workdir=workdir)
+    #        hasRun=True
+    #    else:
+    #        time.sleep(60)
+    #    ii+=1
             
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")                                                     
 
@@ -896,8 +908,7 @@ def run_pipeline_from_args(args):
     # Check the arguments
     workdirList=check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
-    sim_plan_table=rp.create_plan(args, retTable=True)
-    batches,simPlanSimNo=create_batches(sim_plan_table,workdirList)
+    sim_plan_table,sim_plan_tablename=rp.create_plan(args, retTable=True)
     
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
@@ -905,6 +916,22 @@ def run_pipeline_from_args(args):
     # Create the ISF for this run
     #qualified_isf_filename = rp.create_isf(args, config_filename)
     
+    shear_bias_measurement_listfile = os.path.join('data','shear_bias_measurement_list.json')
+    
+    # prepare configuration
+    
+    simulation_configs=os.path.join('data','sim_configs.json')
+    logger.info("Preparing configurations")
+    base_config = find_file(args.config, path=args.workdir)
+    
+    she_prepare_configs(sim_plan_tablename,base_config,
+        config_filename,simulation_configs,args.workdir)
+    print(base_config,simulation_configs,sim_plan_tablename)
+    
+    batches=create_batches(args,simulation_configs,workdirList)
+    
+    logger.info("Running parallel part of pipeline in %s batches and %s threads" 
+                % (len(batches),len(workdirList)))
     for batch in batches:
         # Move data to threads
         #insert_data_to_threads(args,batch,workdirList,sim_table)
@@ -914,6 +941,7 @@ def run_pipeline_from_args(args):
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
         prodThreads=[]
+        
         for threadNo in range(batch.nThreads):
             workdir = workdirList[threadNo]
             # logdir?
@@ -922,11 +950,8 @@ def run_pipeline_from_args(args):
             # @TODO:  do we need multiple versions of this, one for each thread
             
             # @FIXME: Don't really need ISF - that is for the pipeline runner..
-            simulate_measure_inputs = create_simulate_measure_inputs(args, config_filename,
-                workdir,sim_plan_table,simulation_no,simPlanSimNo)
-            
-            
-            
+            simulate_measure_inputs = create_simulate_measure_inputs(args, 
+                config_filename,workdir,simulation_configs,simulation_no)
             
             
             #simulation_config =
@@ -941,32 +966,73 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
                       simulate_measure_inputs.pipeline_config,
-                      workdir.workdir)))
+                      workdir.workdir,simulation_no)))
         
         if prodThreads:
             runThreads(prodThreads,logger)
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        mergeOutputs(workdirList,batch)
+        mergeOutputs(workdirList,batch,shear_bias_measurement_listfile)
         # Clean up 
         logger.info("Cleaning up batch files..")   
-        cleanup(batch)
-    # Final merge?
+        cleanup(batch,workdirList)
+    
+    
+    exit()
+    # Run final process
+    shear_bias_measurement_final=os.path.join(args.workdir,'data','shear_bias_measurements_final.xml')
+    
+    logger.info("Running final she_measure_bias to calculate final shear: output in %s"
+        % shear_bias_measurement)
+    she_measure_bias(shear_bias_measurement_listfile,config_filename,
+        shear_bias_measurement_final,args.workdir)
+    logger.info("Parallel pipeline completed!")
+    
     
     return
 
 
-def mergeOutputs(workdirInfo,batch):
+def mergeOutputs(workdirList,batch,shear_bias_measurement_listfile):
     """ Merge outputs from different threads
     
     
     """
-    pass
+    
+    # @FIXME: use read/write_list_product
+    lines=open(shear_bias_measurement_listfile).readlines()
+    newList=[]
+    for workdir in workdirList:
+        thread_no = int(workdir.workdir.split('thread')[1].split('/')[0])
+        if thread_no<batch.nThreads:
+            sim_no=get_sim_no(thread_no,batch)
+            shear_bias_measfile=os.path.join(workdir.workdir,'data',
+                'shear_bias_measurement_sim%s.xml' % sim_no)
+            if os.path.exists(shear_bias_measfile):
+                newList.append(shear_bias_measfile)
+    lines[-1]=lines[-1][:-1]+','+','.join(newList)+'\n'
+    open(shear_bias_measurement_listfile,'w').writelines(lines)
+    
+    
+        
+    
+    # What are the main outputs needed for 2nd part?
+    # rename? shear_bias_measurements, 
+    
+    # All the shear_bias_measurements -- collate into .json file
+    
+    return
 
-def cleanup(batch):
+def cleanup(batch,workdirList):
     """
     Remove sim links and batch setup files ready for the next batch.
+    Remove intermediate products...
     
     """
+    # workdir:
+    #*.bin
+    
+    
+    
+    
     pass
 
 
