@@ -1092,17 +1092,18 @@ def mergeOutputs(workdirList,batch,
     
     """
     
-    # @FIXME: use read/write_listfile
-    print("SBML: ",shear_bias_measurement_listfile)
     newList=[]
     for workdir in workdirList:
         thread_no = int(workdir.workdir.split('thread')[1].split('/')[0])
         if thread_no<batch.nThreads:
             sim_no=get_sim_no(thread_no,batch)
+            # @TODO: root of this in one place
             shear_bias_measfile=os.path.join(workdir.workdir,'data',
-                'shear_bias_measurement_sim%s.xml' % sim_no)
+                'shear_bias_measurements_sim%s.xml' % sim_no)
             if os.path.exists(shear_bias_measfile):
+                
                 newList.append(shear_bias_measfile)
+                
     sbml_list=[]
     if os.path.exists(shear_bias_measurement_listfile):
         sbml_list=read_listfile(shear_bias_measurement_listfile)
