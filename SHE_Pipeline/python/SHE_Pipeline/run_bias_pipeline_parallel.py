@@ -29,14 +29,22 @@ from collections import namedtuple
 from astropy.table import Table
 from astropy.io import fits
 import subprocess as sbp
+from   subprocess import Popen, PIPE, STDOUT
+
 
 
 
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, 
-                             read_xml_product, read_listfile)
+                             read_xml_product, read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
+import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
+from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
+import SHE_GST_cIceBRGpy
+from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
+import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
+
 #from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
 #                                                    she_measure_statistics, she_measure_bias,
 #                                                    she_cleanup_bias_measurement)
@@ -58,13 +66,26 @@ def she_prepare_configs(simulation_plan,config_template,
     """
     """
     
-    cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
-            "--config_template %s --pipeline_config %s --simulation_configs %s "
-            "--workdir %s"
-            % (simulation_plan,config_template,
-        pipeline_config,simulation_configs,workdir))
+    gst_prep_conf.write_configs_from_plan(
+        plan_filename=simulation_plan,
+            template_filename=config_template,
+            listfile_filename=simulation_configs,
+            workdir=workdir)
     
-    sbp.call(cmd,shell=True)
+    #cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
+    #        "--config_template %s --pipeline_config %s --simulation_configs %s "
+    #        "--workdir %s"
+    #        % (simulation_plan,config_template,
+    #    pipeline_config,simulation_configs,workdir))
+    
+    # Needs to complete before return!
+    #sbp.call(cmd,shell=True)
+    #isComplete=False
+    #while not isComplete:
+    #    if os.path.exists(os.path.join(workdir,simulation_configs)):
+    #        isComplete=True
+    #    else:
+    #        time.sleep(60)
     return
 
 def she_simulate_images(config_files,pipeline_config,data_images,
@@ -73,6 +94,28 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     workdir):
     """
     """
+    #SHE_GST_cIceBRGpy.set_workdir(workdir)
+    
+    #args_parser=ggi.defineSpecificProgramOptions()
+    #gen_image_args=ArgsTuple(*[config_files,pipeline_config,data_images,
+    #stacked_data_image, psf_images_and_tables,segmentation_images,
+    #stacked_segmentation_image,detections_tables,details_table,
+    #workdir])
+    #args=("--config_files %s "
+    #    "--pipeline_config %s --data_images %s --stacked_data_image %s "
+    #    "--psf_images_and_tables %s --segmentation_images %s "
+    #    "--stacked_segmentation_image %s --detections_tables %s "
+    #    "--details_table %s --workdir %s" 
+    #    % (config_files,pipeline_config,data_images,
+    #    stacked_data_image,psf_images_and_tables,segmentation_images,
+    #    stacked_segmentation_image,detections_tables,details_table,
+    #    workdir))
+    
+    #args_parser.parse_args(args)
+    
+    #run_from_args(generate_images, args_parser)
+    
+    
     # ,data_images,
     #    stacked_data_image,psf_images_and_tables,segmentation_images,
     #    stacked_segmentation_image,detection_table,details_table):   
@@ -86,7 +129,14 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         stacked_segmentation_image,detections_tables,details_table,
         workdir))
     
-    sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
+    #sbp.call(cmd,shell=True)
+    #isComplete=False
+    #while not isComplete:
+    #    if os.path.exists(os.path.join(workdir,data_images)):
+    #        isComplete=True
+    #    else:
+    #        time.sleep(60)
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -113,7 +163,14 @@ def she_estimate_shear(data_images,stacked_image,
          momentsml_training_data,regauss_training_data,pipeline_config,
          shear_estimates_product,workdir))
      
-    sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
+    #sbp.call(cmd,shell=True)
+    #isComplete=False
+    #while not isComplete:
+    #    if os.path.exists(os.path.join(workdir,shear_estimates_product)):
+    #        isComplete=True
+    #    else:
+    #        time.sleep(60)
     return
 
 def she_measure_statistics(details_table, shear_estimates,
@@ -128,7 +185,15 @@ def she_measure_statistics(details_table, shear_estimates,
         % (details_table, shear_estimates, pipeline_config,shear_bias_statistics,
            workdir))
     
-    sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
+    
+    #sbp.call(cmd,shell=True)
+    #isComplete=False
+    #while not isComplete:
+    #    if os.path.exists(os.path.join(workdir,shear_bias_statistics)):
+    #        isComplete=True
+    #    else:
+    #        time.sleep(60)
     return
 
 def she_cleanup_bias_measurement(simulation_config,data_images, 
@@ -145,11 +210,19 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         "--detections_tables %s --details_table %s --shear_estimates %s "
         "--shear_bias_statistics_in %s --pipeline_config %s "
         "--shear_bias_statistics_out %s --workdir %s" % (simulation_config,data_images, 
-    stacked_data_image, psf_images_and_tables, segmentation_images,
-    stacked_segmentation_image, detections_tables, details_table,
-    shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements,workdir))
-    sbp.call(cmd,shell=True)
+        stacked_data_image, psf_images_and_tables, segmentation_images,
+        stacked_segmentation_image, detections_tables, details_table,
+        shear_estimates, shear_bias_statistics_in, pipeline_config,
+        shear_bias_measurements,workdir))
+    
+    external_process_run(cmd, raiseOnError=False)
+    #sbp.call(cmd,shell=True)
+    #isComplete=False
+    #while not isComplete:
+    #    if os.path.exists(os.path.join(workdir,shear_bias_measurements)):
+    #        isComplete=True
+    #    else:
+    #        time.sleep(60)
     return
 
 
@@ -163,6 +236,13 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
            shear_bias_measurement_final,workdir))
     
     sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
+    #isComplete=False
+    #while not isComplete:
+    #    if os.path.exists(os.path.join(workdir,shear_bias_measurement_final)):
+    #        isComplete=True
+    #    else:
+    #        time.sleep(60)
     return
 
 def get_pipeline_dir():
@@ -546,7 +626,6 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list
         os.path.join(workdir.workdir,args_to_set['regauss_training_data']),
         os.path.join(workdir.workdir,args_to_set['pipeline_config'])])
     
-    print("ATS: ",args_to_set)
     
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
@@ -815,34 +894,32 @@ def create_thread_dir_struct(args,workdirList,number_threads):
     return directStrList
 
 def she_simulate_and_measure_bias_statistics(simulation_config,
-                                             bfd_training_data,
-                                             ksb_training_data,
-                                             lensmc_training_data,
-                                             momentsml_training_data,
-                                             regauss_training_data,
-                                             pipeline_config,workdir,
-                                             simulation_no):
-    
+        bfd_training_data, ksb_training_data,
+        lensmc_training_data, momentsml_training_data,
+        regauss_training_data,pipeline_config,workdir,
+        simulation_no):
+    """ Function that runs parallel parts of bias_measurement pipeline
+    """
     # several commands...
     # @FIXME: check None types.
     
     logger = getLogger(__name__)
 
-    
-    data_image_list = os.path.join(workdir,'data','data_images.json')
-    stacked_data_image =  os.path.join(workdir,'data','stacked_image.xml')
-    psf_images_and_tables = os.path.join(workdir,'data','psf_images_and_tables.json')
-    segmentation_images = os.path.join(workdir,'data','segmentation_images.json')
-    stacked_segmentation_image = os.path.join(workdir,'data','stacked_segm_image.xml')
-    detections_tables=os.path.join(workdir,'data','detections_tables.json')
-    details_table=os.path.join(workdir,'data','details_table.xml')
+     
+    data_image_list = os.path.join('data','data_images.json')
+    stacked_data_image =  os.path.join('data','stacked_image.xml')
+    psf_images_and_tables = os.path.join('data','psf_images_and_tables.json')
+    segmentation_images = os.path.join('data','segmentation_images.json')
+    stacked_segmentation_image = os.path.join('data','stacked_segm_image.xml')
+    detections_tables=os.path.join('data','detections_tables.json')
+    details_table=os.path.join('data','details_table.xml')
     
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
         stacked_segmentation_image,detections_tables,details_table,workdir) 
     
 
-    shear_estimates_product = os.path.join(workdir,'data','shear_estimates_product.xml')
+    shear_estimates_product = os.path.join('data','shear_estimates_product.xml')
     
     she_estimate_shear(data_images=data_image_list,
         stacked_image=stacked_data_image,
@@ -860,7 +937,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         workdir=workdir)
 
 
-    shear_bias_statistics = os.path.join(workdir,'data','shear_bias_statistics.xml')
+    shear_bias_statistics = os.path.join('data','shear_bias_statistics.xml')
     
     she_measure_statistics(details_table=details_table,
         shear_estimates=shear_estimates_product,
@@ -868,7 +945,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_bias_statistics=shear_bias_statistics,
         workdir=workdir)
 
-    shear_bias_measurements = os.path.join(workdir,'data',
+    shear_bias_measurements = os.path.join('data',
         'shear_bias_measurements_sim%s.xml' % simulation_no)
     
     
@@ -877,7 +954,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     #hasRun = False
     #while not hasRun and ii<maxNTries:
     #    if os.path.exists(shear_bias_statistics):
-    
+
     she_cleanup_bias_measurement(simulation_config=simulation_config,
         data_images=data_image_list, stacked_data_image=stacked_data_image,
         psf_images_and_tables=psf_images_and_tables,
@@ -916,17 +993,34 @@ def run_pipeline_from_args(args):
     # Create the ISF for this run
     #qualified_isf_filename = rp.create_isf(args, config_filename)
     
-    shear_bias_measurement_listfile = os.path.join('data','shear_bias_measurement_list.json')
+    shear_bias_measurement_listfile = os.path.join(
+        args.workdir,'data','shear_bias_measurement_list.json')
     
     # prepare configuration
     
     simulation_configs=os.path.join('data','sim_configs.json')
     logger.info("Preparing configurations")
-    base_config = find_file(args.config, path=args.workdir)
     
-    she_prepare_configs(sim_plan_tablename,base_config,
+    # @FIXME: sim configuration template
+    base_isf = find_file(args.isf, path=args.workdir)
+    # read get 
+    args_to_set={}
+    with open(base_isf, 'r') as fi:
+        # Check each line to see if values we'll overwrite are specified in it,
+        # and only write out lines with other values
+        for line in fi:
+            split_line = line.strip().split('=')
+            # Add any new args here to the list of args we want to set
+            if not (split_line[0] in args_to_set) and len(split_line) > 1:
+                args_to_set[split_line[0]] = split_line[1]
+    
+    if not ('config_template' in args_to_set and 
+            os.path.exists(find_file(args_to_set['config_template']))):
+        raise Exception("configuration template not found") 
+    
+    config_template=find_file(args_to_set['config_template'])
+    she_prepare_configs(sim_plan_tablename,config_template,
         config_filename,simulation_configs,args.workdir)
-    print(base_config,simulation_configs,sim_plan_tablename)
     
     batches=create_batches(args,simulation_configs,workdirList)
     
@@ -957,7 +1051,8 @@ def run_pipeline_from_args(args):
             #simulation_config =
             #bfd_training...
             
-           
+            # @TODO: Is it better to run each process separately?
+            
             prodThreads.append(multiprocessing.Process(target=she_simulate_and_measure_bias_statistics,
                 args=(simulate_measure_inputs.simulation_config,
                       simulate_measure_inputs.bfd_training_data,
@@ -969,20 +1064,19 @@ def run_pipeline_from_args(args):
                       workdir.workdir,simulation_no)))
         
         if prodThreads:
-            runThreads(prodThreads,logger)
+            runThreads(prodThreads)
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
         mergeOutputs(workdirList,batch,shear_bias_measurement_listfile)
         # Clean up 
         logger.info("Cleaning up batch files..")   
         cleanup(batch,workdirList)
     
-    
-    exit()
+
     # Run final process
     shear_bias_measurement_final=os.path.join(args.workdir,'data','shear_bias_measurements_final.xml')
     
-    logger.info("Running final she_measure_bias to calculate final shear: output in %s"
-        % shear_bias_measurement)
+    logger.info("Running final she_measure_bias to calculate "
+        "final shear: output in %s" % shear_bias_measurement_final)
     she_measure_bias(shear_bias_measurement_listfile,config_filename,
         shear_bias_measurement_final,args.workdir)
     logger.info("Parallel pipeline completed!")
@@ -991,14 +1085,15 @@ def run_pipeline_from_args(args):
     return
 
 
-def mergeOutputs(workdirList,batch,shear_bias_measurement_listfile):
+def mergeOutputs(workdirList,batch,
+        shear_bias_measurement_listfile):
     """ Merge outputs from different threads
     
     
     """
     
-    # @FIXME: use read/write_list_product
-    lines=open(shear_bias_measurement_listfile).readlines()
+    # @FIXME: use read/write_listfile
+    print("SBML: ",shear_bias_measurement_listfile)
     newList=[]
     for workdir in workdirList:
         thread_no = int(workdir.workdir.split('thread')[1].split('/')[0])
@@ -1008,11 +1103,12 @@ def mergeOutputs(workdirList,batch,shear_bias_measurement_listfile):
                 'shear_bias_measurement_sim%s.xml' % sim_no)
             if os.path.exists(shear_bias_measfile):
                 newList.append(shear_bias_measfile)
-    lines[-1]=lines[-1][:-1]+','+','.join(newList)+'\n'
-    open(shear_bias_measurement_listfile,'w').writelines(lines)
+    sbml_list=[]
+    if os.path.exists(shear_bias_measurement_listfile):
+        sbml_list=read_listfile(shear_bias_measurement_listfile)
+    sbml_list.extend(newList)
+    write_listfile(shear_bias_measurement_listfile,sbml_list)
     
-    
-        
     
     # What are the main outputs needed for 2nd part?
     # rename? shear_bias_measurements, 
@@ -1036,18 +1132,163 @@ def cleanup(batch,workdirList):
     pass
 
 
-def runThreads(threads,logger):
+def runThreads(threads):
     """ Executes given list of thread processes.
     """
      
+    logger = getLogger(__name__)
     try:
         for thread in threads:
             thread.start()
     finally:
         threadFail = False
-        for ii,thread in enumerate(threads):
-            logger.info("...%s" % threadFail)
+        for thread in threads:
             if threadFail:
                 thread.terminate()
                 thread.join()
-   
+            else:
+                thread.join()
+                threadFail = thread.exitcode
+                if threadFail:
+                    logger.info("<ERROR> Thread failed. Terminating all"
+                                      " other running threads.")
+
+        if threadFail:
+            raise Exception("Forked processes failed. Please check stdout.")
+ 
+def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True, cwd=None,
+        env=None, close_fds=True, isVerbose=True, _isIterable=False,
+        ignoreMsgs=None):
+    """
+    Run the given external program. Unless overridden, an exception is thrown
+    on error and the output is logged.
+
+    @param command:      Command string to execute. Use a single string with
+                         all arguments to run in shell, use a list of the
+                         command with arguments as separate elements to not
+                         run in a shell (faster if shell not needed).
+    @type  command:      str or list(str)
+    @param stdIn:        Optionally supply some input for stdin.
+    @type  stdIn:        str
+    @param raiseOnError: If True, if the external process sends anything to
+                         stdErr then an exception is raised and the complete
+                         programme is logged. Otherwise, stdErr is just always
+                         redirected to stdOut.
+    @type  raiseOnError: bool
+    @param parseStdOut:  If True, stdout is captured, not print to screen, and
+                         returned by this function, otherwise stdout is left
+                         alone and will be sent to terminal as normal.
+    @type  parseStdOut:  bool
+    @param cwd:          Run the external process with this directory as its
+                         working directory.
+    @type  cwd:          str
+    @param env:          Environment variables for the external process.
+    @type  env:          dict(str:str)
+    @param close_fds:    If True, close all open file-like objects before
+                         executing external process.
+    @type  close_fds:    bool
+    @param isVerbose:    If False, don't log the full command that was
+                         executed, even when Logger is in verbose mode.
+    @type  isVerbose:    bool
+    @param _isIterable:  Return an iterable stdout. NB: Use the L{out()}
+                         function instead of this option.
+    @type  _isIterable:  bool
+    @param ignoreMsgs:   List of strings that if they appear in stderr should
+                         override the raiseOnError if it is set to True.
+    @type  ignoreMsgs:   list(str)
+
+    @return: Messages sent to stdout if parsed, otherwise an iterable file
+             object for stdout if _isIterable, else a return a code.
+    @rtype:  list(str) or file or int
+
+    """
+    logger = getLogger(__name__)
+    cmdStr = (command if isinstance(command, str) else ' '.join(command))
+    if isVerbose:
+        logger.info(cmdStr)
+
+    parseStdOut = parseStdOut or _isIterable
+    parseStdErr = raiseOnError and not _isIterable
+    isMemError = False
+    while True:
+        try:
+            proc = Popen(command, shell=isinstance(command, str),
+                         stdin=(PIPE if stdIn else None),
+                         stdout=(PIPE if parseStdOut else None),
+                         stderr=(PIPE if parseStdErr else STDOUT),
+                         close_fds=close_fds, cwd=cwd, env=env)
+        except OSError as error:
+            if "[Errno 12] Cannot allocate memory" not in str(error):
+                raise
+            if not isMemError:
+                logger.info("Memory allocation problem; delaying...")
+                isMemError = True
+                close_fds = True
+            time.sleep(60)
+        else:
+            if isMemError:
+                Logger.addMessage("Problem fixed; continuing...")
+            break
+
+    if stdIn:
+        proc.stdin.write(stdIn + '\n')
+        proc.stdin.flush()
+
+    if _isIterable:
+        return proc.stdout
+
+    stdOut = []
+    stdErr = []
+    try:
+        if parseStdOut:
+            # Calling readlines() instead of iterating through stdout ensures
+            # that KeyboardInterrupts are handled correctly.
+            stdOut = [line.strip() for line in proc.stdout.readlines()]
+        if raiseOnError:
+            stdErr = [line.strip() for line in proc.stderr]
+
+        if not parseStdOut and not raiseOnError:
+            return proc.wait()
+#    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
+#        with utils.noInterrupt():
+#            Logger.addMessage("KeyboardInterrupt - %s interrupted, "
+#              "waiting for process to end cleanly..." %
+#              os.path.basename(command.split()[0]))
+#            if parseStdOut:
+#                print(''.join(proc.stdout))
+#            if parseStdErr:
+#                print(''.join(proc.stderr))
+#            proc.wait()
+#        raise
+    except IOError as error:
+        # Sometimes a KeyboardInterrupt is translated into an IOError - I think
+        # this may just be due to a bug in PyFITS messing with signals, as only
+        # seems to happen when the PyFITS ignoring KeyboardInterrupt occurs.
+        if "Interrupted system call" in str(error):
+            raise KeyboardInterrupt
+        raise
+
+    # If the stdErr messages are benign then ignore them
+    if stdErr and ignoreMsgs:
+        for stdErrStr in stdErr[:]:
+            if any(msg in stdErrStr for msg in ignoreMsgs):
+                stdErr.remove(stdErrStr)
+
+    if stdErr:
+        if raiseOnError and (not isVerbose):
+            logger.info(cmdStr)
+
+        for line in stdOut:
+            logger.info(line)
+
+        for line in stdErr:
+            logger.info('# ' + str(line))
+
+        if raiseOnError:
+            cmd = cmdStr.split(';')[-1].split()[0]
+            if cmd == "python":
+                cmd = ' '.join(cmdStr.split()[:2])
+
+            raise Exception(cmd + " failed", stdErr)
+
+    return stdOut  
