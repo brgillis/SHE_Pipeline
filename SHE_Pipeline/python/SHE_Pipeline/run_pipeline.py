@@ -295,7 +295,7 @@ def create_plan(args, retTable=False):
     simulation_plan_table.write(qualified_new_plan_filename, format="fits")
     
     if retTable:
-        return simulation_plan_table
+        return simulation_plan_table,qualified_new_plan_filename
     else:
         return
 

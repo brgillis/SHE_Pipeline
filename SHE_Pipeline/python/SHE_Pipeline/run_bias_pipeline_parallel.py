@@ -1,8 +1,8 @@
-""" @file run_pipeline.py
+""" @file run_bias_pipeline_parallel.py
 
-    Created 4 July 2018
+    Created Aug 2018
 
-    Main executable for running pipelines in parallel
+    Main executable for running bias pipeline in parallel
 """
 
 __updated__ = "2018-08-16"
@@ -29,16 +29,20 @@ from collections import namedtuple
 from astropy.table import Table
 from astropy.io import fits
 import subprocess as sbp
-
-
+from   subprocess import Popen, PIPE, STDOUT
 
 from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, 
+                             read_xml_product, read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
-#from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
-#                                                    she_measure_statistics, she_measure_bias,
-#                                                    she_cleanup_bias_measurement)
+import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
+from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
+import SHE_GST_cIceBRGpy
+from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
+import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
+
+
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -53,36 +57,45 @@ ERun_MER = "E-Run SHE_MER 0.1 "
 
 
 def she_prepare_configs(simulation_plan,config_template,
-        pipeline_config,simulation_configs):
-    """
+        pipeline_config,simulation_configs,workdir):
+    """ Runs SHE_GST Prepare configurations
+    Sets up simulations using simulation plan and configuration
+    template. 
+    Creates *cache.bin files
     """
     
-    cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
-            "--config_template %s --pipeline_config %s --simulation_configs %s"
-            % (simulation_plan,config_template,
-        pipeline_config,simulation_configs))
+    gst_prep_conf.write_configs_from_plan(
+        plan_filename=simulation_plan,
+            template_filename=config_template,
+            listfile_filename=simulation_configs,
+            workdir=workdir)
     
-    sbp.call(cmd,shell=True)
+    #cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
+    #        "--config_template %s --pipeline_config %s --simulation_configs %s "
+    #        "--workdir %s"
+    #        % (simulation_plan,config_template,
+    #    pipeline_config,simulation_configs,workdir))
+    
     return
 
 def she_simulate_images(config_files,pipeline_config,data_images,
     stacked_data_image, psf_images_and_tables,segmentation_images,
-    stacked_segmentation_image,detections_tables,details_table):
+    stacked_segmentation_image,detections_tables,details_table,
+    workdir):
+    """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
+    catalogues etc.
     """
-    """
-    # ,data_images,
-    #    stacked_data_image,psf_images_and_tables,segmentation_images,
-    #    stacked_segmentation_image,detection_table,details_table):   
     cmd=(ERun_GST + "SHE_GST_GenGalaxyImages --config_files %s "
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s" 
+        "--details_table %s --workdir %s" 
         % (config_files,pipeline_config,data_images,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table))
+        stacked_segmentation_image,detections_tables,details_table,
+        workdir))
     
-    sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -91,10 +104,10 @@ def she_estimate_shear(data_images,stacked_image,
     bfd_training_data, ksb_training_data,
     lensmc_training_data,momentsml_training_data,
     regauss_training_data, pipeline_config,
-    shear_estimates_product):
+    shear_estimates_product,workdir):
+    """ Runs the SHE_CTE_EstimateShear method that calculates 
+    the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
     """
-    """
-    # Optional data???
     
     cmd=(ERun_CTE + "SHE_CTE_EstimateShear --data_images %s "
         "--stacked_image %s --psf_images_and_tables %s "
@@ -102,65 +115,82 @@ def she_estimate_shear(data_images,stacked_image,
         "--detections_tables %s --bfd_training_data %s --ksb_training_data %s "
         "--lensmc_training_data %s --momentsml_training_data %s "
         "--regauss_training_data %s --pipeline_config %s "
-        "--shear_estimates_product %s" %
+        "--shear_estimates_product %s --workdir %s" %
         (data_images,stacked_image,psf_images_and_tables,
          segmentation_images,   stacked_segmentation_image, detections_tables,
          bfd_training_data, ksb_training_data, lensmc_training_data,
          momentsml_training_data,regauss_training_data,pipeline_config,
-         shear_estimates_product))
+         shear_estimates_product,workdir))
      
-    sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
     return
 
 def she_measure_statistics(details_table, shear_estimates,
-    pipeline_config,shear_bias_statistics):
-    """
-    
+    pipeline_config,shear_bias_statistics,workdir):
+    """ Runs the SHE_CTE_MeasureStatistics method on shear 
+    estimates to get shear bias statistics.
     """
     
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
-        "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s"
-        % (details_table, shear_estimates, pipeline_config,shear_bias_statistics))
+        "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
+        "--workdir %s"
+        % (details_table, shear_estimates, pipeline_config,shear_bias_statistics,
+           workdir))
     
-    sbp.call(cmd,shell=True)
+    external_process_run(cmd, raiseOnError=False)
+    
     return
 
 def she_cleanup_bias_measurement(simulation_config,data_images, 
     stacked_data_image, psf_images_and_tables, segmentation_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements):
+    shear_bias_measurements,workdir):
+    """ Runs the SHE_CTE_CleanupBiasMeasurement code on shear_bias_statistics.
+    Returns shear_bias_measurements
+    """
     
     cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s --details_table %s --shear_estimates %s "
         "--shear_bias_statistics_in %s --pipeline_config %s "
-        "--shear_bias_statistics_out %s" % (simulation_config,data_images, 
-    stacked_data_image, psf_images_and_tables, segmentation_images,
-    stacked_segmentation_image, detections_tables, details_table,
-    shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements))
-
-    sbp.call(cmd,shell=True)
+        "--shear_bias_statistics_out %s --workdir %s" % (simulation_config,data_images, 
+        stacked_data_image, psf_images_and_tables, segmentation_images,
+        stacked_segmentation_image, detections_tables, details_table,
+        shear_estimates, shear_bias_statistics_in, pipeline_config,
+        shear_bias_measurements,workdir))
+    
+    external_process_run(cmd, raiseOnError=False)
     return
 
 
-
-def get_pipeline_dir():
-    """Gets the directory containing the pipeline packages, using the location of this module.
+def she_measure_bias(shear_bias_measurement_list,pipeline_config,
+    shear_bias_measurement_final,workdir):
+    """ Runs the SHE_CTE_MeasureBias on a list of shear_bias_measurements from
+    all simulation runs.
+    
     """
-
-    logger = getLogger(__name__)
-
-    this_file_name = __name__.replace(".", "/") + '.py'
-    pipeline_dir = __file__.replace('/' + this_file_name, '')
-
-    return pipeline_dir
+    cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
+        "--pipeline_config %s --shear_bias_measurements %s --workdir %s" 
+        % (shear_bias_measurement_list,pipeline_config,
+           shear_bias_measurement_final,workdir))
+    
+    external_process_run(cmd, raiseOnError=False)
+    return
 
 
 def check_args(args):
     """Checks arguments for validity and fixes if possible.
+    Modified from similar function in run_pipeline
+    
+    One big modification is that it checks that number of threads
+    has been set and if not uses multiprocessing to do so
+    and then sets up the multiple directory structure for each
+    thread.
+    
+    @return dirStruct
+    @rType  list(namedtuple)
     """
 
     logger = getLogger(__name__)
@@ -169,7 +199,7 @@ def check_args(args):
 
     pipeline='bias_measurement'
     # Does the pipeline we want to run exist?
-    pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/"+ pipeline + ".py")
+    pipeline_filename = os.path.join(rp.get_pipeline_dir(), "SHE_Pipeline_pkgdef/"+ pipeline + ".py")
     if not os.path.exists(pipeline_filename):
         logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
                      pipeline_filename)
@@ -212,13 +242,6 @@ def check_args(args):
             args.workdir = default_workdir
         logger.info('No workdir supplied at command-line. Using default workdir: ' + args.workdir)
 
-    # Use the default app_workdir if necessary
-    if args.app_workdir is None:
-        if args.cluster:
-            args.app_workdir = default_cluster_workdir
-        else:
-            args.app_workdir = default_workdir
-        logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
 
     # Use the default logdir if necessary
     if args.logdir is None:
@@ -227,18 +250,19 @@ def check_args(args):
 
     # Set up the workdir and app_workdir the same way
 
-    if args.workdir == args.app_workdir:
-        workdirs = (args.workdir,)
-    else:
-        workdirs = (args.workdir, args.app_workdir,)
+    #if args.workdir == args.app_workdir:
+    workdirs = (args.workdir,)
+    #else:
+    #    workdirs = (args.workdir), args.app_workdir,)
 
     if args.number_threads is None:
-        args.number_threads = multiprocessing.cpu_count()-1
+        args.number_threads = str(multiprocessing.cpu_count()-1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
 
     # @TODO: Be careful, workdir and app_workdir...
     # make sure number threads is valid 
+    # @FIXME: Check this...
     nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()-1))
     
     dirStruct = create_thread_dir_struct(args,workdirs,int(nThreads))
@@ -249,217 +273,67 @@ def check_args(args):
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
     
-    
-        
-
     return dirStruct
 
 
 
 
 
-def create_batches(simulation_plan_table,workdirList):
+def create_batches(args,sim_config_list,workdirList):
+    """ Uses the simulation configuration list and the 
+    workdir (thread) list to split the simulations into
+    batches.
+    
+    @return batchList
+    @rType list(namedtuple)
+    """
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
-    BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no") 
+    BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no")
     
-    #keyVals= [(key,simulation_plan_table[key]) for key in simulation_plan_table]
-    
-    # @TODO: Improve
-    number_simulations = numpy.sum(((simulation_plan_table['NSEED_MAX']-
-                                simulation_plan_table['NSEED_MIN'])//
-                               simulation_plan_table['NSEED_STEP'])+1)
+    sim_config_list=read_listfile(os.path.join(args.workdir,sim_config_list))
+    number_simulations=len(sim_config_list)
     
     number_batches = math.ceil(number_simulations/len(workdirList))
     batchList=[]
     
-
+                  
+    
     for batch_no in range(number_batches):
         
-        max_thread_no=len(workdirList)-1
+        nThreads=len(workdirList)
         min_sim_no = len(workdirList)*batch_no
         max_sim_no = len(workdirList)*(batch_no+1)
         if max_sim_no>number_simulations:
-            max_thread_no = number_simulations-min_sim_no
+            nThreads = number_simulations-min_sim_no
             max_sim_no = number_simulations
             
-        batchList.append(BatchTuple(batch_no,max_thread_no,min_sim_no,max_sim_no))
+        batchList.append(BatchTuple(batch_no,nThreads,min_sim_no,max_sim_no))
     
 
     return batchList
 
 
 def get_sim_no(thread_no,batch):
-    """ Returns simulation no.
+    """ Returns simulation number calculated from thread_no and batch tuple
+    @return: simulation_number
+    @rType:  int
     """
     
     return batch.min_sim_no+thread_no
-
-def insert_data_to_threads(args,batch,workdirList,sim_plan_table,isfFileName):
-    # @FIXME: do this later, at beginning of batch
-    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
-    
-    dataFiles = get_data_file_list(args.workdir)
-    
-    
-    for thread_no in range(batch.nThreads):
-       
-        # Soft link files from data/cache etc to thread data/cache etc.
-        
-        # But not simulation plan
-        create_soft_links(dataFiles,workdirList[thread_no].workdir)
-       
-        simulation_no=batch.min_sim_no+thread_no
-       
-         
-        # @FIXME: Update with batch no...
-        # thread/batch...
-        qualified_new_plan_filename=os.path.join(
-            workdirList[thread_no].workdir,
-            new_plan_filename) 
-        # Update NSEED, MSEED, set NUM_DET=1  
-        # Does this need to be updated?                
-        batch_simulation_plan_table=update_sim_plan_table(
-            sim_plan_table,simulation_no)
-        # Write out the new plan
-        if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
-            os.mkdir(os.path.dirname(qualified_new_plan_filename))
-
-        batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
-       
-        # copy / modify ISF file
-        
-        
-
-    return 
-
-def get_data_file_list(main_workdir):
-    """ Trawl through directory structure avoiding threads, logdir,
-    simulation_plan
-    
-    """
-    final_file_list=[]
-    directoryList=['']
-    isComplete=False
-    while not isComplete:
-        new_dirs=[]
-        for directory in directoryList:
-            file_list,sub_dirs= process_directory(directory,main_workdir)
-            final_file_list.extend(file_list)
-            new_dirs.extend(sub_dirs)
-        if new_dirs:
-            directoryList=new_dirs
-        else:
-            isComplete=True
-    return final_file_list
-
-def process_directory(directory,main_workdir):   
-    """ Function that returns file_list and sub directories. 
-    """ 
-    file_list=[]
-    sub_dirs=[]
-    main_files = os.listdir(os.path.join(main_workdir,directory))
-    for filename in main_files:
-        
-        if 'SIM-PLAN' in filename or 'SHE-ISF' in filename or filename.startswith('thread'):
-            continue
-        
-        if os.path.isdir(os.path.join(main_workdir,directory,filename)):
-            sub_dirs.append(os.path.join(directory,filename))
-        else:
-            file_list.append(os.path.join(directory,filename))
-    return file_list,sub_dirs
-
-
-def create_soft_links(dataFiles,new_workdir):
-    """
-    """
-    for filename in dataFiles:
-        new_filename = os.path.join(new_workdir,filename)
-        #try:
-        os.symlink(filename,new_filename)
-        #except:
-        #   Exce 
     
 
-def update_sim_plan_table(sim_plan_table,simulation_no):
-    """
-    
-    # Update NSEED, MSEED 
-    """
-    # Find correct row in table
-    # Update NSEED/MSEED values 
-    number_simulations=0
-    table_row=-1
-    min_mseed=1
-    min_nseed=1
-    for row_id in range(len(sim_plan_table['MSEED_MAX'])):
-        ns = ((sim_plan_table['MSEED_MAX'][row_id]-
-                                sim_plan_table['MSEED_MIN'][row_id])//
-                               sim_plan_table['MSEED_STEP'][row_id])+1
-        number_simulations+=ns
-        if simulation_no<=number_simulations and table_row==-1:
-            table_row=row_id
-            min_mseed=sim_plan_table['MSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['MSEED_STEP'][row_id]
-            min_nseed=sim_plan_table['NSEED_MIN'][row_id]+(simulation_no-ns)*sim_plan_table['NSEED_STEP'][row_id]
-            
-    batch_sim_plan_tab=sim_plan_table[table_row:table_row+1]
-    batch_sim_plan_tab['MSEED_MIN']=min_mseed
-    batch_sim_plan_tab['NSEED_MIN']=min_nseed
-    batch_sim_plan_tab['MSEED_MAX']=min_mseed+sim_plan_table['MSEED_STEP']
-    batch_sim_plan_tab['NSEED_MAX']=min_nseed+sim_plan_table['NSEED_STEP']
-    return batch_sim_plan_tab
-
-def create_config(args, workdir, batch):
-    """Function to create a new pipeline_config file for this run.
-    """
-
-    logger = getLogger(__name__)
-
-    # Find the base config we'll be creating a modified copy of
-    base_config = find_file(args.config, path=args.workdir)
-    new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.03")
-    qualified_config_filename = os.path.join(workdir.workdir, 
-        new_config_filename.replace('.txt','_batch%s.txt' % batch.batch_no))
-    if not os.path.exists(os.path.dirname(qualified_config_filename)):
-        os.mkdir(os.path.dirname(qualified_config_filename))
-    
-    # Set up the args we'll be replacing or setting
-    args_to_set = {}
-
-    arg_i = 0
-    while arg_i < len(args.config_args):
-        args_to_set[args.config_args[arg_i]] = args.config_args[arg_i + 1]
-        arg_i += 2
-
-    with open(base_config, 'r') as fi:
-        # Check each line to see if values we'll overwrite are specified in it,
-        # and only write out lines with other values
-        for line in fi:
-            split_line = line.strip().split('=')
-            # Add any new args here to the list of args we want to set
-            key = split_line[0].strip()
-            if not (key in args_to_set) and len(split_line) > 1:
-                args_to_set[key] = split_line[1].strip()
-
-    # Write out the new config
-    with open(qualified_config_filename, 'w') as fo:
-        # Write out values we want set specifically
-        for arg in args_to_set:
-            fo.write(arg + "=" + args_to_set[arg] + "\n")
-
-    return new_config_filename
-
-def isFilename(strValue):
-    """
-    """
-    if len(os.path.dirname(strValue))>0:
-        return True
-    
-
-def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,simulation_no):
+def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list,
+        simulation_no):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
+       
+       More importantly, does symlinks to current thread to link correct
+       files to different threads. Based on run_pipeline function
+    
+    @return: Simulation inputs
+    @rtype:  namedtuple
+    
     """
     
     InputsTuple =namedtuple("SMInputs","simulation_config bfd_training_data "
@@ -481,8 +355,8 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
     args_to_set = {}
     args_to_set["workdir"] = workdir.workdir
     args_to_set["logdir"] = workdir.logdir
-    args_to_set["pkgRepository"] = get_pipeline_dir()
-    args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), 
+    args_to_set["pkgRepository"] = rp.get_pipeline_dir()
+    args_to_set["pipelineDir"] = os.path.join(rp.get_pipeline_dir(), 
                                               "SHE_Pipeline_pkgdef")
     args_to_set["pipeline_config"] = config_filename
 
@@ -503,36 +377,25 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
                 args_to_set[split_line[0]] = split_line[1]
      
 
-    # Check each filename arg to see if it's already in the workdir, or if we have to move it there
-
-    # Create a search path from the workdir, the root directory (using an empty string), and the current
-    # directory
+ 
+    simulation_config = read_listfile(os.path.join(
+        args.workdir,sim_config_list))[simulation_no]
+    args_to_set['simulation_config']=simulation_config
     
-    # set up SIM-PLAN
-    batch_simulation_plan_table=update_sim_plan_table(
-            sim_plan_table,simulation_no)
-    
-    # Write out the new plan
-    qualified_new_plan_filename = os.path.join(workdir.workdir,
-            args_to_set['simulation_plan'])
-    
-    if not os.path.exists(os.path.dirname(qualified_new_plan_filename)):
-        os.mkdir(os.path.dirname(qualified_new_plan_filename))
-    batch_simulation_plan_table.write(qualified_new_plan_filename, format="fits")
-    
-    simulation_config=create_simulation_config_file(
-        batch_simulation_plan_table,find_file(args_to_set['config_template'],args.workdir),
-        workdir.workdir)
-    
-    
+    # Search path is root workdir
     search_path = args.workdir
-    simulateInputs = InputsTuple(*[simulation_config,
+    
+    # Inputs for thread
+    simulateInputs = InputsTuple(*[
+        os.path.join(workdir.workdir,args_to_set['simulation_config']),
         os.path.join(workdir.workdir,args_to_set['bfd_training_data']),
         os.path.join(workdir.workdir,args_to_set['ksb_training_data']),
         os.path.join(workdir.workdir,args_to_set['lensmc_training_data']),
         os.path.join(workdir.workdir,args_to_set['momentsml_training_data']),
         os.path.join(workdir.workdir,args_to_set['regauss_training_data']),
         os.path.join(workdir.workdir,args_to_set['pipeline_config'])])
+    
+    
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
         if input_port_name in non_filename_args:
@@ -544,6 +407,13 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
         # Skip if None
         if filename is None or filename == "None":
             continue
+
+        if 'TEST-%s' % simulation_no in filename:
+            # File for this simulation
+            pass
+        elif 'TEST-' in filename:
+            continue
+
 
         # Find the qualified location of the file
         try:
@@ -615,9 +485,7 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
         # End loop "for data_filename in data_filenames:"
 
     # End loop "for input_port_name in args_to_set:"
-    
-    
-       
+
 
     # Write out the new ISF
     with open(qualified_isf_filename, 'w') as fo:
@@ -627,73 +495,24 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_plan_table,
 
     return simulateInputs
 
-def create_simulation_config_file(sim_plan_table,config_template,workdir):
-    """ Replaces values in template and writes out config file
+
+
+def create_thread_dir_struct(args,workdirRootList,number_threads):
+    """ Used in check_args to create thread directories based on number
+    threads
+    
+    Takes basic workdir base(s) and creates directory structure based 
+    on threads from there, with data, cache and logdirs.
+    
+    @return: List of directories
+    @rtype:  list(namedtuple)
     """
-    
-    
-    replaceDict={'SEED':sim_plan_table['MSEED_MIN'][0],
-                 'NOISESEED':sim_plan_table['NSEED_MIN'][0],
-                 'SUPPRESSNOISE':sim_plan_table['SUP_NOISE'][0],
-                 'NUMDETECTORS':sim_plan_table['NUM_DETECTORS'][0],
-                 'NUMGALAXIES':sim_plan_table['NUM_GALAXIES'][0],
-                 'RENDERBACKGROUND':sim_plan_table['RENDER_BKG'][0],
-                 }
-    
-
-    simulation_config_file = os.path.join(workdir,'data',
-        os.path.basename(config_template.replace('Template','SimConfig')))
-    
-    lines = open(config_template).readlines()
-    outLines=[]
-    for line in lines:
-        if '$REPLACEME' in line:
-            keyVal=[('$REPLACEME_%s' % repKey,replaceDict[repKey]) 
-                    for repKey in replaceDict if '$REPLACEME_%s' % repKey in line]
-            for key,val in keyVal:
-                line=line.replace(key,"%s" % val)
-                    
-        outLines.append(line)
-            
-    open(simulation_config_file,'w').writelines(outLines)
-    return simulation_config_file
-
-def execute_pipeline(pipeline, isf):
-    """Sets up and calls a command to execute the pipeline.
-    """
-
     logger = getLogger(__name__)
 
-    #cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf) # + ' --serverurl="' + serverurl + '"')
-    logger.info("Calling pipeline with command: '" + cmd + "'")
-
-    # Do not use subprocess - replace. 
-    # System call, or pipeline_runner directly run - but pipeline runner seems to be
-    # a python 2.7 code?
-    # What does subprocess.call with shell=True do - env var?
-    #sbp.call(cmd, shell=True)
-
-    bm.she_simulate_and_measure_bias_statistics(simulation_config,
-                                             bfd_training_data,
-                                             ksb_training_data,
-                                             lensmc_training_data,
-                                             momentsml_training_data,
-                                             regauss_training_data,
-                                             pipeline_config)
-    
-    
-    
-
-    return
-
-
-def create_thread_dir_struct(args,workdirList,number_threads):
-    """
-    """
     # Creates directory structure
     DirStruct = namedtuple("Directories","workdir logdir app_workdir app_logdir")
     # @FIXME: Do the create multiple threads here
-    for workdir_base in workdirList:
+    for workdir_base in workdirRootList:
 
         # Does the workdir exist?
         if not os.path.exists(workdir_base):
@@ -734,7 +553,7 @@ def create_thread_dir_struct(args,workdirList,number_threads):
     directStrList=[]        
     for thread_no in range(number_threads):
         thread_dir_list=[]
-        for workdir_base in workdirList:
+        for workdir_base in workdirRootList:
             workdir=os.path.join(workdir_base,'thread%s' % thread_no) 
             if not os.path.exists(workdir):
                 try:
@@ -781,38 +600,40 @@ def create_thread_dir_struct(args,workdirList,number_threads):
             if args.cluster:
                 os.chmod(qualified_logdir, 0o777)
             thread_dir_list.extend((workdir,qualified_logdir))
-        if len(workdirList)==1:
+        if len(workdirRootList)==1:
             thread_dir_list.extend((None,None))
         directStrList.append(DirStruct(*thread_dir_list))
     return directStrList
 
+
 def she_simulate_and_measure_bias_statistics(simulation_config,
-                                             bfd_training_data,
-                                             ksb_training_data,
-                                             lensmc_training_data,
-                                             momentsml_training_data,
-                                             regauss_training_data,
-                                             pipeline_config,workdir):
+        bfd_training_data, ksb_training_data,
+        lensmc_training_data, momentsml_training_data,
+        regauss_training_data,pipeline_config,workdir,
+        simulation_no):
+    """ Parallel processing parts of bias_measurement pipeline
     
+    """
     # several commands...
     # @FIXME: check None types.
     
-    data_image_list = os.path.join(workdir,'data','data_images.json')
-    stacked_data_image =  os.path.join(workdir,'data','stacked_image.xml')
-    psf_images_and_tables = os.path.join(workdir,'data','psf_images_and_tables.json')
-    segmentation_images = os.path.join(workdir,'data','segmentation_images.json')
-    stacked_segmentation_image = os.path.join(workdir,'data','stacked_segm_image.xml')
-    detections_tables=os.path.join(workdir,'data','detections_tables.json')
-    details_table=os.path.join(workdir,'data','details_table.xml')
+    logger = getLogger(__name__)
+
+     
+    data_image_list = os.path.join('data','data_images.json')
+    stacked_data_image =  os.path.join('data','stacked_image.xml')
+    psf_images_and_tables = os.path.join('data','psf_images_and_tables.json')
+    segmentation_images = os.path.join('data','segmentation_images.json')
+    stacked_segmentation_image = os.path.join('data','stacked_segm_image.xml')
+    detections_tables=os.path.join('data','detections_tables.json')
+    details_table=os.path.join('data','details_table.xml')
     
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table) 
-    #data_images,stacked_data_image, psf_images_and_tables,
-    #segmentation_images, stacked_segmentation_image,
-    #detections_tables, details_table)
+        stacked_segmentation_image,detections_tables,details_table,workdir) 
     
-    shear_estimates_product = os.path.join(workdir,'data','shear_estimates_product.xml')
+
+    shear_estimates_product = os.path.join('data','shear_estimates_product.xml')
     
     she_estimate_shear(data_images=data_image_list,
         stacked_image=stacked_data_image,
@@ -826,18 +647,28 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         momentsml_training_data=momentsml_training_data,
         regauss_training_data=regauss_training_data,
         pipeline_config=pipeline_config,
-        shear_estimates_product=shear_estimates_product)
+        shear_estimates_product=shear_estimates_product,
+        workdir=workdir)
 
 
-    shear_bias_statistics = os.path.join(workdir,'data','shear_bias_statistics.xml')
+    shear_bias_statistics = os.path.join('data','shear_bias_statistics.xml')
     
     she_measure_statistics(details_table=details_table,
         shear_estimates=shear_estimates_product,
         pipeline_config=pipeline_config,
-        shear_bias_statistics=shear_bias_statistics)
+        shear_bias_statistics=shear_bias_statistics,
+        workdir=workdir)
 
-    shear_bias_measurements = os.path.join(workdir,'data','shear_bias_measurements.xml')
+    shear_bias_measurements = os.path.join('data',
+        'shear_bias_measurements_sim%s.xml' % simulation_no)
     
+    
+    #ii=0
+    #maxNTries=5
+    #hasRun = False
+    #while not hasRun and ii<maxNTries:
+    #    if os.path.exists(shear_bias_statistics):
+
     she_cleanup_bias_measurement(simulation_config=simulation_config,
         data_images=data_image_list, stacked_data_image=stacked_data_image,
         psf_images_and_tables=psf_images_and_tables,
@@ -848,13 +679,15 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_estimates=shear_estimates_product,
         shear_bias_statistics_in=shear_bias_statistics,  
         pipeline_config=pipeline_config,
-        shear_bias_measurements=shear_bias_measurements)
-                                                         
+        shear_bias_measurements=shear_bias_measurements,
+        workdir=workdir)
+            
+    logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")                                                     
 
     return 
 
 def run_pipeline_from_args(args):
-    """Main executable to run pipelines.
+    """Main executable to run parallel pipeline.
     """
 
     logger = getLogger(__name__)
@@ -862,14 +695,47 @@ def run_pipeline_from_args(args):
     # Check the arguments
     workdirList=check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
-    sim_plan_table=rp.create_plan(args, retTable=True)
-    batches=create_batches(sim_plan_table,workdirList)
+    sim_plan_table,sim_plan_tablename=rp.create_plan(args, retTable=True)
+    
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
     
     # Create the ISF for this run
     #qualified_isf_filename = rp.create_isf(args, config_filename)
     
+    shear_bias_measurement_listfile = os.path.join(
+        args.workdir,'data','shear_bias_measurement_list.json')
+    
+    # prepare configuration
+    
+    simulation_configs=os.path.join('data','sim_configs.json')
+    logger.info("Preparing configurations")
+    
+    # @FIXME: sim configuration template
+    base_isf = find_file(args.isf, path=args.workdir)
+    # read get 
+    args_to_set={}
+    with open(base_isf, 'r') as fi:
+        # Check each line to see if values we'll overwrite are specified in it,
+        # and only write out lines with other values
+        for line in fi:
+            split_line = line.strip().split('=')
+            # Add any new args here to the list of args we want to set
+            if not (split_line[0] in args_to_set) and len(split_line) > 1:
+                args_to_set[split_line[0]] = split_line[1]
+    
+    if not ('config_template' in args_to_set and 
+            os.path.exists(find_file(args_to_set['config_template']))):
+        raise Exception("configuration template not found") 
+    
+    config_template=find_file(args_to_set['config_template'])
+    she_prepare_configs(sim_plan_tablename,config_template,
+        config_filename,simulation_configs,args.workdir)
+    
+    batches=create_batches(args,simulation_configs,workdirList)
+    
+    logger.info("Running parallel part of pipeline in %s batches and %s threads" 
+                % (len(batches),len(workdirList)))
     for batch in batches:
         # Move data to threads
         #insert_data_to_threads(args,batch,workdirList,sim_table)
@@ -879,6 +745,7 @@ def run_pipeline_from_args(args):
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
         prodThreads=[]
+        
         for threadNo in range(batch.nThreads):
             workdir = workdirList[threadNo]
             # logdir?
@@ -886,17 +753,16 @@ def run_pipeline_from_args(args):
             # Create the ISF for this run
             # @TODO:  do we need multiple versions of this, one for each thread
             
-            # Modify...
-            
-            simulate_measure_inputs = create_simulate_measure_inputs(args, config_filename,
-                workdir,sim_plan_table,simulation_no)
-            # @TODO: Do we want serverurl? isf and serverurl
+            # @FIXME: Don't really need ISF - that is for the pipeline runner..
+            simulate_measure_inputs = create_simulate_measure_inputs(args, 
+                config_filename,workdir,simulation_configs,simulation_no)
             
             
             #simulation_config =
             #bfd_training...
             
-           
+            # @TODO: Is it better to run each process separately?
+            
             prodThreads.append(multiprocessing.Process(target=she_simulate_and_measure_bias_statistics,
                 args=(simulate_measure_inputs.simulation_config,
                       simulate_measure_inputs.bfd_training_data,
@@ -905,47 +771,240 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
                       simulate_measure_inputs.pipeline_config,
-                      workdir.workdir)))
+                      workdir.workdir,simulation_no)))
         
         if prodThreads:
-            runThreads(prodThreads,logger)
+            runThreads(prodThreads)
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        mergeOutputs(workdirList,batch)
+        mergeOutputs(workdirList,batch,shear_bias_measurement_listfile)
         # Clean up 
         logger.info("Cleaning up batch files..")   
-        cleanup(batch)
-    # Final merge?
+        cleanup(batch,workdirList)
+    
+
+    # Run final process
+    shear_bias_measurement_final=os.path.join(args.workdir,'data','shear_bias_measurements_final.xml')
+    
+    logger.info("Running final she_measure_bias to calculate "
+        "final shear: output in %s" % shear_bias_measurement_final)
+    she_measure_bias(shear_bias_measurement_listfile,config_filename,
+        shear_bias_measurement_final,args.workdir)
+    logger.info("Parallel pipeline completed!")
+    
     
     return
 
 
-def mergeOutputs(workdirInfo,batch):
-    """ Merge outputs from different threads
+def mergeOutputs(workdirList,batch,
+        shear_bias_measurement_listfile):
+    """ Merge outputs from different threads at the end of each 
+    batch. Updates .json file
     
     
     """
-    pass
+    
+    newList=[]
+    for workdir in workdirList:
+        thread_no = int(workdir.workdir.split('thread')[1].split('/')[0])
+        if thread_no<batch.nThreads:
+            sim_no=get_sim_no(thread_no,batch)
+            # @TODO: root of this in one place
+            shear_bias_measfile=os.path.join(workdir.workdir,'data',
+                'shear_bias_measurements_sim%s.xml' % sim_no)
+            if os.path.exists(shear_bias_measfile):
+                
+                newList.append(shear_bias_measfile)
+                
+    sbml_list=[]
+    if os.path.exists(shear_bias_measurement_listfile):
+        sbml_list=read_listfile(shear_bias_measurement_listfile)
+    sbml_list.extend(newList)
+    write_listfile(shear_bias_measurement_listfile,sbml_list)
+    
+    
+    # What are the main outputs needed for 2nd part?
+    # rename? shear_bias_measurements, 
+    
+    # All the shear_bias_measurements -- collate into .json file
+    
+    return
 
-def cleanup(batch):
+def cleanup(batch,workdirList):
     """
     Remove sim links and batch setup files ready for the next batch.
+    Remove intermediate products...
+    
     
     """
+    # workdir:
+    #*.bin
+    
+    
+    
+    
     pass
 
 
-def runThreads(threads,logger):
+def runThreads(threads):
     """ Executes given list of thread processes.
+    Originally written by Ross Collins for VDFS
+    
     """
      
+    logger = getLogger(__name__)
     try:
         for thread in threads:
             thread.start()
     finally:
         threadFail = False
-        for ii,thread in enumerate(threads):
-            logger.info("...%s" % threadFail)
+        for thread in threads:
             if threadFail:
                 thread.terminate()
                 thread.join()
-   
+            else:
+                thread.join()
+                threadFail = thread.exitcode
+                if threadFail:
+                    logger.info("<ERROR> Thread failed. Terminating all"
+                                      " other running threads.")
+
+        if threadFail:
+            raise Exception("Forked processes failed. Please check stdout.")
+ 
+def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True, cwd=None,
+        env=None, close_fds=True, isVerbose=True, _isIterable=False,
+        ignoreMsgs=None):
+    """
+    Run the given external program. Unless overridden, an exception is thrown
+    on error and the output is logged. Originally written by Ross Collins for VDFS
+
+
+    @param command:      Command string to execute. Use a single string with
+                         all arguments to run in shell, use a list of the
+                         command with arguments as separate elements to not
+                         run in a shell (faster if shell not needed).
+    @type  command:      str or list(str)
+    @param stdIn:        Optionally supply some input for stdin.
+    @type  stdIn:        str
+    @param raiseOnError: If True, if the external process sends anything to
+                         stdErr then an exception is raised and the complete
+                         programme is logged. Otherwise, stdErr is just always
+                         redirected to stdOut.
+    @type  raiseOnError: bool
+    @param parseStdOut:  If True, stdout is captured, not print to screen, and
+                         returned by this function, otherwise stdout is left
+                         alone and will be sent to terminal as normal.
+    @type  parseStdOut:  bool
+    @param cwd:          Run the external process with this directory as its
+                         working directory.
+    @type  cwd:          str
+    @param env:          Environment variables for the external process.
+    @type  env:          dict(str:str)
+    @param close_fds:    If True, close all open file-like objects before
+                         executing external process.
+    @type  close_fds:    bool
+    @param isVerbose:    If False, don't log the full command that was
+                         executed, even when Logger is in verbose mode.
+    @type  isVerbose:    bool
+    @param _isIterable:  Return an iterable stdout. NB: Use the L{out()}
+                         function instead of this option.
+    @type  _isIterable:  bool
+    @param ignoreMsgs:   List of strings that if they appear in stderr should
+                         override the raiseOnError if it is set to True.
+    @type  ignoreMsgs:   list(str)
+
+    @return: Messages sent to stdout if parsed, otherwise an iterable file
+             object for stdout if _isIterable, else a return a code.
+    @rtype:  list(str) or file or int
+
+    """
+    logger = getLogger(__name__)
+    cmdStr = (command if isinstance(command, str) else ' '.join(command))
+    if isVerbose:
+        logger.info(cmdStr)
+
+    parseStdOut = parseStdOut or _isIterable
+    parseStdErr = raiseOnError and not _isIterable
+    isMemError = False
+    while True:
+        try:
+            proc = Popen(command, shell=isinstance(command, str),
+                         stdin=(PIPE if stdIn else None),
+                         stdout=(PIPE if parseStdOut else None),
+                         stderr=(PIPE if parseStdErr else STDOUT),
+                         close_fds=close_fds, cwd=cwd, env=env)
+        except OSError as error:
+            if "[Errno 12] Cannot allocate memory" not in str(error):
+                raise
+            if not isMemError:
+                logger.info("Memory allocation problem; delaying...")
+                isMemError = True
+                close_fds = True
+            time.sleep(60)
+        else:
+            if isMemError:
+                Logger.addMessage("Problem fixed; continuing...")
+            break
+
+    if stdIn:
+        proc.stdin.write(stdIn + '\n')
+        proc.stdin.flush()
+
+    if _isIterable:
+        return proc.stdout
+
+    stdOut = []
+    stdErr = []
+    try:
+        if parseStdOut:
+            # Calling readlines() instead of iterating through stdout ensures
+            # that KeyboardInterrupts are handled correctly.
+            stdOut = [line.strip() for line in proc.stdout.readlines()]
+        if raiseOnError:
+            stdErr = [line.strip() for line in proc.stderr]
+
+        if not parseStdOut and not raiseOnError:
+            return proc.wait()
+#    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
+#        with utils.noInterrupt():
+#            Logger.addMessage("KeyboardInterrupt - %s interrupted, "
+#              "waiting for process to end cleanly..." %
+#              os.path.basename(command.split()[0]))
+#            if parseStdOut:
+#                print(''.join(proc.stdout))
+#            if parseStdErr:
+#                print(''.join(proc.stderr))
+#            proc.wait()
+#        raise
+    except IOError as error:
+        # Sometimes a KeyboardInterrupt is translated into an IOError - I think
+        # this may just be due to a bug in PyFITS messing with signals, as only
+        # seems to happen when the PyFITS ignoring KeyboardInterrupt occurs.
+        if "Interrupted system call" in str(error):
+            raise KeyboardInterrupt
+        raise
+
+    # If the stdErr messages are benign then ignore them
+    if stdErr and ignoreMsgs:
+        for stdErrStr in stdErr[:]:
+            if any(msg in stdErrStr for msg in ignoreMsgs):
+                stdErr.remove(stdErrStr)
+
+    if stdErr:
+        if raiseOnError and (not isVerbose):
+            logger.info(cmdStr)
+
+        for line in stdOut:
+            logger.info(line)
+
+        for line in stdErr:
+            logger.info('# ' + str(line))
+
+        if raiseOnError:
+            cmd = cmdStr.split(';')[-1].split()[0]
+            if cmd == "python":
+                cmd = ' '.join(cmdStr.split()[:2])
+
+            raise Exception(cmd + " failed", stdErr)
+
+    return stdOut  
