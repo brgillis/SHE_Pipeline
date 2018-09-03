@@ -26,7 +26,7 @@ from euclidwf.framework.workflow_dsl import pipeline
 @pipeline(outputs=('pipeline_output',))
 def controlled_shear_bias_measurement(pickled_args):
 
-    shear_bias_measurements = she_run_bias_pipeline(pickled_args=pickled_args)
+    shear_bias_measurements = she_run_controlled_bias_pipeline(pickled_args=pickled_args)
 
     return shear_bias_measurements
 
