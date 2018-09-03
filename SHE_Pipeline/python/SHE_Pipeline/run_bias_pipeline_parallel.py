@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,28 +20,28 @@ __updated__ = "2018-08-16"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
-import math
-import time
-import numpy
-import multiprocessing
 from collections import namedtuple
-from astropy.table import Table
-from astropy.io import fits
-import subprocess as sbp
-from   subprocess import Popen, PIPE, STDOUT
+import math
+import multiprocessing
+import os
+from subprocess import Popen, PIPE, STDOUT
+import time
 
+from astropy.io import fits
+from astropy.table import Table
+import numpy
+
+import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
+from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
+from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
+import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
+import SHE_GST_cIceBRGpy
 from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, 
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
-import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
-from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
-import SHE_GST_cIceBRGpy
-from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
-import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
-
+import subprocess as sbp
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -255,7 +255,7 @@ def check_args(args):
     #else:
     #    workdirs = (args.workdir), args.app_workdir,)
 
-    if args.number_threads is None:
+    if args.number_threads == 0:
         args.number_threads = str(multiprocessing.cpu_count()-1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
@@ -263,7 +263,7 @@ def check_args(args):
     # @TODO: Be careful, workdir and app_workdir...
     # make sure number threads is valid 
     # @FIXME: Check this...
-    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()-1))
+    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()))
     
     dirStruct = create_thread_dir_struct(args,workdirs,int(nThreads))
     
@@ -691,6 +691,11 @@ def run_pipeline_from_args(args):
     """
 
     logger = getLogger(__name__)
+    
+    # Check for pickled arguments, and override if found
+    if args.pickled_args is not None:
+        qualified_pickled_args_filename = find_file(args.pickled_args,args.workdir)
+        args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     workdirList=check_args(args) # add argument there..
