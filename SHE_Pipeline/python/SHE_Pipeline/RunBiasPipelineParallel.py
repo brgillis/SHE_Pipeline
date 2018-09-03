@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,9 +22,8 @@ __updated__ = "2018-08-16"
 
 import argparse
 
-from SHE_PPT.utility import get_arguments_string
-
 from ElementsKernel.Logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 from SHE_Pipeline.run_bias_pipeline_parallel import run_pipeline_from_args
 
 
@@ -64,7 +63,6 @@ def defineSpecificProgramOptions():
     
 
     # Input arguments for the bias measurement pipeline
-    # @TODO: Should this include nthreads?
     parser.add_argument('--plan_args', type=str, nargs='*',
                         help='Arguments to write to simulation plan (must be in pairs of key value)')
 
@@ -72,6 +70,10 @@ def defineSpecificProgramOptions():
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
+    
+    # Output arguments for the bias measurement pipeline
+    parser.add_argument('--shear_bias_measurements', type=str, default='shear_bias_measurements.xml',
+                        help='Desired filename of the final output bias measurements')
 
     logger.debug('# Exiting SHE_Pipeline_Run defineSpecificProgramOptions()')
 
