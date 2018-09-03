@@ -38,7 +38,8 @@ import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile)
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
 from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
 import subprocess as sbp
@@ -49,11 +50,6 @@ default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
-
-
-ERun_CTE = "E-Run SHE_CTE 0.5 "
-ERun_GST = "E-Run SHE_GST 1.5 "
-ERun_MER = "E-Run SHE_MER 0.1 "
 
 
 def she_prepare_configs(simulation_plan,config_template,
@@ -69,12 +65,6 @@ def she_prepare_configs(simulation_plan,config_template,
             template_filename=config_template,
             listfile_filename=simulation_configs,
             workdir=workdir)
-    
-    #cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
-    #        "--config_template %s --pipeline_config %s --simulation_configs %s "
-    #        "--workdir %s"
-    #        % (simulation_plan,config_template,
-    #    pipeline_config,simulation_configs,workdir))
     
     return
 
