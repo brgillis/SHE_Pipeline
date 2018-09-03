@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-23"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -537,7 +537,8 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
 
     return
 
-def create_pickled_args(args):
+def create_pickled_args(args,
+                        controlled_run=False):
     """Function to create pickled args for when calling a meta pipeline.
     """
     
@@ -549,8 +550,11 @@ def create_pickled_args(args):
     local_args.serverurl = args.local_serverurl
     local_args.isf = args.local_isf
     local_args.config = args.local_config
-    local_args.wait = not args.no_local_wait
-    local_args.pipeline = args.pipeline.replace("meta_","")
+    
+    if not controlled_run:
+        local_args.wait = not args.no_local_wait
+        local_args.pipeline = args.pipeline.replace("meta_","")
+        
     
     pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
                                                               extension=".bin", release="00.03"))
@@ -575,10 +579,11 @@ def run_pipeline_from_args(args):
     
     # Are we doing a meta run?
     meta_run = args.pipeline[0:4]=="meta"
-    if meta_run:
+    controlled_run = args.pipeline[0:10]=="controlled"
+    if meta_run or controlled_run:
         config_filename = None
         
-        pickled_args_filename = create_pickled_args(args)
+        pickled_args_filename = create_pickled_args(args,controlled_run=controlled_run)
     else:
 
         # If necessary, update the simulation plan
