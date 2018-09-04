@@ -38,9 +38,6 @@ from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
-import SHE_GST_cIceBRGpy
-from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
-import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
 
 
 
