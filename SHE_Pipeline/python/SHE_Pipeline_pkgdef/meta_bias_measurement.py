@@ -1,11 +1,11 @@
-""" @file __init__.py
+""" @file meta_bias_measurement.py
 
-    Created 6 July 2018
+    Created 23 August 2018
 
-    Generic __init__.py
+    Pipeline script for the shear bias measurement pipeline.
 """
 
-__updated__ = "2018-07-06"
+__updated__ = "2018-08-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -19,3 +19,20 @@ __updated__ = "2018-07-06"
 #
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+from SHE_Pipeline_pkgdef.package_definition import she_run_bias_pipeline
+from euclidwf.framework.workflow_dsl import pipeline
+
+@pipeline(outputs=('pipeline_output',))
+def meta_shear_bias_measurement(pickled_args):
+
+    pipeline_output = she_run_bias_pipeline(pickled_args=pickled_args)
+
+    return pipeline_output
+
+
+if __name__ == '__main__':
+    from euclidwf.framework.graph_builder import build_graph
+    from euclidwf.utilities import visualizer
+    pydron_graph = build_graph(meta_shear_bias_measurement)
+    visualizer.visualize_graph(pydron_graph)

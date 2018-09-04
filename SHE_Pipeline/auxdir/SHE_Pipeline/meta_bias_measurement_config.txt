@@ -1,4 +1,4 @@
-SHE_CTE_CleanupBiasMeasurement_cleanup = False
+SHE_CTE_CleanupBiasMeasurement_cleanup = True
 
 SHE_CTE_EstimateShear_methods = BFD KSB LensMC MomentsML REGAUSS
 

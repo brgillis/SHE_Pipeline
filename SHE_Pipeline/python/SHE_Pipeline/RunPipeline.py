@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,9 +22,8 @@ __updated__ = "2018-08-16"
 
 import argparse
 
-from SHE_PPT.utility import get_arguments_string
-
 from ElementsKernel.Logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
 
@@ -59,6 +58,12 @@ def defineSpecificProgramOptions():
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
+    parser.add_argument('--wait', action='store_true',
+                        help='If set, will wait to complete until the pipeline has finished executing.')
+    parser.add_argument('--max_wait', type=float, default=7200,
+                        help='Maximum time to wait to finish execution, in seconds')
+    parser.add_argument('--poll_interval', type=float, default=30,
+                        help='Time to wait between polls for completion, in seconds')
 
     parser.add_argument('--app_workdir', type=str,
                         help="Application work directory. This is the work directory specified in the application " +
@@ -67,6 +72,32 @@ def defineSpecificProgramOptions():
     # Input arguments for the bias measurement pipeline
     parser.add_argument('--plan_args', type=str, nargs='*',
                         help='Arguments to write to simulation plan (must be in pairs of key value)')
+    
+    # Input arguments for when calling a meta or controlled pipeline
+    parser.add_argument('--local_workdir', type=str, default=None,
+                        help="Work directory to be used by the pipeline this calls")
+    parser.add_argument('--local_serverurl', type=str, default="http://localhost:50000",
+                        help="Server URL for the local pipeline")
+    parser.add_argument('--local_isf', type=str, default=None,
+                        help="ISF for the local pipeline run.")
+    parser.add_argument('--local_config', type=str, default=None,
+                        help="Pipeline config for the local pipeline run.")
+    parser.add_argument('--no_local_wait', action='store_true',
+                        help="Disable waiting for local pipeline run.")
+
+    parser.add_argument('--number_threads',type=str, default=0,
+                        help="Number of threads to use. This might be curtailed if > number available. " +
+                        "0 (default) will result in using all but one available cpu.")
+    
+    # Input arguments for when called by a meta pipeline
+    parser.add_argument('--pickled_args', type=str, default=None,
+                        help="Pickled file of arguments for this task. If supplied, will override all other arguments.")
+    parser.add_argument('--parent_workdir', type=str, default=None,
+                        help="Work directory of the parent pipeline.")
+    
+    # Output arguments for when called by a meta pipeline
+    parser.add_argument('--pipeline_output', type=str, default=None,
+                        help="Desired filename of output from pipeline")
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
@@ -93,7 +124,7 @@ def mainMethod(args):
     logger.debug('#')
 
     exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Run",
-                                    store_true=["profile", "debug", "cluster"])
+                                    store_true=["profile", "debug", "cluster", "wait", "no_local_wait"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
