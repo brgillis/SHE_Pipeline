@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2018-08-23"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -119,3 +119,7 @@ she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
                                    inputs=[Input("pickled_args")],
                                    outputs=[Output("pipeline_output", mime_type="xml")],
                                    resources=ComputingResources(cores=0,ram=0.1,walltime=1.0))
+
+she_run_controlled_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasParallel",
+                                   inputs=[Input("pickled_args")],
+                                   outputs=[Output("shear_bias_measurements", mime_type="xml")])
