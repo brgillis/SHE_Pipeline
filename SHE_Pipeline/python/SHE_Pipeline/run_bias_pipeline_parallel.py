@@ -173,6 +173,16 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     external_process_run(cmd, raiseOnError=False)
     return
 
+def she_print_bias(workdir,shear_bias_measurement_final):
+    """ Runs the SHE_CTE_PrintBias on the final shear bias measurements
+    file
+    """
+        
+    cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
+         "--shear_bias_measurements %s" % (workdir,
+                shear_bias_measurement_final)) 
+    external_process_run(cmd)
+    return
 
 def check_args(args):
     """Checks arguments for validity and fixes if possible.
@@ -798,8 +808,11 @@ def run_pipeline_from_args(args):
         "final shear: output in %s" % shear_bias_measurement_final)
     she_measure_bias(shear_bias_measurement_listfile,config_filename,
         shear_bias_measurement_final,args.workdir)
-    logger.info("Parallel pipeline completed!")
-    
+    logger.info("Pipeline completed!")
+    # Add test?
+    logger.info("Running SHE_CTE PrintBias to calculate bias values")
+    she_print_bias(args.workdir,shear_bias_measurement_final)
+    logger.info("Tests completed!")
     
     return
 
