@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,9 +22,8 @@ __updated__ = "2018-08-16"
 
 import argparse
 
-from SHE_PPT.utility import get_arguments_string
-
 from ElementsKernel.Logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 from SHE_Pipeline.run_bias_pipeline_parallel import run_pipeline_from_args
 
 
@@ -61,17 +60,26 @@ def defineSpecificProgramOptions():
                         help="Application work directory. This is the work directory specified in the application " +
                         "configuration file provided to the pipeline server.")
 
-    
-
     # Input arguments for the bias measurement pipeline
-    # @TODO: Should this include nthreads?
     parser.add_argument('--plan_args', type=str, nargs='*',
                         help='Arguments to write to simulation plan (must be in pairs of key value)')
 
-    parser.add_argument('--number_threads',type=str, help="Number of threads to use. This might be curtailed if > number available")
+    parser.add_argument('--number_threads',type=str, default=0,
+                        help="Number of threads to use. This might be curtailed if > number available. " +
+                        "0 (default) will result in using all but one available cpu.")
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
+    
+    # Input arguments for when called by a meta pipeline
+    parser.add_argument('--pickled_args', type=str, default=None,
+                        help="Pickled file of arguments for this task. If supplied, will override all other arguments.")
+    parser.add_argument('--parent_workdir', type=str, default=None,
+                        help="Work directory of the parent pipeline.")
+    
+    # Output arguments for the bias measurement pipeline
+    parser.add_argument('--shear_bias_measurements', type=str, default='shear_bias_measurements.xml',
+                        help='Desired filename of the final output bias measurements')
 
     logger.debug('# Exiting SHE_Pipeline_Run defineSpecificProgramOptions()')
 
@@ -94,7 +102,7 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Run",
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_RunBiasParallel",
                                     store_true=["profile", "debug", "cluster"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)

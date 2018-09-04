@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-08-21"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,13 +20,19 @@ __updated__ = "2018-08-21"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
 
-from SHE_PPT import products
-from SHE_PPT.file_io import find_file, find_aux_file, get_allowed_filename, read_xml_product
-from SHE_PPT.logging import getLogger
+import ast
+from copy import deepcopy
+import os
+from shutil import copyfile
+from time import sleep
+
 from astropy.table import Table
 
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
+                             read_pickled_product, write_pickled_product)
+from SHE_PPT.logging import getLogger
 import subprocess as sbp
 
 
@@ -47,6 +53,8 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
                      "SHE_CTE_MeasureStatistics_archive_dir",
                      "SHE_CTE_MeasureStatistics_webdav_archive",
                      "SHE_CTE_MeasureStatistics_webdav_dir",)
+
+known_output_filenames = {"bias_measurement":"she_measure_bias/shear_bias_measurements.xml"}
 
 
 def get_pipeline_dir():
@@ -131,6 +139,14 @@ def check_args(args):
         else:
             args.app_workdir = default_workdir
         logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
+
+    # Use the default local_workdir if necessary
+    if args.local_workdir is None:
+        if args.cluster:
+            args.local_workdir = default_cluster_workdir
+        else:
+            args.local_workdir = default_workdir
+        logger.info('No local_workdir supplied at command-line. Using default local_workdir: ' + args.local_workdir)
 
     # Use the default logdir if necessary
     if args.logdir is None:
@@ -323,7 +339,8 @@ def create_config(args):
 
 
 def create_isf(args,
-               config_filename):
+               config_filename,
+               pickled_args_filename):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -342,7 +359,10 @@ def create_isf(args,
     args_to_set["logdir"] = args.logdir
     args_to_set["pkgRepository"] = get_pipeline_dir()
     args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef")
-    args_to_set["pipeline_config"] = config_filename
+    if config_filename is not None:
+        args_to_set["pipeline_config"] = config_filename
+    if pickled_args_filename is not None:
+        args_to_set["pickled_args"] = pickled_args_filename
 
     arg_i = 0
     while arg_i < len(args.isf_args):
@@ -454,49 +474,145 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline, isf, serverurl):
+def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_interval):
     """Sets up and calls a command to execute the pipeline.
     """
 
     logger = getLogger(__name__)
+    
+    # If we're waiting, we'll need to store the output in a temporary file
+    if wait:
+        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.03")
+        qualified_output_filename = os.path.join(workdir,output_filename)
+        output_tail = " > " + qualified_output_filename
+    else:
+        output_tail = ""
 
-    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"')
+    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"'
+           + output_tail)
     logger.info("Calling pipeline with command: '" + cmd + "'")
     sbp.call(cmd, shell=True)
+    
+    # If we're waiting, print the output for records, then poll for when it's finished
+    if wait:
+        cmd = "cat " + qualified_output_filename
+        sbp.call(cmd, shell=True)
+        
+        # Get the run ID
+        ex_head = "Run submitted to server with id "
+        with open(qualified_output_filename,'r') as fo:
+            run_id = None
+            for line in fo:
+                if ex_head in line:
+                    run_id = line.replace(ex_head,"").strip()[0:-1]
+                    break
+            if run_id is None:
+                raise RuntimeError("Cannot determine runid from output in " + qualified_output_filename)
+            else:
+                logger.info("Run id is '" + run_id + "'")
+        
+        # Periodically poll for the status
+        
+        time_elapsed = 0
+        while time_elapsed < max_wait:
+            sleep(poll_interval)
+            time_elapsed += poll_interval
+            
+            cmd = 'curl -H "Accept: application/json" "'+serverurl+'/runs/'+run_id+'/status"'
+            logger.debug('Polling with command: ' + cmd)
+            status_line=sbp.run(cmd,shell=True,stdout=sbp.PIPE).stdout.decode('utf-8')
+            logger.debug("Full status is: " + status_line)
+            state = ast.literal_eval(status_line)["executionStatus"]
+            if state=="COMPLETED":
+                logger.info("Pipeline execution completed.")
+                break
+            elif state=="ERROR":
+                logger.error("Pipeline ended in error")
+                break
+            else:
+                logger.debug("Pipeline in state: " + state)
+                
+        if time_elapsed >= max_wait:
+            logger.error("Pipeline timed out.")
 
     return
 
+def create_pickled_args(args,
+                        controlled_run=False):
+    """Function to create pickled args for when calling a meta pipeline.
+    """
+    
+    local_args = deepcopy(args)
+    
+    # Set up the args we'll want for the local run
+    local_args.workdir = args.local_workdir
+    local_args.parent_workdir = args.workdir
+    local_args.serverurl = args.local_serverurl
+    local_args.isf = args.local_isf
+    local_args.config = args.local_config
+    
+    if not controlled_run:
+        local_args.wait = not args.no_local_wait
+        local_args.pipeline = args.pipeline.replace("meta_","")
+        
+    
+    pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
+                                                              extension=".bin", release="00.03"))
+    
+    write_pickled_product(local_args, pickled_args_filename)
+    
+    return pickled_args_filename
 
 def run_pipeline_from_args(args):
     """Main executable to run pipelines.
     """
 
     logger = getLogger(__name__)
+    
+    # Check for pickled arguments, and override if found
+    if args.pickled_args is not None:
+        qualified_pickled_args_filename = find_file(args.pickled_args,args.workdir)
+        args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     check_args(args)
+    
+    # Are we doing a meta run?
+    meta_run = args.pipeline[0:4]=="meta"
+    controlled_run = args.pipeline[0:10]=="controlled"
+    if meta_run or controlled_run:
+        config_filename = None
+        
+        pickled_args_filename = create_pickled_args(args,controlled_run=controlled_run)
+    else:
 
-    # If necessary, update the simulation plan
-    if len(args.plan_args) > 0:
-        create_plan(args)
-
-    # Create the pipeline_config for this run
-    config_filename = create_config(args)
+        # If necessary, update the simulation plan
+        if len(args.plan_args) > 0:
+            create_plan(args)
+    
+        # Create the pipeline_config for this run
+        config_filename = create_config(args)
+        
+        pickled_args_filename = None
 
     # Create the ISF for this run
-    qualified_isf_filename = create_isf(args, config_filename)
+    qualified_isf_filename = create_isf(args, config_filename, pickled_args_filename)
 
     # Try to call the pipeline
     try:
         execute_pipeline(pipeline=args.pipeline,
                          isf=qualified_isf_filename,
-                         serverurl=args.serverurl)
+                         serverurl=args.serverurl,
+                         workdir=args.workdir,
+                         wait=args.wait,
+                         max_wait=args.max_wait,
+                         poll_interval=args.poll_interval)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:
             os.remove(new_isf_filename)
-        except Exception:
-            pass
-        raise e
+        except Exception as e:
+            logger.warn("Failsafe exception block triggered with exception: " + str(e))
+        raise
 
     return

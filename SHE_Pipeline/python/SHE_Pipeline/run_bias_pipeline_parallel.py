@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-08-16"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,26 +20,28 @@ __updated__ = "2018-08-16"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
-import math
-import time
-import numpy
-import multiprocessing
 from collections import namedtuple
-from astropy.table import Table
-from astropy.io import fits
-import subprocess as sbp
-from   subprocess import Popen, PIPE, STDOUT
+import math
+import multiprocessing
+import os
+from subprocess import Popen, PIPE, STDOUT
+import time
 
+from astropy.io import fits
+from astropy.table import Table
+import numpy
+
+import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
+from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
+from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
+import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
+import SHE_GST_cIceBRGpy
 from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, 
-                             read_xml_product, read_listfile, write_listfile)
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
 from SHE_PPT.logging import getLogger
 import SHE_Pipeline.run_pipeline as rp
-import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
-from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
-
-
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -47,11 +49,10 @@ default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
 
-
 ERun_CTE = "E-Run SHE_CTE 0.5 "
 ERun_GST = "E-Run SHE_GST 1.5 "
 ERun_MER = "E-Run SHE_MER 0.1 "
-
+ERun_Pipeline = "E-Run SHE_Pipeline 0.3 "
 
 def she_prepare_configs(simulation_plan,config_template,
         pipeline_config,simulation_configs,workdir):
@@ -66,12 +67,6 @@ def she_prepare_configs(simulation_plan,config_template,
             template_filename=config_template,
             listfile_filename=simulation_configs,
             workdir=workdir)
-    
-    #cmd = (ERun_GST + "SHE_GST_PrepareConfigs --simulation_plan %s "
-    #        "--config_template %s --pipeline_config %s --simulation_configs %s "
-    #        "--workdir %s"
-    #        % (simulation_plan,config_template,
-    #    pipeline_config,simulation_configs,workdir))
     
     return
 
@@ -176,6 +171,16 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     external_process_run(cmd, raiseOnError=False)
     return
 
+def she_print_bias(workdir,shear_bias_measurement_final):
+    """ Runs the SHE_CTE_PrintBias on the final shear bias measurements
+    file
+    """
+        
+    cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
+         "--shear_bias_measurements %s" % (workdir,
+                shear_bias_measurement_final)) 
+    external_process_run(cmd)
+    return
 
 def check_args(args):
     """Checks arguments for validity and fixes if possible.
@@ -252,7 +257,7 @@ def check_args(args):
     #else:
     #    workdirs = (args.workdir), args.app_workdir,)
 
-    if args.number_threads is None:
+    if args.number_threads == 0:
         args.number_threads = str(multiprocessing.cpu_count()-1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
@@ -260,7 +265,7 @@ def check_args(args):
     # @TODO: Be careful, workdir and app_workdir...
     # make sure number threads is valid 
     # @FIXME: Check this...
-    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()-1))
+    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()))
     
     dirStruct = create_thread_dir_struct(args,workdirs,int(nThreads))
     
@@ -697,6 +702,11 @@ def run_pipeline_from_args(args):
     """
 
     logger = getLogger(__name__)
+    
+    # Check for pickled arguments, and override if found
+    if args.pickled_args is not None:
+        qualified_pickled_args_filename = find_file(args.pickled_args,args.workdir)
+        args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     workdirList=check_args(args) # add argument there..
@@ -796,8 +806,11 @@ def run_pipeline_from_args(args):
         "final shear: output in %s" % shear_bias_measurement_final)
     she_measure_bias(shear_bias_measurement_listfile,config_filename,
         shear_bias_measurement_final,args.workdir)
-    logger.info("Parallel pipeline completed!")
-    
+    logger.info("Pipeline completed!")
+    # Add test?
+    logger.info("Running SHE_CTE PrintBias to calculate bias values")
+    she_print_bias(args.workdir,shear_bias_measurement_final)
+    logger.info("Tests completed!")
     
     return
 
