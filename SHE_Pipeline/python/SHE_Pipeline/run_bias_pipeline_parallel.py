@@ -493,6 +493,13 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list
         for arg in args_to_set:
             fo.write(arg + "=" + args_to_set[arg] + "\n")
 
+    # Symlink to *.bin files...
+    binaryConfigFiles = [fName for fName in os.listdir(args.workdir) 
+                         if fName.endswith('bin')]
+    for binConfFile in binaryConfigFiles:
+        newConfFileName=os.path.join(workdir.workdir,binConfFile)
+        if not os.path.exists(newConfFileName):
+            os.symlink(os.path.join(args.workdir,binConfFile),newConfFileName)
     return simulateInputs
 
 
@@ -632,7 +639,9 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         stacked_data_image,psf_images_and_tables,segmentation_images,
         stacked_segmentation_image,detections_tables,details_table,workdir) 
     
-
+    
+    
+    
     shear_estimates_product = os.path.join('data','shear_estimates_product.xml')
     
     she_estimate_shear(data_images=data_image_list,
@@ -757,7 +766,7 @@ def run_pipeline_from_args(args):
             simulate_measure_inputs = create_simulate_measure_inputs(args, 
                 config_filename,workdir,simulation_configs,simulation_no)
             
-            
+        
             #simulation_config =
             #bfd_training...
             
@@ -775,6 +784,7 @@ def run_pipeline_from_args(args):
         
         if prodThreads:
             runThreads(prodThreads)
+            
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
         mergeOutputs(workdirList,batch,shear_bias_measurement_listfile)
         # Clean up 
@@ -837,7 +847,9 @@ def cleanup(batch,workdirList):
     
     """
     # workdir:
-    #*.bin
+    # Each thread - not sim* files... (or there components...)
+    
+    
     
     
     
