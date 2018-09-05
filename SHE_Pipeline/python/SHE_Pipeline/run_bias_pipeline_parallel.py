@@ -105,14 +105,35 @@ def she_estimate_shear(data_images,stacked_image,
     shear_estimates_product,workdir,logdir):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
+    
+    @todo: use defined options for which Methods to use...
     """
     
+    
+    # Check to see if training data exists.
+    # @TODO: Simplify, avoid repetitions
+    shear_method_arg_string=""
+    if bfd_training_data and bfd_training_data!='None':
+        shear_method_arg_string+=" --bfd_training_data %s" % get_relpath(
+            bfd_training_data,workdir)
+    if ksb_training_data and ksb_training_data!='None':
+        shear_method_arg_string+=" --ksb_training_data %s" % get_relpath(
+            ksb_training_data,workdir)
+    #if lensmc_training_data and lensmc_training_data!='None':
+    #    shear_method_arg_string+=" --lensmc_training_data %s" % get_relpath(
+    #        lensmc_training_data,workdir)
+    if momentsml_training_data and momentsml_training_data!='None':
+        shear_method_arg_string+=" --momentsml_training_data %s" % get_relpath(
+            momentsml_training_data,workdir)
+    if regauss_training_data and regauss_training_data!='None':
+        shear_method_arg_string+=" --regauss_training_data %s" % get_relpath(
+            regauss_training_data,workdir)
+        
+        
     cmd=(ERun_CTE + "SHE_CTE_EstimateShear --data_images %s "
         "--stacked_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
-        "--detections_tables %s --bfd_training_data %s --ksb_training_data %s "
-        "--lensmc_training_data %s --momentsml_training_data %s "
-        "--regauss_training_data %s --pipeline_config %s "
+        "--detections_tables %s%s --pipeline_config %s "
         "--shear_estimates_product %s --workdir %s --logdir %s" %
         (get_relpath(data_images,workdir),
          get_relpath(stacked_image,workdir),
@@ -120,15 +141,11 @@ def she_estimate_shear(data_images,stacked_image,
          get_relpath(segmentation_images,workdir), 
          get_relpath(stacked_segmentation_image,workdir), 
          get_relpath(detections_tables,workdir),
-         get_relpath(bfd_training_data,workdir), 
-         get_relpath(ksb_training_data,workdir), 
-         get_relpath(lensmc_training_data,workdir),
-         get_relpath(momentsml_training_data,workdir),
-         get_relpath(regauss_training_data,workdir),
+         shear_method_arg_string,
          get_relpath(pipeline_config,workdir),
          get_relpath(shear_estimates_product,workdir),
          workdir,logdir))
-     
+    
     external_process_run(cmd, raiseOnError=False)
     return
 
@@ -439,13 +456,13 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list
     
     # Inputs for thread
     simulateInputs = InputsTuple(*[
-        os.path.join(workdir.workdir,args_to_set['simulation_config']),
-        os.path.join(workdir.workdir,args_to_set['bfd_training_data']),
-        os.path.join(workdir.workdir,args_to_set['ksb_training_data']),
-        os.path.join(workdir.workdir,args_to_set['lensmc_training_data']),
-        os.path.join(workdir.workdir,args_to_set['momentsml_training_data']),
-        os.path.join(workdir.workdir,args_to_set['regauss_training_data']),
-        os.path.join(workdir.workdir,args_to_set['pipeline_config'])])
+        args_to_set['simulation_config'],
+        args_to_set['bfd_training_data'],
+        args_to_set['ksb_training_data'],
+        args_to_set['lensmc_training_data'],
+        args_to_set['momentsml_training_data'],
+        args_to_set['regauss_training_data'],
+        args_to_set['pipeline_config']])
     
     
     for input_port_name in args_to_set:
@@ -865,9 +882,9 @@ def run_pipeline_from_args(args):
         shear_bias_measurement_final,args.workdir)
     logger.info("Pipeline completed!")
     # Add test?
-    #logger.info("Running SHE_CTE PrintBias to calculate bias values")
-    #she_print_bias(args.workdir,shear_bias_measurement_final)
-    #logger.info("Tests completed!")
+    logger.info("Running SHE_CTE PrintBias to calculate bias values")
+    she_print_bias(args.workdir,shear_bias_measurement_final)
+    logger.info("Tests completed!")
     
     return
 
