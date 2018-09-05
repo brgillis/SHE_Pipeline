@@ -59,7 +59,7 @@ def defineSpecificProgramOptions():
     parser.add_argument('--app_workdir', type=str,
                         help="Application work directory. This is the work directory specified in the application " +
                         "configuration file provided to the pipeline server.")
-
+    
     # Input arguments for the bias measurement pipeline
     parser.add_argument('--plan_args', type=str, nargs='*',
                         help='Arguments to write to simulation plan (must be in pairs of key value)')
@@ -81,6 +81,7 @@ def defineSpecificProgramOptions():
     parser.add_argument('--shear_bias_measurements', type=str, default='shear_bias_measurements.xml',
                         help='Desired filename of the final output bias measurements')
 
+    
     logger.debug('# Exiting SHE_Pipeline_Run defineSpecificProgramOptions()')
 
     return parser

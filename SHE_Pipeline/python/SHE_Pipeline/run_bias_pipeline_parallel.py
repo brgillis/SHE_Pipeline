@@ -63,9 +63,9 @@ def she_prepare_configs(simulation_plan,config_template,
     """
     
     gst_prep_conf.write_configs_from_plan(
-        plan_filename=simulation_plan,
-            template_filename=config_template,
-            listfile_filename=simulation_configs,
+        plan_filename=get_relpath(simulation_plan,workdir),
+            template_filename=get_relpath(config_template,workdir),
+            listfile_filename=get_relpath(simulation_configs,workdir),
             workdir=workdir)
     
     return
@@ -73,7 +73,7 @@ def she_prepare_configs(simulation_plan,config_template,
 def she_simulate_images(config_files,pipeline_config,data_images,
     stacked_data_image, psf_images_and_tables,segmentation_images,
     stacked_segmentation_image,detections_tables,details_table,
-    workdir):
+    workdir,logdir):
     """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
     catalogues etc.
     """
@@ -81,11 +81,17 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s --workdir %s" 
-        % (config_files,pipeline_config,data_images,
-        stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table,
-        workdir))
+        "--details_table %s --workdir %s --logdir %s" 
+        % (get_relpath(config_files,workdir),
+           get_relpath(pipeline_config,workdir),
+           get_relpath(data_images,workdir),
+           get_relpath(stacked_data_image,workdir),
+           get_relpath(psf_images_and_tables,workdir),
+           get_relpath(segmentation_images,workdir),
+           get_relpath(stacked_segmentation_image,workdir),
+           get_relpath(detections_tables,workdir),
+           get_relpath(details_table,workdir),
+        workdir,logdir))
     
     external_process_run(cmd, raiseOnError=False)
     return
@@ -96,7 +102,7 @@ def she_estimate_shear(data_images,stacked_image,
     bfd_training_data, ksb_training_data,
     lensmc_training_data,momentsml_training_data,
     regauss_training_data, pipeline_config,
-    shear_estimates_product,workdir):
+    shear_estimates_product,workdir,logdir):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
     """
@@ -107,27 +113,39 @@ def she_estimate_shear(data_images,stacked_image,
         "--detections_tables %s --bfd_training_data %s --ksb_training_data %s "
         "--lensmc_training_data %s --momentsml_training_data %s "
         "--regauss_training_data %s --pipeline_config %s "
-        "--shear_estimates_product %s --workdir %s" %
-        (data_images,stacked_image,psf_images_and_tables,
-         segmentation_images,   stacked_segmentation_image, detections_tables,
-         bfd_training_data, ksb_training_data, lensmc_training_data,
-         momentsml_training_data,regauss_training_data,pipeline_config,
-         shear_estimates_product,workdir))
+        "--shear_estimates_product %s --workdir %s --logdir %s" %
+        (get_relpath(data_images,workdir),
+         get_relpath(stacked_image,workdir),
+         get_relpath(psf_images_and_tables,workdir),
+         get_relpath(segmentation_images,workdir), 
+         get_relpath(stacked_segmentation_image,workdir), 
+         get_relpath(detections_tables,workdir),
+         get_relpath(bfd_training_data,workdir), 
+         get_relpath(ksb_training_data,workdir), 
+         get_relpath(lensmc_training_data,workdir),
+         get_relpath(momentsml_training_data,workdir),
+         get_relpath(regauss_training_data,workdir),
+         get_relpath(pipeline_config,workdir),
+         get_relpath(shear_estimates_product,workdir),
+         workdir,logdir))
      
     external_process_run(cmd, raiseOnError=False)
     return
 
 def she_measure_statistics(details_table, shear_estimates,
-    pipeline_config,shear_bias_statistics,workdir):
+    pipeline_config,shear_bias_statistics,workdir,logdir):
     """ Runs the SHE_CTE_MeasureStatistics method on shear 
     estimates to get shear bias statistics.
     """
     
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
         "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
-        "--workdir %s"
-        % (details_table, shear_estimates, pipeline_config,shear_bias_statistics,
-           workdir))
+        "--workdir %s --logdir %s"
+        % (get_relpath(details_table,workdir), 
+           get_relpath(shear_estimates,workdir), 
+           get_relpath(pipeline_config,workdir),
+           get_relpath(shear_bias_statistics,workdir),
+           workdir,logdir))
     
     external_process_run(cmd, raiseOnError=False)
     
@@ -137,7 +155,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     stacked_data_image, psf_images_and_tables, segmentation_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements,workdir):
+    shear_bias_measurements,workdir,logdir):
     """ Runs the SHE_CTE_CleanupBiasMeasurement code on shear_bias_statistics.
     Returns shear_bias_measurements
     """
@@ -147,11 +165,19 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s --details_table %s --shear_estimates %s "
         "--shear_bias_statistics_in %s --pipeline_config %s "
-        "--shear_bias_statistics_out %s --workdir %s" % (simulation_config,data_images, 
-        stacked_data_image, psf_images_and_tables, segmentation_images,
-        stacked_segmentation_image, detections_tables, details_table,
-        shear_estimates, shear_bias_statistics_in, pipeline_config,
-        shear_bias_measurements,workdir))
+        "--shear_bias_statistics_out %s --workdir %s --logdir %s" % (
+        get_relpath(simulation_config,workdir),
+        get_relpath(data_images,workdir), 
+        get_relpath(stacked_data_image,workdir), 
+        get_relpath(psf_images_and_tables,workdir), 
+        get_relpath(segmentation_images,workdir),
+        get_relpath(stacked_segmentation_image,workdir), 
+        get_relpath(detections_tables,workdir), 
+        get_relpath(details_table,workdir),
+        get_relpath(shear_estimates,workdir), 
+        get_relpath(shear_bias_statistics_in,workdir), 
+        get_relpath(pipeline_config,workdir),
+        get_relpath(shear_bias_measurements,workdir),workdir,logdir))
     
     external_process_run(cmd, raiseOnError=False)
     return
@@ -165,8 +191,10 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     """
     cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
         "--pipeline_config %s --shear_bias_measurements %s --workdir %s" 
-        % (shear_bias_measurement_list,pipeline_config,
-           shear_bias_measurement_final,workdir))
+        % (get_relpath(shear_bias_measurement_list,workdir),
+           get_relpath(pipeline_config,workdir),
+           get_relpath(shear_bias_measurement_final,workdir),
+           workdir))
     
     external_process_run(cmd, raiseOnError=False)
     return
@@ -178,9 +206,30 @@ def she_print_bias(workdir,shear_bias_measurement_final):
         
     cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
          "--shear_bias_measurements %s" % (workdir,
-                shear_bias_measurement_final)) 
+                get_relpath(shear_bias_measurement_final,workdir))) 
     external_process_run(cmd)
     return
+
+
+def get_relpath(file_path,workdir):
+    """Removes workdir from path if necessary 
+    @todo: should be in file_io?
+    
+    
+    """
+    # If workdir doesn't exist, this will not work
+    if not os.path.exists(workdir):
+        raise Exception("Work directory %s does not exist" 
+                        % workdir)
+    
+    # Don't check to see if the file_path exists: it might
+    # be an output.
+    
+    if not file_path.startswith(workdir):
+        return file_path
+    else:
+        return os.path.relpath(file_path,workdir)
+        
 
 def check_args(args):
     """Checks arguments for validity and fixes if possible.
@@ -258,6 +307,7 @@ def check_args(args):
     #    workdirs = (args.workdir), args.app_workdir,)
 
     if args.number_threads == 0:
+        # @TODO: change to multiprocessing.cpu_count()?
         args.number_threads = str(multiprocessing.cpu_count()-1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
@@ -618,7 +668,7 @@ def create_thread_dir_struct(args,workdirRootList,number_threads):
 def she_simulate_and_measure_bias_statistics(simulation_config,
         bfd_training_data, ksb_training_data,
         lensmc_training_data, momentsml_training_data,
-        regauss_training_data,pipeline_config,workdir,
+        regauss_training_data,pipeline_config,workdirTuple,
         simulation_no):
     """ Parallel processing parts of bias_measurement pipeline
     
@@ -627,7 +677,11 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     # @FIXME: check None types.
     
     logger = getLogger(__name__)
-
+    
+    workdir=workdirTuple.workdir 
+    logdir= 'logdir' #workdirTuple.logdir
+    
+    
      
     data_image_list = os.path.join('data','data_images.json')
     stacked_data_image =  os.path.join('data','stacked_image.xml')
@@ -639,7 +693,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
-        stacked_segmentation_image,detections_tables,details_table,workdir) 
+        stacked_segmentation_image,detections_tables,details_table,
+        workdir,logdir) 
     
     
     
@@ -659,7 +714,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         regauss_training_data=regauss_training_data,
         pipeline_config=pipeline_config,
         shear_estimates_product=shear_estimates_product,
-        workdir=workdir)
+        workdir=workdir, logdir=logdir)
 
 
     shear_bias_statistics = os.path.join('data','shear_bias_statistics.xml')
@@ -668,7 +723,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_estimates=shear_estimates_product,
         pipeline_config=pipeline_config,
         shear_bias_statistics=shear_bias_statistics,
-        workdir=workdir)
+        workdir=workdir, logdir=logdir)
 
     shear_bias_measurements = os.path.join('data',
         'shear_bias_measurements_sim%s.xml' % simulation_no)
@@ -691,7 +746,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_bias_statistics_in=shear_bias_statistics,  
         pipeline_config=pipeline_config,
         shear_bias_measurements=shear_bias_measurements,
-        workdir=workdir)
+        workdir=workdir, logdir=logdir)
             
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")                                                     
 
@@ -725,7 +780,6 @@ def run_pipeline_from_args(args):
     # prepare configuration
     
     simulation_configs=os.path.join('data','sim_configs.json')
-    logger.info("Preparing configurations")
     
     # @FIXME: sim configuration template
     base_isf = find_file(args.isf, path=args.workdir)
@@ -745,8 +799,11 @@ def run_pipeline_from_args(args):
         raise Exception("configuration template not found") 
     
     config_template=find_file(args_to_set['config_template'])
-    she_prepare_configs(sim_plan_tablename,config_template,
-        config_filename,simulation_configs,args.workdir)
+    
+    logger.info("Preparing configurations")
+    she_prepare_configs(sim_plan_tablename,
+        config_template,config_filename,
+        simulation_configs,args.workdir)
     
     batches=create_batches(args,simulation_configs,workdirList)
     
@@ -787,7 +844,7 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
                       simulate_measure_inputs.pipeline_config,
-                      workdir.workdir,simulation_no)))
+                      workdir,simulation_no)))
         
         if prodThreads:
             runThreads(prodThreads)
@@ -808,9 +865,9 @@ def run_pipeline_from_args(args):
         shear_bias_measurement_final,args.workdir)
     logger.info("Pipeline completed!")
     # Add test?
-    logger.info("Running SHE_CTE PrintBias to calculate bias values")
-    she_print_bias(args.workdir,shear_bias_measurement_final)
-    logger.info("Tests completed!")
+    #logger.info("Running SHE_CTE PrintBias to calculate bias values")
+    #she_print_bias(args.workdir,shear_bias_measurement_final)
+    #logger.info("Tests completed!")
     
     return
 
