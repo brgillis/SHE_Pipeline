@@ -55,7 +55,7 @@ ERun_MER = "E-Run SHE_MER 0.1 "
 ERun_Pipeline = "E-Run SHE_Pipeline 0.3 "
 
 def she_prepare_configs(simulation_plan,config_template,
-        pipeline_config,simulation_configs,workdir):
+        simulation_configs,workdir):
     """ Runs SHE_GST Prepare configurations
     Sets up simulations using simulation plan and configuration
     template. 
@@ -107,6 +107,8 @@ def she_estimate_shear(data_images,stacked_image,
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
     
     @todo: use defined options for which Methods to use...
+    # It is in the pipeline config file...
+    # Do checks for consistency (earlier)
     """
     
     
@@ -119,9 +121,9 @@ def she_estimate_shear(data_images,stacked_image,
     if ksb_training_data and ksb_training_data!='None':
         shear_method_arg_string+=" --ksb_training_data %s" % get_relpath(
             ksb_training_data,workdir)
-    #if lensmc_training_data and lensmc_training_data!='None':
-    #    shear_method_arg_string+=" --lensmc_training_data %s" % get_relpath(
-    #        lensmc_training_data,workdir)
+    if lensmc_training_data and lensmc_training_data!='None':
+        shear_method_arg_string+=" --lensmc_training_data %s" % get_relpath(
+            lensmc_training_data,workdir)
     if momentsml_training_data and momentsml_training_data!='None':
         shear_method_arg_string+=" --momentsml_training_data %s" % get_relpath(
             momentsml_training_data,workdir)
@@ -787,7 +789,6 @@ def run_pipeline_from_args(args):
     
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
-    
     # Create the ISF for this run
     #qualified_isf_filename = rp.create_isf(args, config_filename)
     
@@ -819,8 +820,7 @@ def run_pipeline_from_args(args):
     
     logger.info("Preparing configurations")
     she_prepare_configs(sim_plan_tablename,
-        config_template,config_filename,
-        simulation_configs,args.workdir)
+        config_template,simulation_configs,args.workdir)
     
     batches=create_batches(args,simulation_configs,workdirList)
     
