@@ -24,12 +24,16 @@ import logging
 import pytest
 
 
-class TestRunBiasPipelineParallel():
+class TestRunBiasPipelineParallel(object):
     """ Unit tests for functions in run_bias_parallel
     """
+    
+    # Test main functions 
 
-    def test_sample(self):
-        """Sample test
+    def external_process_run1(self):
+        """ This should be 
+        
+        Tests 
         """
 
         assert True
