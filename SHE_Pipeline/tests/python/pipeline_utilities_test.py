@@ -47,7 +47,7 @@ class TestPipelineUtilities():
         pu.external_process_run(cmd)
         if not os.path.exists(fileName):
             assert False
-        lines=open('temp.dat').readlines()
+        lines=open(fileName).readlines()
         assert len(lines)==1 
         assert lines[0].startswith('33')
         pass

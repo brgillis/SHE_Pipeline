@@ -239,6 +239,11 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
            workdir))
     
     pu.external_process_run(cmd, raiseOnError=False)
+    stdOut,stdErr=pu.external_process_run(cmd, 
+        parseStdOut=True,raiseOnError=True)
+    # @TODO: 
+    pu.createLogs(os.path.join(workdir,'logdir'),
+        "she_measure_bias", stdOut,stdErr)
     return
 
 def she_print_bias(workdir,shear_bias_measurement_final):
@@ -249,7 +254,11 @@ def she_print_bias(workdir,shear_bias_measurement_final):
     cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
          "--shear_bias_measurements %s" % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir))) 
-    pu.external_process_run(cmd)
+    stdOut,stdErr=pu.external_process_run(cmd, 
+        parseStdOut=True,raiseOnError=True)
+    # @TODO: 
+    pu.createLogs(os.path.join(workdir,'logdir'),
+        "she_print_bias",stdOut,stdErr)
     return
 
 
@@ -781,11 +790,11 @@ def run_pipeline_from_args(args):
     
     logger.info("Running final she_measure_bias to calculate "
         "final shear: output in %s" % shear_bias_measurement_final)
-    #she_measure_bias(shear_bias_measurement_listfile,config_filename,
-    #    shear_bias_measurement_final,args.workdir)
+    she_measure_bias(shear_bias_measurement_listfile,config_filename,
+        shear_bias_measurement_final,args.workdir)
     logger.info("Pipeline completed!")
-    # Add test?
-    logger.info("Running SHE_CTE PrintBias to calculate bias values")
+    # @TODO: option for print_bias
+    #logger.info("Running SHE_CTE PrintBias to calculate bias values")
     #she_print_bias(args.workdir,shear_bias_measurement_final)
     logger.info("Tests completed!")
     

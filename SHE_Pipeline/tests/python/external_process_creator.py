@@ -27,6 +27,7 @@ from ElementsKernel.Logging import getLogger
 
 def test_funct(args):
     """ test 
+    @todo: warning/info logger...
     """
     
     stdOutOpt=args.standout 
