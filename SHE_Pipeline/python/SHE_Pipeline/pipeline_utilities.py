@@ -242,7 +242,12 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
     @rtype:  list(str) or file or int
 
     """
-    # @FIXME: return both stdout and stderr separately
+    # @FIXME: What is reported as stdErr is often stdOut.
+    # Why?? 
+    # Am I using the wrong PROC/PIPE?
+    # IF WARN / INFO etc --> stdout
+    # IF ERROR / Exception --> srderr 
+    
     
     
     
@@ -256,6 +261,8 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
     isMemError = False
     while True:
         try:
+            # @TODO: Is this the best command.
+            # Why do info go to stderr.
             proc = Popen(command, shell=isinstance(command, str),
                          stdin=(PIPE if stdIn else None),
                          stdout=(PIPE if parseStdOut else None),
@@ -288,9 +295,14 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
             # Calling readlines() instead of iterating through stdout ensures
             # that KeyboardInterrupts are handled correctly.
             stdOut = [line.strip() for line in proc.stdout.readlines()]
-        #if raiseOnError:
-            stdErr = [line.strip() for line in proc.stderr]
-
+            #if raiseOnError:
+            #
+            stdErrInit = [line.strip() for line in proc.stderr.readlines()]
+            stdErr = [line for line in stdErrInit
+                if 'ERROR' in str(line.upper()) or 'EXCEPTION' in str(line.upper())]
+            stdOut += [line for line in stdErrInit
+                if not ('ERROR' in str(line.upper()) or 
+                        'EXCEPTION' in str(line.upper()))]
         if not parseStdOut and not raiseOnError:
             return proc.wait()
 #    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
@@ -320,13 +332,13 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
 
     if stdErr:
         if raiseOnError and (not isVerbose):
-            logger.info(cmdStr)
+            logger.error(cmdStr)
 
         for line in stdOut:
-            logger.info(line)
+            logger.error(line)
 
         for line in stdErr:
-            logger.info('# ' + str(line))
+            logger.error('# ' + str(line))
 
         if raiseOnError:
             cmd = cmdStr.split(';')[-1].split()[0]
@@ -335,4 +347,19 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
 
             raise Exception(cmd + " failed", stdErr)
 
-    return stdOut,stdErr  
+    return stdOut,stdErr 
+
+def createLogs(log_directory,fileName,stdOut,stdErr):
+    """ @fixme: logging not properly working
+    remove this when I get it working
+    """
+    stdOutFileName=os.path.join(log_directory,fileName+".log")
+    stdErrFileName=os.path.join(log_directory,fileName+".err")
+    
+    stdOutLines=[str(line) for line in stdOut]
+    open(stdOutFileName,'w').writelines(stdOutLines)
+    
+    stdOutLines=[str(line) for line in stdErr]
+    open(stdErrFileName,'w').writelines(stdOutLines)
+    
+    return

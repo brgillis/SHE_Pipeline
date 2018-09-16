@@ -97,7 +97,24 @@ class TestPipelineUtilities():
         assert False
         pass
     
-    
+    def test_external_process_run5(self):
+        """ A command with some standard error, 
+        raised on error
+        
+        """
+
+        # Test external process, with no logging..., no stderr
+        cmd="E-Run SHE_Pipeline 0.3 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout both"
+        
+        try:
+            stdOut,stdErr=pu.external_process_run(cmd,raiseOnError=False)
+        except:
+            assert False
+        assert 'Testing stderr' in str(stdErr[-1])
+        assert 'Testing stdout' in str(stdOut[0])
+        
+        pass
+
     # Additional tests for other features???
     
     def simpleFunction(self, threadNo, raiseException=False):
@@ -125,7 +142,12 @@ class TestPipelineUtilities():
                 target=self.simpleFunction,
                 args=(ii,)))
         if prodThreads:
-            pu.runThreads(prodThreads)
+            try:
+                pu.runThreads(prodThreads)
+            except Exception as e:
+                # But still seems to do it...
+                if '<ERROR>' in e:
+                    assert False
         for ii,fileName in enumerate(fileNameList):
             assert os.path.exists(fileName)
             lines=open(fileName).readlines()
@@ -192,3 +214,5 @@ class TestPipelineUtilities():
                     assert True
          
         pass
+
+

@@ -20,11 +20,6 @@ __updated__ = "2018-09-03"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-from collections import namedtuple
-import math
-import multiprocessing
-import os
-import time
 
 import argparse
 
@@ -39,6 +34,10 @@ def test_funct(args):
         print("Testing stdout...")
     elif stdOutOpt=='stderr':
         raise Exception("Testing stderr..")
+    elif stdOutOpt=='both':
+        print("Testing stdout...")
+        raise Exception("Testing stderr..")
+    
 
 def defineSpecificProgramOptions():
     """

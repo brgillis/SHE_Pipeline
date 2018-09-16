@@ -63,18 +63,20 @@ def she_prepare_configs(simulation_plan,config_template,
     Creates *cache.bin files
     """
     
+    logger=getLogger(__name__)
+    
     gst_prep_conf.write_configs_from_plan(
         plan_filename=get_relpath(simulation_plan,workdir),
             template_filename=get_relpath(config_template,workdir),
             listfile_filename=get_relpath(simulation_configs,workdir),
             workdir=workdir)
-    
+    logger.info("Prepared configurations")
     return
 
 def she_simulate_images(config_files,pipeline_config,data_images,
     stacked_data_image, psf_images_and_tables,segmentation_images,
     stacked_segmentation_image,detections_tables,details_table,
-    workdir,logdir):
+    workdir,logdir,simNo):
     """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
     catalogues etc.
     """
@@ -82,7 +84,7 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s --workdir %s --logdir %s" 
+        "--details_table %s --workdir %s" 
         % (get_relpath(config_files,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(data_images,workdir),
@@ -92,15 +94,17 @@ def she_simulate_images(config_files,pipeline_config,data_images,
            get_relpath(stacked_segmentation_image,workdir),
            get_relpath(detections_tables,workdir),
            get_relpath(details_table,workdir),
-        workdir,logdir))
+        workdir))
     
     
     # warnings out put as stdOut/stdErr --> send to log file..
     # Why is it not E-Run.err??
     
-    stdOut=pu.external_process_run(cmd, raiseOnError=False)
+    stdOut,stdErr=pu.external_process_run(cmd, 
+        parseStdOut=True,raiseOnError=True)
     # @TODO: 
-    createLogs(logdir,"she_simulate_images",stdOut)
+    pu.createLogs(os.path.join(workdir,logdir),
+        "she_simulate_images%s" % simNo,stdOut,stdErr)
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -109,7 +113,7 @@ def she_estimate_shear(data_images,stacked_image,
     bfd_training_data, ksb_training_data,
     lensmc_training_data,momentsml_training_data,
     regauss_training_data, pipeline_config,
-    shear_estimates_product,workdir,logdir):
+    shear_estimates_product,workdir,logdir,sim_no):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
     
@@ -155,11 +159,15 @@ def she_estimate_shear(data_images,stacked_image,
          get_relpath(shear_estimates_product,workdir),
          workdir,logdir))
     
-    pu.external_process_run(cmd, raiseOnError=False)
+    stdOut,stdErr=pu.external_process_run(cmd, 
+        parseStdOut=True,raiseOnError=True)
+     
+    pu.createLogs(os.path.join(workdir,logdir),
+        "she_estimate_shear%s" % sim_no,stdOut,stdErr)
     return
 
 def she_measure_statistics(details_table, shear_estimates,
-    pipeline_config,shear_bias_statistics,workdir,logdir):
+    pipeline_config,shear_bias_statistics,workdir,logdir, sim_no):
     """ Runs the SHE_CTE_MeasureStatistics method on shear 
     estimates to get shear bias statistics.
     """
@@ -173,7 +181,11 @@ def she_measure_statistics(details_table, shear_estimates,
            get_relpath(shear_bias_statistics,workdir),
            workdir,logdir))
     
-    pu.external_process_run(cmd, raiseOnError=False)
+    stdOut,stdErr=pu.external_process_run(cmd, 
+        parseStdOut=True,raiseOnError=True)
+
+    pu.createLogs(os.path.join(workdir,logdir),
+        "she_measure_statistics%s" % sim_no,stdOut,stdErr)
     
     return
 
@@ -181,7 +193,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     stacked_data_image, psf_images_and_tables, segmentation_images,
     stacked_segmentation_image, detections_tables, details_table,
     shear_estimates, shear_bias_statistics_in, pipeline_config,
-    shear_bias_measurements,workdir,logdir):
+    shear_bias_measurements,workdir,logdir,sim_no):
     """ Runs the SHE_CTE_CleanupBiasMeasurement code on shear_bias_statistics.
     Returns shear_bias_measurements
     """
@@ -205,7 +217,11 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         get_relpath(pipeline_config,workdir),
         get_relpath(shear_bias_measurements,workdir),workdir,logdir))
     
-    pu.external_process_run(cmd, raiseOnError=False)
+    stdOut,stdErr=pu.external_process_run(cmd, 
+        parseStdOut=True,raiseOnError=True)
+    # @TODO: 
+    pu.createLogs(os.path.join(workdir,logdir),
+        "she_cleanup_bias_measurement%s" % sim_no,stdOut,stdErr)
     return
 
 
@@ -305,7 +321,8 @@ def check_args(args):
     if args.logdir is None:
         args.logdir = default_logdir
         logger.info('No logdir supplied at command-line. Using default logdir: ' + args.logdir)
-
+    qualified_logdir = os.path.join(args.workdir, args.logdir)
+    
     # Set up the workdir and app_workdir the same way
 
     #if args.workdir == args.app_workdir:
@@ -326,6 +343,16 @@ def check_args(args):
     
     dirStruct = pu.create_thread_dir_struct(args,workdirs,int(nThreads))
     
+    if not os.path.exists(qualified_logdir):
+        # Can we create it?
+        try:
+            os.mkdir(qualified_logdir)
+        except Exception as e:
+            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(qualified_logdir, 0o777)
+
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
@@ -591,9 +618,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
         stacked_data_image,psf_images_and_tables,segmentation_images,
         stacked_segmentation_image,detections_tables,details_table,
-        workdir,logdir) 
-    
-    
+        workdir,logdir,simulation_no) 
     
     
     shear_estimates_product = os.path.join('data','shear_estimates_product.xml')
@@ -611,7 +636,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         regauss_training_data=regauss_training_data,
         pipeline_config=pipeline_config,
         shear_estimates_product=shear_estimates_product,
-        workdir=workdir, logdir=logdir)
+        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
 
     shear_bias_statistics = os.path.join('data','shear_bias_statistics.xml')
@@ -620,7 +645,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_estimates=shear_estimates_product,
         pipeline_config=pipeline_config,
         shear_bias_statistics=shear_bias_statistics,
-        workdir=workdir, logdir=logdir)
+        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     shear_bias_measurements = os.path.join('data',
         'shear_bias_measurements_sim%s.xml' % simulation_no)
@@ -643,7 +668,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         shear_bias_statistics_in=shear_bias_statistics,  
         pipeline_config=pipeline_config,
         shear_bias_measurements=shear_bias_measurements,
-        workdir=workdir, logdir=logdir)
+        workdir=workdir, logdir=logdir, sim_no=simulation_no)
             
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")                                                     
 
@@ -756,12 +781,12 @@ def run_pipeline_from_args(args):
     
     logger.info("Running final she_measure_bias to calculate "
         "final shear: output in %s" % shear_bias_measurement_final)
-    she_measure_bias(shear_bias_measurement_listfile,config_filename,
-        shear_bias_measurement_final,args.workdir)
+    #she_measure_bias(shear_bias_measurement_listfile,config_filename,
+    #    shear_bias_measurement_final,args.workdir)
     logger.info("Pipeline completed!")
     # Add test?
     logger.info("Running SHE_CTE PrintBias to calculate bias values")
-    she_print_bias(args.workdir,shear_bias_measurement_final)
+    #she_print_bias(args.workdir,shear_bias_measurement_final)
     logger.info("Tests completed!")
     
     return
