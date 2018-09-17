@@ -5,7 +5,7 @@
     Utility functions for the parallel pipeline
 """
 
-__updated__ = "2018-09-03"
+__updated__ = "2018-09-17"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,10 +20,11 @@ __updated__ = "2018-09-03"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import time
-import os
 from collections import namedtuple
+import os
 from subprocess import Popen, PIPE, STDOUT
+import time
+
 from SHE_PPT.logging import getLogger
 
 
@@ -97,6 +98,18 @@ def create_thread_dir_struct(args,workdirRootList,number_threads):
                 raise e
         if args.cluster:
             os.chmod(data_dir, 0o777)    
+
+        # Does the log directory exist within the workdir?
+        log_dir = os.path.join(workdir_base, args.logdir)
+        if not os.path.exists(log_dir):
+            # Can we create it?
+            try:
+                os.mkdir(log_dir)
+            except Exception as e:
+                logger.error("Log directory (" + log_dir + ") does not exist and cannot be created.")
+                raise e
+        if args.cluster:
+            os.chmod(log_dir, 0o777)    
     
     # Now make multiple threads below...
         
