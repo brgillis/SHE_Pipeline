@@ -146,7 +146,7 @@ def she_estimate_shear(data_images,stacked_image,
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s%s --pipeline_config %s "
         "--shear_estimates_product %s --workdir %s "
-        "--log-file %s/%s/she_simulate_images.out"  %
+        "--log-file %s/%s/she_estimate_shear.out"  %
         (get_relpath(data_images,workdir),
          get_relpath(stacked_image,workdir),
          get_relpath(psf_images_and_tables,workdir),
@@ -174,7 +174,7 @@ def she_measure_statistics(details_table, shear_estimates,
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
         "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
         "--workdir %s "
-        "--log-file %s/%s/she_simulate_images.out" 
+        "--log-file %s/%s/she_measure_statistics.out" 
         % (get_relpath(details_table,workdir), 
            get_relpath(shear_estimates,workdir), 
            get_relpath(pipeline_config,workdir),
@@ -204,7 +204,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         "--detections_tables %s --details_table %s --shear_estimates %s "
         "--shear_bias_statistics_in %s --pipeline_config %s "
         "--shear_bias_statistics_out %s --workdir %s "
-        "--log-file %s/%s/she_simulate_images.out"  % (
+        "--log-file %s/%s/she_cleanup_bias_measurement.out"  % (
         get_relpath(simulation_config,workdir),
         get_relpath(data_images,workdir), 
         get_relpath(stacked_data_image,workdir), 
@@ -234,7 +234,7 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     """
     cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
         "--pipeline_config %s --shear_bias_measurements %s --workdir %s "
-        "--log-file %s/%s/she_simulate_images.out" 
+        "--log-file %s/%s/she_measure_bias.out" 
         % (get_relpath(shear_bias_measurement_list,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(shear_bias_measurement_final,workdir),
@@ -244,14 +244,16 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
         parseStdOut=False,raiseOnError=True)
     return
 
-def she_print_bias(workdir,shear_bias_measurement_final):
+def she_print_bias(workdir,shear_bias_measurement_final,logdir):
     """ Runs the SHE_CTE_PrintBias on the final shear bias measurements
     file
     """
         
     cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
-         "--shear_bias_measurements %s" % (workdir,
-                get_relpath(shear_bias_measurement_final,workdir))) 
+         "--shear_bias_measurements %s "
+         "--log-file %s/%s/she_print_bias.out"  % (workdir,
+                get_relpath(shear_bias_measurement_final,workdir),
+                workdir,logdir)) 
     pu.external_process_run(cmd, 
         parseStdOut=False,raiseOnError=True)
     return
@@ -786,9 +788,15 @@ def run_pipeline_from_args(args):
     she_measure_bias(shear_bias_measurement_listfile,config_filename,
         shear_bias_measurement_final,args.workdir,args.logdir)
     logger.info("Pipeline completed!")
+    
     # @TODO: option for print_bias
-    #logger.info("Running SHE_CTE PrintBias to calculate bias values")
-    she_print_bias(args.workdir,shear_bias_measurement_final)
+    logger.info("Running SHE_CTE PrintBias to calculate bias values")
+    she_print_bias(args.workdir,shear_bias_measurement_final,args.logdir)
+    
+    with open("%s/%s/she_print_bias.out" % (args.workdir,args.logdir),"r") as fi:
+        for line in fi:
+            print(line)
+    
     logger.info("Tests completed!")
     
     return
