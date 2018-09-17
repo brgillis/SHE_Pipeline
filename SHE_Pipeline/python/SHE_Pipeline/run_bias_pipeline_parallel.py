@@ -102,7 +102,7 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     # warnings out put as stdOut/stdErr --> send to log file..
     # Why is it not E-Run.err??
     
-    pu.external_process_run(cmd,parseStdOut=True,raiseOnError=True)
+    pu.external_process_run(cmd,parseStdOut=False,raiseOnError=True)
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -159,7 +159,7 @@ def she_estimate_shear(data_images,stacked_image,
          workdir,workdir,logdir))
     
     stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=True,raiseOnError=True)
+        parseStdOut=False,raiseOnError=True)
      
     pu.createLogs(os.path.join(workdir,logdir),
         "she_estimate_shear%s" % sim_no,stdOut,stdErr)
@@ -182,7 +182,7 @@ def she_measure_statistics(details_table, shear_estimates,
            workdir,workdir,logdir))
     
     stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=True,raiseOnError=True)
+        parseStdOut=False,raiseOnError=True)
 
     pu.createLogs(os.path.join(workdir,logdir),
         "she_measure_statistics%s" % sim_no,stdOut,stdErr)
@@ -219,7 +219,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         get_relpath(shear_bias_measurements,workdir),workdir,workdir,logdir))
     
     stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=True,raiseOnError=True)
+        parseStdOut=False,raiseOnError=True)
     # @TODO: 
     pu.createLogs(os.path.join(workdir,logdir),
         "she_cleanup_bias_measurement%s" % sim_no,stdOut,stdErr)
@@ -242,7 +242,7 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     
     pu.external_process_run(cmd, raiseOnError=False)
     stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=True,raiseOnError=True)
+        parseStdOut=False,raiseOnError=True)
     # @TODO: 
     pu.createLogs(os.path.join(workdir,'logdir'),
         "she_measure_bias", stdOut,stdErr)
@@ -257,7 +257,7 @@ def she_print_bias(workdir,shear_bias_measurement_final):
          "--shear_bias_measurements %s" % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir))) 
     stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=True,raiseOnError=True)
+        parseStdOut=False,raiseOnError=True)
     # @TODO: 
     pu.createLogs(os.path.join(workdir,'logdir'),
         "she_print_bias",stdOut,stdErr)
