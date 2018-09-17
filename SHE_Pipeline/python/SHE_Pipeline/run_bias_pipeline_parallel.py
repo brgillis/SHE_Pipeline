@@ -43,6 +43,7 @@ from SHE_PPT.logging import getLogger
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
+import subprocess as sbp
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -102,7 +103,7 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     # warnings out put as stdOut/stdErr --> send to log file..
     # Why is it not E-Run.err??
     
-    pu.external_process_run(cmd,parseStdOut=False,raiseOnError=True)
+    sbp.check_call(cmd,shell=True)
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -158,11 +159,7 @@ def she_estimate_shear(data_images,stacked_image,
          get_relpath(shear_estimates_product,workdir),
          workdir,workdir,logdir))
     
-    stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=False,raiseOnError=True)
-     
-    pu.createLogs(os.path.join(workdir,logdir),
-        "she_estimate_shear%s" % sim_no,stdOut,stdErr)
+    sbp.check_call(cmd,shell=True)
     return
 
 def she_measure_statistics(details_table, shear_estimates,
@@ -181,11 +178,7 @@ def she_measure_statistics(details_table, shear_estimates,
            get_relpath(shear_bias_statistics,workdir),
            workdir,workdir,logdir))
     
-    stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=False,raiseOnError=True)
-
-    pu.createLogs(os.path.join(workdir,logdir),
-        "she_measure_statistics%s" % sim_no,stdOut,stdErr)
+    sbp.check_call(cmd,shell=True)
     
     return
 
@@ -218,11 +211,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         get_relpath(pipeline_config,workdir),
         get_relpath(shear_bias_measurements,workdir),workdir,workdir,logdir))
     
-    stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=False,raiseOnError=True)
-    # @TODO: 
-    pu.createLogs(os.path.join(workdir,logdir),
-        "she_cleanup_bias_measurement%s" % sim_no,stdOut,stdErr)
+    sbp.check_call(cmd,shell=True)
     return
 
 
@@ -240,8 +229,7 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
            get_relpath(shear_bias_measurement_final,workdir),
            workdir,workdir,logdir))
     
-    pu.external_process_run(cmd, 
-        parseStdOut=False,raiseOnError=True)
+    sbp.check_call(cmd,shell=True)
     return
 
 def she_print_bias(workdir,shear_bias_measurement_final,logdir):
@@ -254,8 +242,7 @@ def she_print_bias(workdir,shear_bias_measurement_final,logdir):
          "--log-file %s/%s/she_print_bias.out"  % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir),
                 workdir,logdir)) 
-    pu.external_process_run(cmd, 
-        parseStdOut=False,raiseOnError=True)
+    sbp.check_call(cmd,shell=True)
     return
 
 
