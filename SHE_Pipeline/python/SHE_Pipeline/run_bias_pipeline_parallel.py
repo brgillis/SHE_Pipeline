@@ -257,7 +257,6 @@ def she_print_bias(workdir,shear_bias_measurement_final):
         parseStdOut=False,raiseOnError=True)
     return
 
-bias
 
 def check_args(args):
     """Checks arguments for validity and fixes if possible.
