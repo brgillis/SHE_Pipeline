@@ -227,7 +227,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
 
 
 def she_measure_bias(shear_bias_measurement_list,pipeline_config,
-    shear_bias_measurement_final,workdir):
+    shear_bias_measurement_final,workdir,logdir):
     """ Runs the SHE_CTE_MeasureBias on a list of shear_bias_measurements from
     all simulation runs.
     
@@ -792,7 +792,7 @@ def run_pipeline_from_args(args):
     logger.info("Running final she_measure_bias to calculate "
         "final shear: output in %s" % shear_bias_measurement_final)
     she_measure_bias(shear_bias_measurement_listfile,config_filename,
-        shear_bias_measurement_final,args.workdir)
+        shear_bias_measurement_final,args.workdir,args.logdir)
     logger.info("Pipeline completed!")
     # @TODO: option for print_bias
     #logger.info("Running SHE_CTE PrintBias to calculate bias values")
