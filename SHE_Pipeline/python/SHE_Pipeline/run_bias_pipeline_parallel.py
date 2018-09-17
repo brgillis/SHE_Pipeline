@@ -85,7 +85,8 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s --workdir %s --logdir %s" 
+        "--details_table %s --workdir %s "
+        "--log-file %s/%s/she_simulate_images.out" 
         % (get_relpath(config_files,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(data_images,workdir),
@@ -95,17 +96,13 @@ def she_simulate_images(config_files,pipeline_config,data_images,
            get_relpath(stacked_segmentation_image,workdir),
            get_relpath(detections_tables,workdir),
            get_relpath(details_table,workdir),
-           workdir, logdir))
+           workdir, workdir, logdir))
     
     
     # warnings out put as stdOut/stdErr --> send to log file..
     # Why is it not E-Run.err??
     
-    stdOut,stdErr=pu.external_process_run(cmd, 
-        parseStdOut=True,raiseOnError=True)
-    # @TODO: 
-    pu.createLogs(os.path.join(workdir,logdir),
-        "she_simulate_images%s" % simNo,stdOut,stdErr)
+    pu.external_process_run(cmd,parseStdOut=True,raiseOnError=True)
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -148,7 +145,8 @@ def she_estimate_shear(data_images,stacked_image,
         "--stacked_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s%s --pipeline_config %s "
-        "--shear_estimates_product %s --workdir %s --logdir %s" %
+        "--shear_estimates_product %s --workdir %s "
+        "--log-file %s/%s/she_simulate_images.out"  %
         (get_relpath(data_images,workdir),
          get_relpath(stacked_image,workdir),
          get_relpath(psf_images_and_tables,workdir),
@@ -158,7 +156,7 @@ def she_estimate_shear(data_images,stacked_image,
          shear_method_arg_string,
          get_relpath(pipeline_config,workdir),
          get_relpath(shear_estimates_product,workdir),
-         workdir,logdir))
+         workdir,workdir,logdir))
     
     stdOut,stdErr=pu.external_process_run(cmd, 
         parseStdOut=True,raiseOnError=True)
@@ -175,12 +173,13 @@ def she_measure_statistics(details_table, shear_estimates,
     
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
         "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
-        "--workdir %s --logdir %s"
+        "--workdir %s "
+        "--log-file %s/%s/she_simulate_images.out" 
         % (get_relpath(details_table,workdir), 
            get_relpath(shear_estimates,workdir), 
            get_relpath(pipeline_config,workdir),
            get_relpath(shear_bias_statistics,workdir),
-           workdir,logdir))
+           workdir,workdir,logdir))
     
     stdOut,stdErr=pu.external_process_run(cmd, 
         parseStdOut=True,raiseOnError=True)
@@ -204,7 +203,8 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s --details_table %s --shear_estimates %s "
         "--shear_bias_statistics_in %s --pipeline_config %s "
-        "--shear_bias_statistics_out %s --workdir %s --logdir %s" % (
+        "--shear_bias_statistics_out %s --workdir %s "
+        "--log-file %s/%s/she_simulate_images.out"  % (
         get_relpath(simulation_config,workdir),
         get_relpath(data_images,workdir), 
         get_relpath(stacked_data_image,workdir), 
@@ -216,7 +216,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         get_relpath(shear_estimates,workdir), 
         get_relpath(shear_bias_statistics_in,workdir), 
         get_relpath(pipeline_config,workdir),
-        get_relpath(shear_bias_measurements,workdir),workdir,logdir))
+        get_relpath(shear_bias_measurements,workdir),workdir,workdir,logdir))
     
     stdOut,stdErr=pu.external_process_run(cmd, 
         parseStdOut=True,raiseOnError=True)
@@ -233,12 +233,12 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     
     """
     cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
-        "--pipeline_config %s --shear_bias_measurements %s --workdir %s" 
-        "--logdir %s"
+        "--pipeline_config %s --shear_bias_measurements %s --workdir %s "
+        "--log-file %s/%s/she_simulate_images.out" 
         % (get_relpath(shear_bias_measurement_list,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(shear_bias_measurement_final,workdir),
-           workdir,logdir))
+           workdir,workdir,logdir))
     
     pu.external_process_run(cmd, raiseOnError=False)
     stdOut,stdErr=pu.external_process_run(cmd, 
