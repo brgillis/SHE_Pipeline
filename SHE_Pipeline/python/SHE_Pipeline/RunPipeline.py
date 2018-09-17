@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-09-03"
+__updated__ = "2018-09-17"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
