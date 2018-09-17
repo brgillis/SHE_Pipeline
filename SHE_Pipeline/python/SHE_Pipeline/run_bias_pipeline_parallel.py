@@ -241,11 +241,8 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
            workdir,workdir,logdir))
     
     pu.external_process_run(cmd, raiseOnError=False)
-    stdOut,stdErr=pu.external_process_run(cmd, 
+    pu.external_process_run(cmd, 
         parseStdOut=False,raiseOnError=True)
-    # @TODO: 
-    pu.createLogs(os.path.join(workdir,'logdir'),
-        "she_measure_bias", stdOut,stdErr)
     return
 
 def she_print_bias(workdir,shear_bias_measurement_final):
@@ -256,14 +253,11 @@ def she_print_bias(workdir,shear_bias_measurement_final):
     cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
          "--shear_bias_measurements %s" % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir))) 
-    stdOut,stdErr=pu.external_process_run(cmd, 
+    pu.external_process_run(cmd, 
         parseStdOut=False,raiseOnError=True)
-    # @TODO: 
-    pu.createLogs(os.path.join(workdir,'logdir'),
-        "she_print_bias",stdOut,stdErr)
     return
 
-
+bias
 
 def check_args(args):
     """Checks arguments for validity and fixes if possible.
