@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-09-03"
+__updated__ = "2018-09-17"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -40,9 +40,10 @@ from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
 from SHE_PPT.logging import getLogger
-import SHE_Pipeline.run_pipeline as rp
+from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
-from SHE_Pipeline.pipeline_utilities import get_relpath  
+import SHE_Pipeline.run_pipeline as rp
+
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -84,7 +85,7 @@ def she_simulate_images(config_files,pipeline_config,data_images,
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
-        "--details_table %s --workdir %s" 
+        "--details_table %s --workdir %s --logdir %s" 
         % (get_relpath(config_files,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(data_images,workdir),
@@ -94,7 +95,7 @@ def she_simulate_images(config_files,pipeline_config,data_images,
            get_relpath(stacked_segmentation_image,workdir),
            get_relpath(detections_tables,workdir),
            get_relpath(details_table,workdir),
-        workdir))
+           workdir, logdir))
     
     
     # warnings out put as stdOut/stdErr --> send to log file..
@@ -233,10 +234,11 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     """
     cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
         "--pipeline_config %s --shear_bias_measurements %s --workdir %s" 
+        "--logdir %s"
         % (get_relpath(shear_bias_measurement_list,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(shear_bias_measurement_final,workdir),
-           workdir))
+           workdir,logdir))
     
     pu.external_process_run(cmd, raiseOnError=False)
     stdOut,stdErr=pu.external_process_run(cmd, 
