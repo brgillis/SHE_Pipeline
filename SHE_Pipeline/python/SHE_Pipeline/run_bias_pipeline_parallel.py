@@ -240,7 +240,6 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
            get_relpath(shear_bias_measurement_final,workdir),
            workdir,workdir,logdir))
     
-    pu.external_process_run(cmd, raiseOnError=False)
     pu.external_process_run(cmd, 
         parseStdOut=False,raiseOnError=True)
     return
@@ -789,7 +788,7 @@ def run_pipeline_from_args(args):
     logger.info("Pipeline completed!")
     # @TODO: option for print_bias
     #logger.info("Running SHE_CTE PrintBias to calculate bias values")
-    #she_print_bias(args.workdir,shear_bias_measurement_final)
+    she_print_bias(args.workdir,shear_bias_measurement_final)
     logger.info("Tests completed!")
     
     return
