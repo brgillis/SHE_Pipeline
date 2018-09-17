@@ -604,7 +604,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         bfd_training_data, ksb_training_data,
         lensmc_training_data, momentsml_training_data,
         regauss_training_data,pipeline_config,workdirTuple,
-        simulation_no):
+        simulation_no,logdir):
     """ Parallel processing parts of bias_measurement pipeline
     
     """
@@ -614,7 +614,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     logger = getLogger(__name__)
     
     workdir=workdirTuple.workdir 
-    logdir= 'logdir' #workdirTuple.logdir
     
     
      
@@ -775,7 +774,7 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
                       simulate_measure_inputs.pipeline_config,
-                      workdir,simulation_no)))
+                      workdir,simulation_no,args.logdir)))
         
         if prodThreads:
             pu.runThreads(prodThreads)
