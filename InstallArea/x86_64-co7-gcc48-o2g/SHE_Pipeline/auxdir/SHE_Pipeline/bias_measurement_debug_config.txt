@@ -1,0 +1,11 @@
+SHE_CTE_CleanupBiasMeasurement_cleanup = False
+
+SHE_CTE_EstimateShear_methods = BFD KSB LensMC MomentsML REGAUSS
+
+SHE_CTE_MeasureBias_archive_dir=None
+SHE_CTE_MeasureBias_webdav_archive=False
+SHE_CTE_MeasureBias_webdav_dir=/mnt/euclid-webdav
+
+SHE_CTE_MeasureStatistics_archive_dir=None
+SHE_CTE_MeasureStatistics_webdav_archive=False
+SHE_CTE_MeasureStatistics_webdav_dir=/mnt/euclid-webdav
