@@ -123,7 +123,7 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.4.12 SHE_Pipeline_Run",
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.4.13 SHE_Pipeline_Run",
                                     store_true=["profile", "debug", "cluster", "wait", "no_local_wait"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)

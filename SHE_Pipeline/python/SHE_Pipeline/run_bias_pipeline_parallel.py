@@ -55,7 +55,7 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
 ERun_CTE = "E-Run SHE_CTE 0.6.7 "
 ERun_GST = "E-Run SHE_GST 1.6.3 "
 ERun_MER = "E-Run SHE_MER 0.2 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.4.12 "
+ERun_Pipeline = "E-Run SHE_Pipeline 0.4.13 "
 
 def she_prepare_configs(simulation_plan,config_template,
         simulation_configs,workdir):
