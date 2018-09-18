@@ -466,9 +466,9 @@ def create_batches(args,sim_config_list):
     
     for batch_no in range(number_batches):
         
-        nThreads=len(workdirList)
-        min_sim_no = len(workdirList)*batch_no
-        max_sim_no = len(workdirList)*(batch_no+1)
+        nThreads=args.number_threads
+        min_sim_no = args.number_threads*batch_no
+        max_sim_no = args.number_threads*(batch_no+1)
         if max_sim_no>number_simulations:
             nThreads = number_simulations-min_sim_no
             max_sim_no = number_simulations
@@ -809,7 +809,7 @@ def run_pipeline_from_args(args):
     batches,workdirList=create_batches(args,simulation_configs)
     
     logger.info("Running parallel part of pipeline in %s batches and %s threads" 
-                % (len(batches),len(workdirList)))
+                % (len(batches),args.number_threads))
     
     for batch_no in range(len(batches)):
         batch = batches[batch_no]
@@ -887,7 +887,7 @@ def mergeOutputs(workdirList,batch,
     
     newList=[]
     for workdir in workdirList:
-        thread_no = int(workdir.workdir.split('thread')[1].split('/')[0])
+        thread_no = int(workdir.workdir.split('thread')[1].split('_')[0])
         if thread_no<batch.nThreads:
             sim_no=get_sim_no(thread_no,batch)
             # @TODO: root of this in one place

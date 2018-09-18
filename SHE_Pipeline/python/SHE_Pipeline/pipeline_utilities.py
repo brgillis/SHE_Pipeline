@@ -48,7 +48,7 @@ def get_relpath(file_path,workdir):
         return os.path.relpath(file_path,workdir)
         
 
-def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches=1):
+def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches):
     """ Used in check_args to create thread directories based on number
     threads
     
@@ -164,9 +164,9 @@ def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches=
                 if args.cluster:
                     os.chmod(qualified_logdir, 0o777)
                 thread_dir_list.extend((workdir,qualified_logdir))
-        if len(workdirRootList)==1:
-            thread_dir_list.extend((None,None))
-        directStrList.append(DirStruct(*thread_dir_list))
+            if len(workdirRootList)==1:
+                thread_dir_list.extend((None,None))
+            directStrList.append(DirStruct(*thread_dir_list))
     return directStrList
 
 def cleanup(batch,workdirList):
