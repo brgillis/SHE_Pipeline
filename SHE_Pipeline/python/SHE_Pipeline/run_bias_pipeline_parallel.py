@@ -368,13 +368,7 @@ def check_args(args):
         args.number_threads = str(multiprocessing.cpu_count()-1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
-
-    # @TODO: Be careful, workdir and app_workdir...
-    # make sure number threads is valid 
-    # @FIXME: Check this...
-    nThreads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()))
-    
-    dirStruct = pu.create_thread_dir_struct(args,workdirs,int(nThreads))
+    args.number_threads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()))
     
     if not os.path.exists(qualified_logdir):
         # Can we create it?
@@ -391,6 +385,16 @@ def check_args(args):
         args.plan_args = []
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
+
+    return
+
+def get_dir_struct(args,num_batches):
+
+    # @TODO: Be careful, workdir and app_workdir...
+    # make sure number threads is valid 
+    # @FIXME: Check this...
+    
+    dirStruct = pu.create_thread_dir_struct(args,workdirs,int(args.number_threads),num_batches)
     
     return dirStruct
 
@@ -718,7 +722,7 @@ def run_pipeline_from_args(args):
         args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
-    workdirList=check_args(args) # add argument there..
+    check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
     sim_plan_table,sim_plan_tablename=rp.create_plan(args, retTable=True)
     
@@ -761,7 +765,9 @@ def run_pipeline_from_args(args):
     
     logger.info("Running parallel part of pipeline in %s batches and %s threads" 
                 % (len(batches),len(workdirList)))
-    for batch in batches:
+    workdirList=get_dir_struct(args, num_batches=len(batches))
+    for batch_no in range(len(batches)):
+        batch = batches[batch_no]
         # Move data to threads
         #insert_data_to_threads(args,batch,workdirList,sim_table)
         # Update_isf_...
@@ -772,7 +778,7 @@ def run_pipeline_from_args(args):
         prodThreads=[]
         
         for threadNo in range(batch.nThreads):
-            workdir = workdirList[threadNo]
+            workdir = workdirList[threadNo+args.number_threads*batch_no]
             # logdir?
             simulation_no=get_sim_no(threadNo,batch)
             # Create the ISF for this run

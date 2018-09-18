@@ -5,7 +5,7 @@
     Utility functions for the parallel pipeline
 """
 
-__updated__ = "2018-09-17"
+__updated__ = "2018-09-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -48,7 +48,7 @@ def get_relpath(file_path,workdir):
         return os.path.relpath(file_path,workdir)
         
 
-def create_thread_dir_struct(args,workdirRootList,number_threads):
+def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches=1):
     """ Used in check_args to create thread directories based on number
     threads
     
@@ -115,54 +115,55 @@ def create_thread_dir_struct(args,workdirRootList,number_threads):
         
     directStrList=[]        
     for thread_no in range(number_threads):
-        thread_dir_list=[]
-        for workdir_base in workdirRootList:
-            workdir=os.path.join(workdir_base,'thread%s' % thread_no) 
-            if not os.path.exists(workdir):
-                try:
-                   os.mkdir(workdir)
-                except Exception as e:
-                    logger.error("Workdir thread (" + workdir + ") does not exist and cannot be created.")
-                    raise e
-            if args.cluster:
-                os.chmod(workdir, 0o777)
-    
-            # Does the cache directory exist within the workdir?
-            cache_dir = os.path.join(workdir, "cache")
-            if not os.path.exists(cache_dir):
-                # Can we create it?
-                try:
-                    os.mkdir(cache_dir)
-                except Exception as e:
-                    logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
-                    raise e
-            if args.cluster:
-                os.chmod(cache_dir, 0o777)
-    
-            # Does the data directory exist within the workdir?
-            data_dir = os.path.join(workdir, "data")
-            if not os.path.exists(data_dir):
-                # Can we create it?
-                try:
-                    os.mkdir(data_dir)
-                except Exception as e:
-                    logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
-                    raise e
-            if args.cluster:
-                os.chmod(data_dir, 0o777)
-    
-            # Does the logdir exist?
-            qualified_logdir = os.path.join(workdir, args.logdir)
-            if not os.path.exists(qualified_logdir):
-                # Can we create it?
-                try:
-                    os.mkdir(qualified_logdir)
-                except Exception as e:
-                    logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
-                    raise e
-            if args.cluster:
-                os.chmod(qualified_logdir, 0o777)
-            thread_dir_list.extend((workdir,qualified_logdir))
+        for batch_no in range(number_batches):
+            thread_dir_list=[]
+            for workdir_base in workdirRootList:
+                workdir=os.path.join(workdir_base,'thread%s_batch%s' % (thread_no,batch_no)) 
+                if not os.path.exists(workdir):
+                    try:
+                       os.mkdir(workdir)
+                    except Exception as e:
+                        logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
+                        raise e
+                if args.cluster:
+                    os.chmod(workdir, 0o777)
+        
+                # Does the cache directory exist within the workdir?
+                cache_dir = os.path.join(workdir, "cache")
+                if not os.path.exists(cache_dir):
+                    # Can we create it?
+                    try:
+                        os.mkdir(cache_dir)
+                    except Exception as e:
+                        logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+                        raise e
+                if args.cluster:
+                    os.chmod(cache_dir, 0o777)
+        
+                # Does the data directory exist within the workdir?
+                data_dir = os.path.join(workdir, "data")
+                if not os.path.exists(data_dir):
+                    # Can we create it?
+                    try:
+                        os.mkdir(data_dir)
+                    except Exception as e:
+                        logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+                        raise e
+                if args.cluster:
+                    os.chmod(data_dir, 0o777)
+        
+                # Does the logdir exist?
+                qualified_logdir = os.path.join(workdir, args.logdir)
+                if not os.path.exists(qualified_logdir):
+                    # Can we create it?
+                    try:
+                        os.mkdir(qualified_logdir)
+                    except Exception as e:
+                        logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+                        raise e
+                if args.cluster:
+                    os.chmod(qualified_logdir, 0o777)
+                thread_dir_list.extend((workdir,qualified_logdir))
         if len(workdirRootList)==1:
             thread_dir_list.extend((None,None))
         directStrList.append(DirStruct(*thread_dir_list))
