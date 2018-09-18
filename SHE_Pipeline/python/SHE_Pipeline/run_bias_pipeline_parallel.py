@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-09-17"
+__updated__ = "2018-09-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -82,6 +82,7 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
     catalogues etc.
     """
+    logger=getLogger(__name__)
     cmd=(ERun_GST + "SHE_GST_GenGalaxyImages --config_files %s "
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
@@ -102,8 +103,13 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     
     # warnings out put as stdOut/stdErr --> send to log file..
     # Why is it not E-Run.err??
-    
-    sbp.check_call(cmd,shell=True)
+    logger.info("Executing command: " + cmd)
+    try:
+        sbp.check_call(cmd,shell=True)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
     return
  
 def she_estimate_shear(data_images,stacked_image,
@@ -121,6 +127,7 @@ def she_estimate_shear(data_images,stacked_image,
     # Do checks for consistency (earlier)
     """
     
+    logger=getLogger(__name__)
     
     # Check to see if training data exists.
     # @TODO: Simplify, avoid repetitions
@@ -159,7 +166,13 @@ def she_estimate_shear(data_images,stacked_image,
          get_relpath(shear_estimates_product,workdir),
          workdir,workdir,logdir))
     
-    sbp.check_call(cmd,shell=True)
+    logger.info("Executing command: " + cmd)
+    try:
+        sbp.check_call(cmd,shell=True)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
     return
 
 def she_measure_statistics(details_table, shear_estimates,
@@ -167,6 +180,7 @@ def she_measure_statistics(details_table, shear_estimates,
     """ Runs the SHE_CTE_MeasureStatistics method on shear 
     estimates to get shear bias statistics.
     """
+    logger=getLogger(__name__)
     
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
         "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
@@ -178,7 +192,13 @@ def she_measure_statistics(details_table, shear_estimates,
            get_relpath(shear_bias_statistics,workdir),
            workdir,workdir,logdir))
     
-    sbp.check_call(cmd,shell=True)
+    logger.info("Executing command: " + cmd)
+    try:
+        sbp.check_call(cmd,shell=True)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
     
     return
 
@@ -190,6 +210,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     """ Runs the SHE_CTE_CleanupBiasMeasurement code on shear_bias_statistics.
     Returns shear_bias_measurements
     """
+    logger=getLogger(__name__)
     
     cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
@@ -211,7 +232,13 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         get_relpath(pipeline_config,workdir),
         get_relpath(shear_bias_measurements,workdir),workdir,workdir,logdir))
     
-    sbp.check_call(cmd,shell=True)
+    logger.info("Executing command: " + cmd)
+    try:
+        sbp.check_call(cmd,shell=True)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
     return
 
 
@@ -221,6 +248,7 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     all simulation runs.
     
     """
+    logger=getLogger(__name__)
     cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
         "--pipeline_config %s --shear_bias_measurements %s --workdir %s "
         "--log-file %s/%s/she_measure_bias.out 2> /dev/null" 
@@ -229,20 +257,33 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
            get_relpath(shear_bias_measurement_final,workdir),
            workdir,workdir,logdir))
     
-    sbp.check_call(cmd,shell=True)
+    logger.info("Executing command: " + cmd)
+    try:
+        sbp.check_call(cmd,shell=True)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
     return
 
 def she_print_bias(workdir,shear_bias_measurement_final,logdir):
     """ Runs the SHE_CTE_PrintBias on the final shear bias measurements
     file
     """
+    logger = getLogger(__name__)
         
     cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
          "--shear_bias_measurements %s "
          "--log-file %s/%s/she_print_bias.out"  % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir),
                 workdir,logdir)) 
-    sbp.check_call(cmd,shell=True)
+    logger.info("Executing command: " + cmd)
+    try:
+        sbp.check_call(cmd,shell=True)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
     return
 
 
