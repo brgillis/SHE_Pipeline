@@ -370,6 +370,51 @@ def check_args(args):
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
     args.number_threads= max(1,min(int(args.number_threads),multiprocessing.cpu_count()))
     
+    # Create the base workdir
+    if not os.path.exists(args.workdir):
+        # Can we create it?
+        try:
+            os.mkdir(args.workdir)
+        except Exception as e:
+            logger.error("workdir (" + args.workdir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(args.workdir, 0o777) # Does the cache directory exist within the workdir?
+    cache_dir = os.path.join(args.workdir, "cache")
+    if not os.path.exists(cache_dir):
+        # Can we create it?
+        try:
+            os.mkdir(cache_dir)
+        except Exception as e:
+            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(cache_dir, 0o777)
+
+    # Does the data directory exist within the workdir?
+    data_dir = os.path.join(args.workdir, "data")
+    if not os.path.exists(data_dir):
+        # Can we create it?
+        try:
+            os.mkdir(data_dir)
+        except Exception as e:
+            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(data_dir, 0o777)    
+
+    # Does the log directory exist within the workdir?
+    log_dir = os.path.join(args.workdir, args.logdir)
+    if not os.path.exists(log_dir):
+        # Can we create it?
+        try:
+            os.mkdir(log_dir)
+        except Exception as e:
+            logger.error("Log directory (" + log_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(log_dir, 0o777)  
+    
     if not os.path.exists(qualified_logdir):
         # Can we create it?
         try:
@@ -394,12 +439,12 @@ def get_dir_struct(args,num_batches):
     # make sure number threads is valid 
     # @FIXME: Check this...
     
-    dirStruct = pu.create_thread_dir_struct(args,workdirs,int(args.number_threads),num_batches)
+    dirStruct = pu.create_thread_dir_struct(args,[args.workdir],int(args.number_threads),num_batches)
     
     return dirStruct
 
 
-def create_batches(args,sim_config_list,workdirList):
+def create_batches(args,sim_config_list):
     """ Uses the simulation configuration list and the 
     workdir (thread) list to split the simulations into
     batches.
@@ -414,10 +459,10 @@ def create_batches(args,sim_config_list,workdirList):
     sim_config_list=read_listfile(os.path.join(args.workdir,sim_config_list))
     number_simulations=len(sim_config_list)
     
-    number_batches = math.ceil(number_simulations/len(workdirList))
+    number_batches = math.ceil(number_simulations/args.number_threads)
     batchList=[]
     
-                  
+    workdirList=get_dir_struct(args, num_batches=number_batches)
     
     for batch_no in range(number_batches):
         
@@ -431,7 +476,7 @@ def create_batches(args,sim_config_list,workdirList):
         batchList.append(BatchTuple(batch_no,nThreads,min_sim_no,max_sim_no))
     
 
-    return batchList
+    return batchList, workdirList
 
 
 def get_sim_no(thread_no,batch):
@@ -761,11 +806,11 @@ def run_pipeline_from_args(args):
     she_prepare_configs(sim_plan_tablename,
         config_template,simulation_configs,args.workdir)
     
-    batches=create_batches(args,simulation_configs,workdirList)
+    batches,workdirList=create_batches(args,simulation_configs)
     
     logger.info("Running parallel part of pipeline in %s batches and %s threads" 
                 % (len(batches),len(workdirList)))
-    workdirList=get_dir_struct(args, num_batches=len(batches))
+    
     for batch_no in range(len(batches)):
         batch = batches[batch_no]
         # Move data to threads
