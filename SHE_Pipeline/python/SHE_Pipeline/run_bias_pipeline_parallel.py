@@ -83,6 +83,8 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     catalogues etc.
     """
     logger=getLogger(__name__)
+    
+    #@TODO: Replace with function call, see issue 11
     cmd=(ERun_GST + "SHE_GST_GenGalaxyImages --config_files %s "
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
@@ -128,6 +130,9 @@ def she_estimate_shear(data_images,stacked_image,
     """
     
     logger=getLogger(__name__)
+    
+    #@TODO: Replace with function call, see issue 11
+    
     
     # Check to see if training data exists.
     # @TODO: Simplify, avoid repetitions
@@ -182,6 +187,8 @@ def she_measure_statistics(details_table, shear_estimates,
     """
     logger=getLogger(__name__)
     
+    #@TODO: Replace with function call, see issue 11
+    
     cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
         "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
         "--workdir %s "
@@ -211,6 +218,7 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     Returns shear_bias_measurements
     """
     logger=getLogger(__name__)
+    #@TODO: Replace with function call, see issue 11
     
     cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
@@ -248,6 +256,8 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     all simulation runs.
     
     """
+    #@TODO: Replace with function call, see issue 11
+    
     logger=getLogger(__name__)
     cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
         "--pipeline_config %s --shear_bias_measurements %s --workdir %s "
@@ -271,6 +281,7 @@ def she_print_bias(workdir,shear_bias_measurement_final,logdir):
     file
     """
     logger = getLogger(__name__)
+    #@TODO: Replace with function call, see issue 11
         
     cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
          "--shear_bias_measurements %s "
@@ -303,7 +314,7 @@ def check_args(args):
     logger = getLogger(__name__)
 
     logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
-
+    
     pipeline='bias_measurement'
     # Does the pipeline we want to run exist?
     pipeline_filename = os.path.join(rp.get_pipeline_dir(), "SHE_Pipeline_pkgdef/"+ pipeline + ".py")
@@ -359,7 +370,6 @@ def check_args(args):
     # Set up the workdir and app_workdir the same way
 
     #if args.workdir == args.app_workdir:
-    workdirs = (args.workdir,)
     #else:
     #    workdirs = (args.workdir), args.app_workdir,)
 
@@ -439,9 +449,9 @@ def get_dir_struct(args,num_batches):
     # make sure number threads is valid 
     # @FIXME: Check this...
     
-    dirStruct = pu.create_thread_dir_struct(args,[args.workdir],int(args.number_threads),num_batches)
+    dir_struct = pu.create_thread_dir_struct(args,[args.workdir],int(args.number_threads),num_batches)
     
-    return dirStruct
+    return dir_struct
 
 
 def create_batches(args,sim_config_list):
@@ -454,15 +464,15 @@ def create_batches(args,sim_config_list):
     """
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
-    BatchTuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no")
+    batch_tuple=namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no")
     
     sim_config_list=read_listfile(os.path.join(args.workdir,sim_config_list))
     number_simulations=len(sim_config_list)
     
     number_batches = math.ceil(number_simulations/args.number_threads)
-    batchList=[]
+    batch_list=[]
     
-    workdirList=get_dir_struct(args, num_batches=number_batches)
+    workdir_list=get_dir_struct(args, num_batches=number_batches)
     
     for batch_no in range(number_batches):
         
@@ -473,10 +483,11 @@ def create_batches(args,sim_config_list):
             nThreads = number_simulations-min_sim_no
             max_sim_no = number_simulations
             
-        batchList.append(BatchTuple(batch_no,nThreads,min_sim_no,max_sim_no))
+        batch_list.append(batch_tuple(batch_no,nThreads,
+                                     min_sim_no,max_sim_no))
     
 
-    return batchList, workdirList
+    return batch_list, workdir_list
 
 
 def get_sim_no(thread_no,batch):
@@ -501,7 +512,7 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list
     
     """
     
-    InputsTuple =namedtuple("SMInputs","simulation_config bfd_training_data "
+    inputs_tuple =namedtuple("SIMInputs","simulation_config bfd_training_data "
         "ksb_training_data lensmc_training_data momentsml_training_data "
         "regauss_training_data pipeline_config")
 
@@ -551,7 +562,7 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list
     search_path = args.workdir
     
     # Inputs for thread
-    simulateInputs = InputsTuple(*[
+    simulate_inputs = inputs_tuple(*[
         args_to_set['simulation_config'],
         args_to_set['bfd_training_data'],
         args_to_set['ksb_training_data'],
@@ -659,13 +670,14 @@ def create_simulate_measure_inputs(args, config_filename,workdir,sim_config_list
             fo.write(arg + "=" + args_to_set[arg] + "\n")
 
     # Symlink to *.bin files...
-    binaryConfigFiles = [fName for fName in os.listdir(args.workdir) 
-                         if fName.endswith('bin')]
-    for binConfFile in binaryConfigFiles:
-        newConfFileName=os.path.join(workdir.workdir,binConfFile)
-        if not os.path.exists(newConfFileName):
-            os.symlink(os.path.join(args.workdir,binConfFile),newConfFileName)
-    return simulateInputs
+    binary_config_files = [fname for fname in os.listdir(args.workdir) 
+                         if fname.endswith('bin')]
+    for bin_conf_file in binary_config_files:
+        new_conf_file_name=os.path.join(workdir.workdir,bin_conf_file)
+        if not os.path.exists(new_conf_file_name):
+            os.symlink(os.path.join(args.workdir,bin_conf_file),
+                       new_conf_file_name)
+    return simulate_inputs
 
 
 
@@ -769,7 +781,7 @@ def run_pipeline_from_args(args):
     # Check the arguments
     check_args(args) # add argument there..
     #if len(args.plan_args) > 0:
-    sim_plan_table,sim_plan_tablename=rp.create_plan(args, retTable=True)
+    _sim_plan_table,sim_plan_tablename=rp.create_plan(args, retTable=True)
     
     # Create the pipeline_config for this run
     config_filename = rp.create_config(args)
@@ -806,7 +818,7 @@ def run_pipeline_from_args(args):
     she_prepare_configs(sim_plan_tablename,
         config_template,simulation_configs,args.workdir)
     
-    batches,workdirList=create_batches(args,simulation_configs)
+    batches,workdir_list=create_batches(args,simulation_configs)
     
     logger.info("Running parallel part of pipeline in %s batches and %s threads" 
                 % (len(batches),args.number_threads))
@@ -820,12 +832,12 @@ def run_pipeline_from_args(args):
         
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
-        prodThreads=[]
+        prod_threads=[]
         
-        for threadNo in range(batch.nThreads):
-            workdir = workdirList[threadNo+args.number_threads*batch_no]
+        for thread_no in range(batch.nThreads):
+            workdir = workdir_list[thread_no+args.number_threads*batch_no]
             # logdir?
-            simulation_no=get_sim_no(threadNo,batch)
+            simulation_no=get_sim_no(thread_no,batch)
             # Create the ISF for this run
             # @TODO:  do we need multiple versions of this, one for each thread
             
@@ -839,7 +851,7 @@ def run_pipeline_from_args(args):
             
             # @TODO: Is it better to run each process separately?
             
-            prodThreads.append(multiprocessing.Process(target=she_simulate_and_measure_bias_statistics,
+            prod_threads.append(multiprocessing.Process(target=she_simulate_and_measure_bias_statistics,
                 args=(simulate_measure_inputs.simulation_config,
                       simulate_measure_inputs.bfd_training_data,
                       simulate_measure_inputs.ksb_training_data,
@@ -849,14 +861,14 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.pipeline_config,
                       workdir,simulation_no,args.logdir)))
         
-        if prodThreads:
-            pu.runThreads(prodThreads)
+        if prod_threads:
+            pu.run_threads(prod_threads)
             
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        mergeOutputs(workdirList,batch,shear_bias_measurement_listfile)
+        merge_outputs(workdir_list,batch,shear_bias_measurement_listfile)
         # Clean up 
         logger.info("Cleaning up batch files..")   
-        pu.cleanup(batch,workdirList)
+        pu.cleanup(batch,workdir_list)
     
 
     # Run final process
@@ -877,7 +889,7 @@ def run_pipeline_from_args(args):
     return
 
 
-def mergeOutputs(workdirList,batch,
+def merge_outputs(workdir_list,batch,
         shear_bias_measurement_listfile):
     """ Merge outputs from different threads at the end of each 
     batch. Updates .json file
@@ -886,7 +898,7 @@ def mergeOutputs(workdirList,batch,
     """
     
     newList=[]
-    for workdir in workdirList:
+    for workdir in workdir_list:
         thread_no = int(workdir.workdir.split('thread')[1].split('_')[0])
         if thread_no<batch.nThreads:
             sim_no=get_sim_no(thread_no,batch)

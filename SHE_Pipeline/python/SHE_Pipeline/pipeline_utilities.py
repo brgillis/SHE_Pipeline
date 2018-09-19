@@ -48,7 +48,7 @@ def get_relpath(file_path,workdir):
         return os.path.relpath(file_path,workdir)
         
 
-def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches):
+def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batches):
     """ Used in check_args to create thread directories based on number
     threads
     
@@ -61,9 +61,9 @@ def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches)
     logger = getLogger(__name__)
 
     # Creates directory structure
-    DirStruct = namedtuple("Directories","workdir logdir app_workdir app_logdir")
+    dir_struct_tuple = namedtuple("Directories","workdir logdir app_workdir app_logdir")
     # @FIXME: Do the create multiple threads here
-    for workdir_base in workdirRootList:
+    for workdir_base in workdir_root_list:
 
         # Does the workdir exist?
         if not os.path.exists(workdir_base):
@@ -113,11 +113,11 @@ def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches)
     
     # Now make multiple threads below...
         
-    directStrList=[]        
+    direct_str_list=[]        
     for thread_no in range(number_threads):
         for batch_no in range(number_batches):
             thread_dir_list=[]
-            for workdir_base in workdirRootList:
+            for workdir_base in workdir_root_list:
                 workdir=os.path.join(workdir_base,'thread%s_batch%s' % (thread_no,batch_no)) 
                 if not os.path.exists(workdir):
                     try:
@@ -164,12 +164,12 @@ def create_thread_dir_struct(args,workdirRootList,number_threads,number_batches)
                 if args.cluster:
                     os.chmod(qualified_logdir, 0o777)
                 thread_dir_list.extend((workdir,qualified_logdir))
-            if len(workdirRootList)==1:
+            if len(workdir_root_list)==1:
                 thread_dir_list.extend((None,None))
-            directStrList.append(DirStruct(*thread_dir_list))
-    return directStrList
+            direct_str_list.append(dir_struct_tuple(*thread_dir_list))
+    return direct_str_list
 
-def cleanup(batch,workdirList):
+def cleanup(batch,workdir_list):
     """
     Remove sim links and batch setup files ready for the next batch.
     Remove intermediate products...
@@ -187,7 +187,7 @@ def cleanup(batch,workdirList):
     pass
 
 
-def runThreads(threads):
+def run_threads(threads):
     """ Executes given list of thread processes.
     Originally written by Ross Collins for VDFS
     Modified for circumstances...
@@ -255,6 +255,8 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
              object for stdout if _isIterable, else a return a code.
     @rtype:  list(str) or file or int
 
+
+    @obsolete? Not currently used.... 
     """
     # @FIXME: What is reported as stdErr is often stdOut.
     # Why?? 
@@ -363,17 +365,19 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
 
     return stdOut,stdErr 
 
-def createLogs(log_directory,fileName,stdOut,stdErr):
+def create_logs(log_directory,fileName,std_out,std_err):
     """ @fixme: logging not properly working
     remove this when I get it working
+    
+    @obsolete? no longer used.
     """
-    stdOutFileName=os.path.join(log_directory,fileName+".log")
-    stdErrFileName=os.path.join(log_directory,fileName+".err")
+    stdout_filename=os.path.join(log_directory,fileName+".log")
+    stderr_filename=os.path.join(log_directory,fileName+".err")
     
-    stdOutLines=[str(line) for line in stdOut]
-    open(stdOutFileName,'w').writelines(stdOutLines)
+    stdout_lines=[str(line) for line in std_out]
+    open(stdout_filename,'w').writelines(stdout_lines)
     
-    stdOutLines=[str(line) for line in stdErr]
-    open(stdErrFileName,'w').writelines(stdOutLines)
+    stdout_lines=[str(line) for line in std_err]
+    open(stderr_filename,'w').writelines(stdout_lines)
     
     return
