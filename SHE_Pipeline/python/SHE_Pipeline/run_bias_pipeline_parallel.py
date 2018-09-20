@@ -35,10 +35,13 @@ from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
+import SHE_CTE_ShearEstimation.EstimateShear as est_she
+from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
+from SHE_PPT.utility import get_arguments_string
 from SHE_PPT.logging import getLogger
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
@@ -132,6 +135,12 @@ def she_estimate_shear(data_images,stacked_image,
     logger=getLogger(__name__)
     
     #@TODO: Replace with function call, see issue 11
+    # set argsparser
+    
+    estshr_args_parser= est_she.defineSpecificProgramOptions()
+    
+    # add arg --log-file
+
     
     
     # Check to see if training data exists.
@@ -153,13 +162,12 @@ def she_estimate_shear(data_images,stacked_image,
         shear_method_arg_string+=" --regauss_training_data %s" % get_relpath(
             regauss_training_data,workdir)
         
-        
-    cmd=(ERun_CTE + "SHE_CTE_EstimateShear --data_images %s "
+    
+    argv=("--data_images %s "
         "--stacked_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s%s --pipeline_config %s "
-        "--shear_estimates_product %s --workdir %s "
-        "--log-file %s/%s/she_estimate_shear.out 2> /dev/null"  %
+        "--shear_estimates_product %s --workdir %s --logdir %s" %
         (get_relpath(data_images,workdir),
          get_relpath(stacked_image,workdir),
          get_relpath(psf_images_and_tables,workdir),
@@ -169,11 +177,16 @@ def she_estimate_shear(data_images,stacked_image,
          shear_method_arg_string,
          get_relpath(pipeline_config,workdir),
          get_relpath(shear_estimates_product,workdir),
-         workdir,workdir,logdir))
-    
-    logger.info("Executing command: " + cmd)
+         workdir,logdir)).split()
+    # "--log-file %s/%s/she_estimate_shear.out"  %
+        
+    estshr_args= estshr_args_parser.parse_args(argv)
+    exec_cmd = get_arguments_string(estshr_args, cmd=ERun_CTE+" SHE_CTE_EstimateShear",
+                                    store_true=["profile", "debug", "dry_run"])
+    logger.info('Execution command for this step:')
+    logger.info(exec_cmd)  
     try:
-        sbp.check_call(cmd,shell=True)
+        estimate_shears_from_args(estshr_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise

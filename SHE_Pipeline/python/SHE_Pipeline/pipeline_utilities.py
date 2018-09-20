@@ -22,6 +22,7 @@ __updated__ = "2018-09-18"
 
 from collections import namedtuple
 import os
+import argparse
 from subprocess import Popen, PIPE, STDOUT
 import time
 
@@ -381,3 +382,4 @@ def create_logs(log_directory,fileName,std_out,std_err):
     open(stderr_filename,'w').writelines(stdout_lines)
     
     return
+
