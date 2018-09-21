@@ -27,6 +27,7 @@ from subprocess import Popen, PIPE, STDOUT
 import time
 
 from SHE_PPT.logging import getLogger
+from SHE_PPT.utility import get_arguments_string
 
 
 def get_relpath(file_path,workdir):
@@ -383,3 +384,22 @@ def create_logs(log_directory,fileName,std_out,std_err):
     
     return
 
+def setup_function_args(argv, command_line_int_ref,execName):
+    """
+    """
+    logger=getLogger(__name__)
+    
+    estshr_args_parser= command_line_int_ref.defineSpecificProgramOptions()
+    
+    # add arg --log-file
+    estshr_args_parser.add_argument('--log-file',type=str,
+        help='XML data product to contain file links to the shear estimates tables.')
+    
+        
+    estshr_args= estshr_args_parser.parse_args(argv)
+    exec_cmd = get_arguments_string(estshr_args, cmd=execName,
+                                    store_true=["profile", "debug", "dry_run"])
+    logger.info('Execution command for this step:')
+    logger.info(exec_cmd)  
+    
+    return estshr_args

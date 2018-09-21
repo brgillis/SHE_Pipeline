@@ -36,7 +36,10 @@ from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 import SHE_CTE_ShearEstimation.EstimateShear as est_she
+import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
+import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
 from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
+from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
@@ -135,13 +138,6 @@ def she_estimate_shear(data_images,stacked_image,
     logger=getLogger(__name__)
     
     #@TODO: Replace with function call, see issue 11
-    # set argsparser
-    
-    estshr_args_parser= est_she.defineSpecificProgramOptions()
-    
-    # add arg --log-file
-
-    
     
     # Check to see if training data exists.
     # @TODO: Simplify, avoid repetitions
@@ -167,7 +163,8 @@ def she_estimate_shear(data_images,stacked_image,
         "--stacked_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s%s --pipeline_config %s "
-        "--shear_estimates_product %s --workdir %s --logdir %s" %
+        "--shear_estimates_product %s --workdir %s "
+        "--log-file %s/%s/she_estimate_shear.out"  %
         (get_relpath(data_images,workdir),
          get_relpath(stacked_image,workdir),
          get_relpath(psf_images_and_tables,workdir),
@@ -177,14 +174,13 @@ def she_estimate_shear(data_images,stacked_image,
          shear_method_arg_string,
          get_relpath(pipeline_config,workdir),
          get_relpath(shear_estimates_product,workdir),
-         workdir,logdir)).split()
-    # "--log-file %s/%s/she_estimate_shear.out"  %
-        
-    estshr_args= estshr_args_parser.parse_args(argv)
-    exec_cmd = get_arguments_string(estshr_args, cmd=ERun_CTE+" SHE_CTE_EstimateShear",
-                                    store_true=["profile", "debug", "dry_run"])
-    logger.info('Execution command for this step:')
-    logger.info(exec_cmd)  
+         workdir,workdir,logdir)).split()
+    # 
+
+    # set argsparser
+
+    estshr_args=pu.setup_function_args(argv,est_she,ERun_CTE+" SHE_CTE_EstimateShear")
+    
     try:
         estimate_shears_from_args(estshr_args)
     except Exception as e:
@@ -202,19 +198,24 @@ def she_measure_statistics(details_table, shear_estimates,
     
     #@TODO: Replace with function call, see issue 11
     
-    cmd=(ERun_CTE + "SHE_CTE_MeasureStatistics --details_table %s "
-        "--shear_estimates %s --pipeline_config %s --shear_bias_statistics %s "
+    argv=("--details_table %s "
+        "--shear_estimates %s --pipeline_config %s "
+        "--shear_bias_statistics %s "
         "--workdir %s "
-        "--log-file %s/%s/she_measure_statistics.out 2> /dev/null" 
+        "--log-file %s/%s/she_measure_statistics.out" 
         % (get_relpath(details_table,workdir), 
            get_relpath(shear_estimates,workdir), 
            get_relpath(pipeline_config,workdir),
            get_relpath(shear_bias_statistics,workdir),
-           workdir,workdir,logdir))
+           workdir,workdir,logdir)).split()
+           
+    measstats_args=pu.setup_function_args(argv,meas_stats,
+        ERun_CTE + "SHE_CTE_MeasureStatistics")
     
-    logger.info("Executing command: " + cmd)
+    
     try:
-        sbp.check_call(cmd,shell=True)
+        measure_statistics_from_args(measstats_args)
+    
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -233,13 +234,13 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
     logger=getLogger(__name__)
     #@TODO: Replace with function call, see issue 11
     
-    cmd=(ERun_CTE + "SHE_CTE_CleanupBiasMeasurement --simulation_config %s "
+    argv=("--simulation_config %s "
         "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s --details_table %s --shear_estimates %s "
         "--shear_bias_statistics_in %s --pipeline_config %s "
         "--shear_bias_statistics_out %s --workdir %s "
-        "--log-file %s/%s/she_cleanup_bias_measurement.out 2> /dev/null"  % (
+        "--log-file %s/%s/she_cleanup_bias_measurement.out"  % (
         get_relpath(simulation_config,workdir),
         get_relpath(data_images,workdir), 
         get_relpath(stacked_data_image,workdir), 
@@ -251,11 +252,12 @@ def she_cleanup_bias_measurement(simulation_config,data_images,
         get_relpath(shear_estimates,workdir), 
         get_relpath(shear_bias_statistics_in,workdir), 
         get_relpath(pipeline_config,workdir),
-        get_relpath(shear_bias_measurements,workdir),workdir,workdir,logdir))
+        get_relpath(shear_bias_measurements,workdir),
+        workdir,workdir,logdir)).split()
     
-    logger.info("Executing command: " + cmd)
+    cleanbias_args=pu.setup_function_args(argv,cleanup_bias,ERun_CTE + "SHE_CTE_CleanupBiasMeasurement")
     try:
-        sbp.check_call(cmd,shell=True)
+        cleanup_bias.cleanup_bias_measurement_from_args(cleanbias_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
