@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-08-23"
+__updated__ = "2018-09-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -73,7 +73,7 @@ def defineSpecificProgramOptions():
     parser.add_argument('--plan_args', type=str, nargs='*',
                         help='Arguments to write to simulation plan (must be in pairs of key value)')
     
-    # Input arguments for when calling a meta pipeline
+    # Input arguments for when calling a meta or controlled pipeline
     parser.add_argument('--local_workdir', type=str, default=None,
                         help="Work directory to be used by the pipeline this calls")
     parser.add_argument('--local_serverurl', type=str, default="http://localhost:50000",
@@ -84,6 +84,10 @@ def defineSpecificProgramOptions():
                         help="Pipeline config for the local pipeline run.")
     parser.add_argument('--no_local_wait', action='store_true',
                         help="Disable waiting for local pipeline run.")
+
+    parser.add_argument('--number_threads',type=str, default=0,
+                        help="Number of threads to use. This might be curtailed if > number available. " +
+                        "0 (default) will result in using all but one available cpu.")
     
     # Input arguments for when called by a meta pipeline
     parser.add_argument('--pickled_args', type=str, default=None,
