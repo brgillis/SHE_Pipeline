@@ -30,16 +30,21 @@ from astropy.io import fits
 from astropy.table import Table
 import numpy
 
-import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as ggi
+import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 import SHE_CTE_ShearEstimation.EstimateShear as est_she
 import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
+import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
 import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
+import SHE_CTE_BiasMeasurement.PrintBias as print_bias
+
 from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
+from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
+
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
@@ -90,13 +95,15 @@ def she_simulate_images(config_files,pipeline_config,data_images,
     """
     logger=getLogger(__name__)
     
+    
+    SHE_GST_cIceBRGpy.set_workdir(workdir)
     #@TODO: Replace with function call, see issue 11
-    cmd=(ERun_GST + "SHE_GST_GenGalaxyImages --config_files %s "
+    argv=("--config_files %s "
         "--pipeline_config %s --data_images %s --stacked_data_image %s "
         "--psf_images_and_tables %s --segmentation_images %s "
         "--stacked_segmentation_image %s --detections_tables %s "
         "--details_table %s --workdir %s "
-        "--log-file %s/%s/she_simulate_images.out 2> /dev/null" 
+        "--log-file %s/%s/she_simulate_images.out" 
         % (get_relpath(config_files,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(data_images,workdir),
@@ -106,14 +113,14 @@ def she_simulate_images(config_files,pipeline_config,data_images,
            get_relpath(stacked_segmentation_image,workdir),
            get_relpath(detections_tables,workdir),
            get_relpath(details_table,workdir),
-           workdir, workdir, logdir))
+           workdir, workdir, logdir)).split()
     
+    gen_gi_args=pu.setup_function_args(argv, gen_galimg,ERun_GST + "SHE_GST_GenGalaxyImages")
     
     # warnings out put as stdOut/stdErr --> send to log file..
     # Why is it not E-Run.err??
-    logger.info("Executing command: " + cmd)
     try:
-        sbp.check_call(cmd,shell=True)
+        run_from_args(generate_images, gen_gi_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -274,17 +281,17 @@ def she_measure_bias(shear_bias_measurement_list,pipeline_config,
     #@TODO: Replace with function call, see issue 11
     
     logger=getLogger(__name__)
-    cmd=(ERun_CTE + "SHE_CTE_MeasureBias --shear_bias_statistics %s "
+    argv=("--shear_bias_statistics %s "
         "--pipeline_config %s --shear_bias_measurements %s --workdir %s "
-        "--log-file %s/%s/she_measure_bias.out 2> /dev/null" 
+        "--log-file %s/%s/she_measure_bias.out" 
         % (get_relpath(shear_bias_measurement_list,workdir),
            get_relpath(pipeline_config,workdir),
            get_relpath(shear_bias_measurement_final,workdir),
-           workdir,workdir,logdir))
+           workdir,workdir,logdir)).split()
     
-    logger.info("Executing command: " + cmd)
+    measbias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
     try:
-        sbp.check_call(cmd,shell=True)
+        measure_bias_from_args(measbias_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -296,16 +303,16 @@ def she_print_bias(workdir,shear_bias_measurement_final,logdir):
     file
     """
     logger = getLogger(__name__)
-    #@TODO: Replace with function call, see issue 11
         
-    cmd=(ERun_CTE+" SHE_CTE_PrintBias --workdir %s "
+    argv=("--workdir %s "
          "--shear_bias_measurements %s "
          "--log-file %s/%s/she_print_bias.out"  % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir),
-                workdir,logdir)) 
-    logger.info("Executing command: " + cmd)
+                workdir,logdir)).split() 
+    
+    print_bias_args=pu.setup_function_args(argv,print_bias, ERun_CTE+" SHE_CTE_PrintBias")
     try:
-        sbp.check_call(cmd,shell=True)
+        print_bias.mainMethod(print_bias_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -727,7 +734,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         stacked_data_image,psf_images_and_tables,segmentation_images,
         stacked_segmentation_image,detections_tables,details_table,
         workdir,logdir,simulation_no) 
-    
     
     shear_estimates_product = os.path.join('data','shear_estimates_product.xml')
     
