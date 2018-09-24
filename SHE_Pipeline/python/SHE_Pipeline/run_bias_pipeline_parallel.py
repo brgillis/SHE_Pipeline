@@ -49,13 +49,11 @@ from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
-from SHE_PPT.utility import get_arguments_string
+
 from SHE_PPT.logging import getLogger
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
-import subprocess as sbp
-
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -166,11 +164,15 @@ def she_estimate_shear(data_images,stacked_image,
             regauss_training_data,workdir)
         
     
+    # @FIXME: --logdir is a pipeline runner option, not a shear_estimate option
+    # shear_estimate etc. use magic values for the logger..
+     
+    
     argv=("--data_images %s "
         "--stacked_image %s --psf_images_and_tables %s "
         "--segmentation_images %s --stacked_segmentation_image %s "
         "--detections_tables %s%s --pipeline_config %s "
-        "--shear_estimates_product %s --workdir %s "
+        "--shear_estimates_product %s --workdir %s --logdir %s "
         "--log-file %s/%s/she_estimate_shear.out"  %
         (get_relpath(data_images,workdir),
          get_relpath(stacked_image,workdir),
@@ -181,7 +183,7 @@ def she_estimate_shear(data_images,stacked_image,
          shear_method_arg_string,
          get_relpath(pipeline_config,workdir),
          get_relpath(shear_estimates_product,workdir),
-         workdir,workdir,logdir)).split()
+         workdir,logdir,workdir,logdir)).split()
     # 
 
     # set argsparser
@@ -305,10 +307,10 @@ def she_print_bias(workdir,shear_bias_measurement_final,logdir):
     logger = getLogger(__name__)
         
     argv=("--workdir %s "
-         "--shear_bias_measurements %s "
+         "--shear_bias_measurements %s --logdir %s "
          "--log-file %s/%s/she_print_bias.out"  % (workdir,
                 get_relpath(shear_bias_measurement_final,workdir),
-                workdir,logdir)).split() 
+                logdir,workdir,logdir)).split() 
     
     print_bias_args=pu.setup_function_args(argv,print_bias, ERun_CTE+" SHE_CTE_PrintBias")
     try:

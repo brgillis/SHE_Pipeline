@@ -131,26 +131,26 @@ class TestPipelineUtilities():
         """ Test run_threads on simple set of multiple processes
         """
         
-        fileNameList=[]
-        prodThreads=[]
+        filename_list=[]
+        prod_threads=[]
         for ii in range(2):
-            fileName='output2134_%s.dat' % ii
-            if os.path.exists(fileName):
-                os.remove(fileName)
-            fileNameList.append(fileName)
-            prodThreads.append(multiprocessing.Process(
+            filename='output2134_%s.dat' % ii
+            if os.path.exists(filename):
+                os.remove(filename)
+            filename_list.append(filename)
+            prod_threads.append(multiprocessing.Process(
                 target=self.simpleFunction,
                 args=(ii,)))
-        if prodThreads:
+        if prod_threads:
             try:
-                pu.runThreads(prodThreads)
+                pu.run_threads(prod_threads)
             except Exception as e:
                 # But still seems to do it...
                 if '<ERROR>' in e:
                     assert False
-        for ii,fileName in enumerate(fileNameList):
-            assert os.path.exists(fileName)
-            lines=open(fileName).readlines()
+        for ii,filename in enumerate(filename_list):
+            assert os.path.exists(filename)
+            lines=open(filename).readlines()
             assert str(lines[0]).startswith(str(ii))
         
         pass
@@ -160,20 +160,20 @@ class TestPipelineUtilities():
         where exceptions are raised.
         """
         
-        fileNameList=[]
-        prodThreads=[]
+        filename_list=[]
+        prod_threads=[]
         for ii in range(2):
-            fileName='output2134_%s.dat' % ii
-            if os.path.exists(fileName):
-                os.remove(fileName)
+            filename='output2134_%s.dat' % ii
+            if os.path.exists(filename):
+                os.remove(filename)
             raiseException = ii==1
-            fileNameList.append(fileName)
-            prodThreads.append(multiprocessing.Process(
+            filename_list.append(filename)
+            prod_threads.append(multiprocessing.Process(
                 target=self.simpleFunction,
                 args=(ii,raiseException)))
-        if prodThreads:
+        if prod_threads:
             try:
-                pu.runThreads(prodThreads)
+                pu.run_threads(prod_threads)
             except Exception as e:
                 if '<ERROR>' in e:
                     assert True
@@ -194,20 +194,20 @@ class TestPipelineUtilities():
         
         num_threads = multiprocessing.cpu_count()+3
         
-        fileNameList=[]
-        prodThreads=[]
+        filename_list=[]
+        prod_threads=[]
         for ii in range(num_threads):
-            fileName='output2134_%s.dat' % ii
-            if os.path.exists(fileName):
-                os.remove(fileName)
+            filename='output2134_%s.dat' % ii
+            if os.path.exists(filename):
+                os.remove(filename)
             raiseException = ii==1
-            fileNameList.append(fileName)
-            prodThreads.append(multiprocessing.Process(
+            filename_list.append(filename)
+            prod_threads.append(multiprocessing.Process(
                 target=self.simpleFunction,
                 args=(ii,raiseException)))
-        if prodThreads:
+        if prod_threads:
             try:
-                pu.runThreads(prodThreads)
+                pu.run_threads(prod_threads)
             except Exception as e:
                 # But still seems to do it...
                 if '<ERROR>' in e:
