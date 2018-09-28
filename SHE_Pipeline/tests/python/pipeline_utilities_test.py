@@ -52,7 +52,7 @@ class TestPipelineUtilities():
         assert lines[0].startswith('33')
         pass
 
-
+    @pytest.mark.skip(reason="Function not currently used")
     def test_external_process_run2(self):
         """ A command with some standard output, but no standard error
         
@@ -66,6 +66,7 @@ class TestPipelineUtilities():
         assert 'Testing stdout' in str(stdOut[0])
         pass
 
+    @pytest.mark.skip(reason="Function not currently used")
     def test_external_process_run3(self):
         """ A command with some standard error, but not raised on error
         
@@ -80,6 +81,7 @@ class TestPipelineUtilities():
         pass
     
     
+    @pytest.mark.skip(reason="Function not currently used")
     def test_external_process_run4(self):
         """ A command with some standard error, 
         raised on error
@@ -97,6 +99,7 @@ class TestPipelineUtilities():
         assert False
         pass
     
+    @pytest.mark.skip(reason="Function not currently used")
     def test_external_process_run5(self):
         """ A command with some standard error, 
         raised on error
