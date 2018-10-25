@@ -434,8 +434,14 @@ def check_args(args):
         args.number_threads = str(multiprocessing.cpu_count() - 1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
+
     args.number_threads = max(1, min(int(args.number_threads), multiprocessing.cpu_count()))
 
+    if args.est_shear_only:
+        if not args.est_shear_only.isdigit() and int(args.est_shear_only) not in (0,1):
+            raise ValueError("Invalid value passes to est_shear_only must be 0,1")
+        args.est_shear_only = int(args.est_shear_only)==1
+        
     # Create the base workdir
     if not os.path.exists(args.workdir):
         # Can we create it?
@@ -735,7 +741,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                              bfd_training_data, ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
                                              regauss_training_data, pipeline_config, workdirTuple,
-                                             simulation_no, logdir):
+                                             simulation_no, logdir, est_shear_only):
     """ Parallel processing parts of bias_measurement pipeline
 
     """
@@ -775,6 +781,11 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        pipeline_config=pipeline_config,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
+
+    # Complete after shear only if option set.
+    if est_shear_only:
+        logger.info("Configuration set up to complete after shear measurement")
+        return
 
     shear_bias_statistics = os.path.join('data', 'shear_bias_statistics.xml')
 
@@ -900,17 +911,25 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
                       simulate_measure_inputs.pipeline_config,
-                      workdir,simulation_no,args.logdir)))
+                      workdir,simulation_no,args.logdir,args.est_shear_only)))
         
         if prod_threads:
             pu.run_threads(prod_threads)
             
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        merge_outputs(workdir_list,batch,shear_bias_measurement_listfile)
-        # Clean up 
-        logger.info("Cleaning up batch files..")   
-        pu.cleanup(batch,workdir_list)
+        if args.est_shear_only:
+            logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
+            
+        else:
+            merge_outputs(workdir_list,batch,shear_bias_measurement_listfile)
+            # Clean up 
+            logger.info("Cleaning up batch files..")   
+            pu.cleanup(batch,workdir_list)
     
+    if args.est_shear_only:
+        logger.info("Pipeline completed!")
+        return
+
 
     # Run final process
     shear_bias_measurement_final = os.path.join(args.workdir, 'data', 'shear_bias_measurements_final.xml')
