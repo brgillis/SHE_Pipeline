@@ -68,6 +68,10 @@ def defineSpecificProgramOptions():
                         help="Number of threads to use. This might be curtailed if > number available. " +
                         "0 (default) will result in using all but one available cpu.")
 
+    parser.add_argument('--est_shear_only',type=str, default=None,
+                        help="Curtail pipeline after shear estimates (1) or do full pipeline (0).")
+
+
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
     
