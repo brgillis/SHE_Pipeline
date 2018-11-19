@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-09-24"
+__updated__ = "2018-11-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -26,11 +26,6 @@ import multiprocessing
 import os
 import time
 
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
-from SHE_PPT.logging import getLogger
 from astropy.io import fits
 from astropy.io import fits
 from astropy.table import Table
@@ -38,30 +33,33 @@ from astropy.table import Table
 import numpy
 import numpy
 
+import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
+import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
+import SHE_CTE_BiasMeasurement.PrintBias as print_bias
+from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
+from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
+import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
+import SHE_CTE_ShearEstimation.EstimateShear as est_she
+from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
-import SHE_CTE_ShearEstimation.EstimateShear as est_she
-import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
-import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
-import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
-import SHE_CTE_BiasMeasurement.PrintBias as print_bias
-
-from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
-from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
-from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
-
+from SHE_PPT import products
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
-
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
+from SHE_PPT.logging import getLogger
 from SHE_PPT.logging import getLogger
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
+
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -82,7 +80,7 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
                      "SHE_CTE_MeasureStatistics_webdav_dir",)
 
 ERun_CTE = "E-Run SHE_CTE 0.5 "
-ERun_GST = "E-Run SHE_GST 1.5 "
+ERun_GST = "E-Run SHE_GST 1.7 "
 ERun_MER = "E-Run SHE_MER 0.1 "
 ERun_Pipeline = "E-Run SHE_Pipeline 0.3 "
 
