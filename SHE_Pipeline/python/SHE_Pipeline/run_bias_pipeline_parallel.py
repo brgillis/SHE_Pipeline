@@ -676,45 +676,47 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         # Now, go through each data file of the product and symlink those from the workdir too
 
         # Skip (but warn) if it's not an XML data product
-        if qualified_filename[-4:] != ".xml":
+        is_xml = True
+        if qualified_filename[-4:] != ".xml" and qualified_filename[-4:] != ".bin":
             logger.warn("Input file " + filename + " is not an XML data product.")
-            continue
+            is_xml = False
 
-        p = read_xml_product(qualified_filename)
-        if not hasattr(p, "get_all_filenames"):
-            raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
-                                      "initialized first.")
-        data_filenames = p.get_all_filenames()
-        if len(data_filenames) == 0:
-            continue
-
-        # Set up the search path for data files
-        data_search_path = (os.path.split(qualified_filename)[0] + ":" +
-                            os.path.split(qualified_filename)[0] + "/..:" +
-                            os.path.split(qualified_filename)[0] + "/../data:" + search_path)
-
-        # Search for and symlink each data file
-        for data_filename in data_filenames:
-
-            # Find the qualified location of the data file
-            try:
-                qualified_data_filename = find_file(data_filename, path=data_search_path)
-            except RuntimeError as e:
-                raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
-
-            # Symlink the data file within the workdir
-            if os.path.exists(os.path.join(workdir.workdir, data_filename)):
-                os.remove(os.path.join(workdir.workdir, data_filename))
+        if is_xml: 
+            p = read_xml_product(qualified_filename)
+            if not hasattr(p, "get_all_filenames"):
+                raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
+                                          "initialized first.")
+            data_filenames = p.get_all_filenames()
+            if len(data_filenames) == 0:
+                continue
+    
+            # Set up the search path for data files
+            data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                                os.path.split(qualified_filename)[0] + "/..:" +
+                                os.path.split(qualified_filename)[0] + "/../data:" + search_path)
+    
+            # Search for and symlink each data file
+            for data_filename in data_filenames:
+    
+                # Find the qualified location of the data file
                 try:
-                    os.unlink(os.path.join(workdir.workdir, data_filename))
-                except Exception as _:
-                    pass
-            if not qualified_data_filename == os.path.join(workdir.workdir,
-                                                           data_filename):
-                os.symlink(qualified_data_filename, os.path.join(workdir.workdir,
-                                                                 data_filename))
-
-        # End loop "for data_filename in data_filenames:"
+                    qualified_data_filename = find_file(data_filename, path=data_search_path)
+                except RuntimeError as e:
+                    raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+    
+                # Symlink the data file within the workdir
+                if os.path.exists(os.path.join(workdir.workdir, data_filename)):
+                    os.remove(os.path.join(workdir.workdir, data_filename))
+                    try:
+                        os.unlink(os.path.join(workdir.workdir, data_filename))
+                    except Exception as _:
+                        pass
+                if not qualified_data_filename == os.path.join(workdir.workdir,
+                                                               data_filename):
+                    os.symlink(qualified_data_filename, os.path.join(workdir.workdir,
+                                                                     data_filename))
+    
+            # End loop "for data_filename in data_filenames:"
 
     # End loop "for input_port_name in args_to_set:"
 
