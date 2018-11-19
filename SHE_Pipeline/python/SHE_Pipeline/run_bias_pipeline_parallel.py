@@ -860,6 +860,13 @@ def run_pipeline_from_args(args):
             # Add any new args here to the list of args we want to set
             if not (split_line[0] in args_to_set) and len(split_line) > 1:
                 args_to_set[split_line[0]] = split_line[1]
+    # Overwrite with any values in isf_args
+    for i in range(len(args.isf_args)//2):
+        key = args.isf_args[2*i]
+        val = args.isf_args[2*i+1]
+        if not key in args_to_set:
+            raise ValueError("Unrecognized isf arg: " + str(key))
+        args_to_set[key] = val
 
     if not ('config_template' in args_to_set and
             os.path.exists(find_file(args_to_set['config_template']))):
