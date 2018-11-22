@@ -79,10 +79,10 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
                      "SHE_CTE_MeasureStatistics_webdav_archive",
                      "SHE_CTE_MeasureStatistics_webdav_dir",)
 
-ERun_CTE = "E-Run SHE_CTE 0.5 "
+ERun_CTE = "E-Run SHE_CTE 0.7 "
 ERun_GST = "E-Run SHE_GST 1.7 "
-ERun_MER = "E-Run SHE_MER 0.1 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.3 "
+ERun_MER = "E-Run SHE_MER 0.3 "
+ERun_Pipeline = "E-Run SHE_Pipeline 0.5 "
 
 
 def she_prepare_configs(simulation_plan, config_template,

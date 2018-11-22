@@ -80,7 +80,7 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.3 SHE_Pipeline_Configure",
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.5 SHE_Pipeline_Configure",
                                     store_true=["profile", "debug", "start", "restart"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)

@@ -60,7 +60,7 @@ class TestPipelineUtilities():
         """
 
         # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.3 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stdout"
+        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stdout"
         
         stdOut,_stdErr=pu.external_process_run(cmd)
         assert 'Testing stdout' in str(stdOut[0])
@@ -73,7 +73,7 @@ class TestPipelineUtilities():
         """
 
         # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.3 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stderr"
+        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stderr"
         
         _stdOut,stdErr=pu.external_process_run(cmd,raiseOnError=False)
         assert 'Testing stderr' in str(stdErr[-1])
@@ -87,7 +87,7 @@ class TestPipelineUtilities():
         """
 
         # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.3 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stderr"
+        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stderr"
         
         try:
             _stdOut,_stdErr=pu.external_process_run(cmd,raiseOnError=True)
@@ -104,7 +104,7 @@ class TestPipelineUtilities():
         """
 
         # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.3 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout both"
+        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout both"
         
         try:
             stdOut,stdErr=pu.external_process_run(cmd,raiseOnError=False)
