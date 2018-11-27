@@ -20,102 +20,19 @@
 # Boston, MA 02110-1301 US
 
 import logging
+import multiprocessing
+import os
+
 import pytest
 
-import os
-import multiprocessing
 import SHE_Pipeline.pipeline_utilities as pu
+
 
 class TestPipelineUtilities():
     """ Unit tests for functions in run_bias_parallel
     """
     
     # Test main functions 
-
-    def test_external_process_run1(self):
-        """ A simple command without any standard output or error
-        
-        
-        """
-
-        # Test external process, with no logging..., no stderr
-        fileName='temp_njc12345.dat'
-        if os.path.exists(fileName):
-            os.remove(fileName)
-        cmd="echo '33' > %s" % fileName
-        
-        pu.external_process_run(cmd)
-        if not os.path.exists(fileName):
-            assert False
-        lines=open(fileName).readlines()
-        assert len(lines)==1 
-        assert lines[0].startswith('33')
-        pass
-
-
-    def test_external_process_run2(self):
-        """ A command with some standard output, but no standard error
-        
-        
-        """
-
-        # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stdout"
-        
-        stdOut,_stdErr=pu.external_process_run(cmd)
-        assert 'Testing stdout' in str(stdOut[0])
-        pass
-
-    def test_external_process_run3(self):
-        """ A command with some standard error, but not raised on error
-        
-        
-        """
-
-        # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stderr"
-        
-        _stdOut,stdErr=pu.external_process_run(cmd,raiseOnError=False)
-        assert 'Testing stderr' in str(stdErr[-1])
-        pass
-    
-    
-    def test_external_process_run4(self):
-        """ A command with some standard error, 
-        raised on error
-        
-        """
-
-        # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout stderr"
-        
-        try:
-            _stdOut,_stdErr=pu.external_process_run(cmd,raiseOnError=True)
-        except:
-            assert True
-            return
-        assert False
-        pass
-    
-    def test_external_process_run5(self):
-        """ A command with some standard error, 
-        raised on error
-        
-        """
-
-        # Test external process, with no logging..., no stderr
-        cmd="E-Run SHE_Pipeline 0.5 python3 SHE_Pipeline/tests/python/external_process_creator.py --standout both"
-        
-        try:
-            stdOut,stdErr=pu.external_process_run(cmd,raiseOnError=False)
-        except:
-            assert False
-        assert 'Testing stderr' in str(stdErr[-1])
-        assert 'Testing stdout' in str(stdOut[0])
-        
-        pass
-
-    # Additional tests for other features???
     
     def simpleFunction(self, threadNo, raiseException=False):
         """ 
