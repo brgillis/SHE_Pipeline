@@ -845,6 +845,8 @@ def run_pipeline_from_args(args):
 
     shear_bias_measurement_listfile = os.path.join(
         args.workdir, 'data', 'shear_bias_measurement_list.json')
+    if os.path.exists(shear_bias_measurement_listfile):
+        os.remove(shear_bias_measurement_listfile)
 
     # prepare configuration
 
