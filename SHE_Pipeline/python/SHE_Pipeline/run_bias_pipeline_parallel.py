@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-11-19"
+__updated__ = "2018-11-27"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #

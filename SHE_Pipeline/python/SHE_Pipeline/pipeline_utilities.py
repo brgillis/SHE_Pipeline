@@ -5,7 +5,7 @@
     Utility functions for the parallel pipeline
 """
 
-__updated__ = "2018-09-18"
+__updated__ = "2018-11-27"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,9 +20,9 @@ __updated__ = "2018-09-18"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import argparse
 from collections import namedtuple
 import os
-import argparse
 from subprocess import Popen, PIPE, STDOUT
 import time
 
@@ -116,8 +116,8 @@ def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batche
     # Now make multiple threads below...
         
     direct_str_list=[]        
-    for thread_no in range(number_threads):
-        for batch_no in range(number_batches):
+    for batch_no in range(number_batches):
+        for thread_no in range(number_threads):
             thread_dir_list=[]
             for workdir_base in workdir_root_list:
                 workdir=os.path.join(workdir_base,'thread%s_batch%s' % (thread_no,batch_no)) 
