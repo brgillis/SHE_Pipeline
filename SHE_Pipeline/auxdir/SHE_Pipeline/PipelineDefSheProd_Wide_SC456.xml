@@ -34,7 +34,7 @@
                 <InputPortName>vis_image</InputPortName>
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!-- fails if no dpdVisCalibratedFrame is returned so no need to run from IAL -->
-                    <Min>1</Min> <!--should this be 1, 2, 3 or 4 - what is SHE rqmt on calibrated frames, VIS can run < 4-->
+                    <Min>1</Min> <!-- Can be run on just 1, if that's all that's available -->
                     <Max>4</Max>  
                 </Cardinality>
             </InputDataPlan>
@@ -56,7 +56,7 @@
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!-- fails if no DpdMerFinalCatalog is returned so no need to run from IAL -->
                     <Min>1</Min>
-                    <Max>10</Max>  <!--how many tiles can interect an observation?-->
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
                 </Cardinality>
             </InputDataPlan>
             <!--WARNING : SHE DOES NOT WANT PIPELINE TO RUN IF MISSING TILE SPATIAL COVERAGE OF OBSERVATION!!!--> 
@@ -68,7 +68,7 @@
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!--fails if no MerSegmentationMap is returned so no need to run from IAL -->
                     <Min>1</Min>
-                    <Max>10</Max>  <!-- how many tiles can interect an observation-->
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
                 </Cardinality>
             </InputDataPlan>            
             
@@ -79,7 +79,7 @@
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
                     <Min>1</Min>
-                    <Max>10</Max>  <!-- how many tiles can interect an NISP observation-->
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
                 </Cardinality>
             </InputDataPlan>
             <!--I've asked PHZ to confirm whether there catalog is by field or tile, TBC-->            
@@ -91,7 +91,7 @@
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
                     <Min>1</Min>
-                    <Max>10</Max>  <!-- how many tiles can interect an observation-->
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
                 </Cardinality>
             </InputDataPlan>   
             <!--I've asked SPE to confirm whether there catalog is by field or tile, TBC-->            
@@ -108,7 +108,7 @@
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality>
                     <Min>1</Min>
-                    <Max>1</Max>  <!-- how many tiles can interect a NISP observation-->
+                    <Max>1</Max>
                 </Cardinality>
             </InputDataPlan>
             
