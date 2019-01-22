@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2018-09-24"
+__updated__ = "2018-11-27"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -26,11 +26,6 @@ import multiprocessing
 import os
 import time
 
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
-from SHE_PPT.logging import getLogger
 from astropy.io import fits
 from astropy.io import fits
 from astropy.table import Table
@@ -38,30 +33,33 @@ from astropy.table import Table
 import numpy
 import numpy
 
+import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
+import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
+import SHE_CTE_BiasMeasurement.PrintBias as print_bias
+from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
+from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
+import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
+import SHE_CTE_ShearEstimation.EstimateShear as est_she
+from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
-import SHE_CTE_ShearEstimation.EstimateShear as est_she
-import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
-import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
-import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
-import SHE_CTE_BiasMeasurement.PrintBias as print_bias
-
-from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
-from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
-from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
-
+from SHE_PPT import products
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
-
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
+from SHE_PPT.logging import getLogger
 from SHE_PPT.logging import getLogger
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
+
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -81,10 +79,10 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
                      "SHE_CTE_MeasureStatistics_webdav_archive",
                      "SHE_CTE_MeasureStatistics_webdav_dir",)
 
-ERun_CTE = "E-Run SHE_CTE 0.5 "
-ERun_GST = "E-Run SHE_GST 1.5 "
-ERun_MER = "E-Run SHE_MER 0.1 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.3 "
+ERun_CTE = "E-Run SHE_CTE 0.7 "
+ERun_GST = "E-Run SHE_GST 1.7 "
+ERun_MER = "E-Run SHE_MER 0.3 "
+ERun_Pipeline = "E-Run SHE_Pipeline 0.5 "
 
 
 def she_prepare_configs(simulation_plan, config_template,
@@ -434,8 +432,14 @@ def check_args(args):
         args.number_threads = str(multiprocessing.cpu_count() - 1)
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
+
     args.number_threads = max(1, min(int(args.number_threads), multiprocessing.cpu_count()))
 
+    if args.est_shear_only:
+        if not args.est_shear_only.isdigit() and int(args.est_shear_only) not in (0,1):
+            raise ValueError("Invalid value passes to est_shear_only must be 0,1")
+        args.est_shear_only = int(args.est_shear_only)==1
+        
     # Create the base workdir
     if not os.path.exists(args.workdir):
         # Can we create it?
@@ -672,45 +676,47 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         # Now, go through each data file of the product and symlink those from the workdir too
 
         # Skip (but warn) if it's not an XML data product
-        if qualified_filename[-4:] != ".xml":
+        is_xml = True
+        if qualified_filename[-4:] != ".xml" and qualified_filename[-4:] != ".bin":
             logger.warn("Input file " + filename + " is not an XML data product.")
-            continue
+            is_xml = False
 
-        p = read_xml_product(qualified_filename)
-        if not hasattr(p, "get_all_filenames"):
-            raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
-                                      "initialized first.")
-        data_filenames = p.get_all_filenames()
-        if len(data_filenames) == 0:
-            continue
-
-        # Set up the search path for data files
-        data_search_path = (os.path.split(qualified_filename)[0] + ":" +
-                            os.path.split(qualified_filename)[0] + "/..:" +
-                            os.path.split(qualified_filename)[0] + "/../data:" + search_path)
-
-        # Search for and symlink each data file
-        for data_filename in data_filenames:
-
-            # Find the qualified location of the data file
-            try:
-                qualified_data_filename = find_file(data_filename, path=data_search_path)
-            except RuntimeError as e:
-                raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
-
-            # Symlink the data file within the workdir
-            if os.path.exists(os.path.join(workdir.workdir, data_filename)):
-                os.remove(os.path.join(workdir.workdir, data_filename))
+        if is_xml: 
+            p = read_xml_product(qualified_filename)
+            if not hasattr(p, "get_all_filenames"):
+                raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
+                                          "initialized first.")
+            data_filenames = p.get_all_filenames()
+            if len(data_filenames) == 0:
+                continue
+    
+            # Set up the search path for data files
+            data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                                os.path.split(qualified_filename)[0] + "/..:" +
+                                os.path.split(qualified_filename)[0] + "/../data:" + search_path)
+    
+            # Search for and symlink each data file
+            for data_filename in data_filenames:
+    
+                # Find the qualified location of the data file
                 try:
-                    os.unlink(os.path.join(workdir.workdir, data_filename))
-                except Exception as _:
-                    pass
-            if not qualified_data_filename == os.path.join(workdir.workdir,
-                                                           data_filename):
-                os.symlink(qualified_data_filename, os.path.join(workdir.workdir,
-                                                                 data_filename))
-
-        # End loop "for data_filename in data_filenames:"
+                    qualified_data_filename = find_file(data_filename, path=data_search_path)
+                except RuntimeError as e:
+                    raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+    
+                # Symlink the data file within the workdir
+                if os.path.exists(os.path.join(workdir.workdir, data_filename)):
+                    os.remove(os.path.join(workdir.workdir, data_filename))
+                    try:
+                        os.unlink(os.path.join(workdir.workdir, data_filename))
+                    except Exception as _:
+                        pass
+                if not qualified_data_filename == os.path.join(workdir.workdir,
+                                                               data_filename):
+                    os.symlink(qualified_data_filename, os.path.join(workdir.workdir,
+                                                                     data_filename))
+    
+            # End loop "for data_filename in data_filenames:"
 
     # End loop "for input_port_name in args_to_set:"
 
@@ -735,7 +741,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                              bfd_training_data, ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
                                              regauss_training_data, pipeline_config, workdirTuple,
-                                             simulation_no, logdir):
+                                             simulation_no, logdir, est_shear_only):
     """ Parallel processing parts of bias_measurement pipeline
 
     """
@@ -775,6 +781,11 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        pipeline_config=pipeline_config,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
+
+    # Complete after shear only if option set.
+    if est_shear_only:
+        logger.info("Configuration set up to complete after shear measurement")
+        return
 
     shear_bias_statistics = os.path.join('data', 'shear_bias_statistics.xml')
 
@@ -834,6 +845,8 @@ def run_pipeline_from_args(args):
 
     shear_bias_measurement_listfile = os.path.join(
         args.workdir, 'data', 'shear_bias_measurement_list.json')
+    if os.path.exists(shear_bias_measurement_listfile):
+        os.remove(shear_bias_measurement_listfile)
 
     # prepare configuration
 
@@ -851,6 +864,13 @@ def run_pipeline_from_args(args):
             # Add any new args here to the list of args we want to set
             if not (split_line[0] in args_to_set) and len(split_line) > 1:
                 args_to_set[split_line[0]] = split_line[1]
+    # Overwrite with any values in isf_args
+    for i in range(len(args.isf_args)//2):
+        key = args.isf_args[2*i]
+        val = args.isf_args[2*i+1]
+        if not key in args_to_set:
+            raise ValueError("Unrecognized isf arg: " + str(key))
+        args_to_set[key] = val
 
     if not ('config_template' in args_to_set and
             os.path.exists(find_file(args_to_set['config_template']))):
@@ -900,17 +920,25 @@ def run_pipeline_from_args(args):
                       simulate_measure_inputs.momentsml_training_data,
                       simulate_measure_inputs.regauss_training_data,
                       simulate_measure_inputs.pipeline_config,
-                      workdir,simulation_no,args.logdir)))
+                      workdir,simulation_no,args.logdir,args.est_shear_only)))
         
         if prod_threads:
             pu.run_threads(prod_threads)
             
         logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        merge_outputs(workdir_list,batch,shear_bias_measurement_listfile)
-        # Clean up 
-        logger.info("Cleaning up batch files..")   
-        pu.cleanup(batch,workdir_list)
+        if args.est_shear_only:
+            logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
+            
+        else:
+            merge_outputs(workdir_list,batch,shear_bias_measurement_listfile)
+            # Clean up 
+            logger.info("Cleaning up batch files..")   
+            pu.cleanup(batch,workdir_list)
     
+    if args.est_shear_only:
+        logger.info("Pipeline completed!")
+        return
+
 
     # Run final process
     shear_bias_measurement_final = os.path.join(args.workdir, 'data', 'shear_bias_measurements_final.xml')

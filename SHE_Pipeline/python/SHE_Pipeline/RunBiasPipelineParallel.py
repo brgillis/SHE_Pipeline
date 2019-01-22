@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2018-09-17"
+__updated__ = "2019-01-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -68,6 +68,10 @@ def defineSpecificProgramOptions():
                         help="Number of threads to use. This might be curtailed if > number available. " +
                         "0 (default) will result in using all but one available cpu.")
 
+    parser.add_argument('--est_shear_only',type=str, default=None,
+                        help="Curtail pipeline after shear estimates (1) or do full pipeline (0).")
+
+
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
     
@@ -103,7 +107,7 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.4.16 SHE_Pipeline_RunBiasParallel",
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.6 SHE_Pipeline_RunBiasParallel",
                                     store_true=["profile", "debug", "cluster"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
