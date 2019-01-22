@@ -23,7 +23,7 @@ __updated__ = "2019-01-22"
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
 ERun_CTE = "E-Run SHE_CTE 0.6.9 "
-ERun_GST = "E-Run SHE_GST 1.6.5 "
+ERun_GST = "E-Run SHE_GST 1.6.6 "
 ERun_MER = "E-Run SHE_MER 0.2.1 "
 ERun_Pipeline = "E-Run SHE_Pipeline 0.6 "
 
