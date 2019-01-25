@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2018-07-04"
+__updated__ = "2019-01-25"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -42,6 +42,8 @@ def shear_analysis_pipeline(data_images,
                             # psf_calibration_products, # Disabled for now
                             galaxy_population_priors_table,
                             # calibration_parameters_product, # Disabled for now
+                            phz_output_cat,
+                            spe_output_cat,
                             ):
 
     stacked_segmentation_image = she_remap_mosaic(mer_tile_listfile=mer_tiles,
@@ -84,6 +86,7 @@ def shear_analysis_pipeline(data_images,
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 
     return cross_validated_shear_estimates_product
+
 
 if __name__ == '__main__':
     from euclidwf.framework.graph_builder import build_graph
