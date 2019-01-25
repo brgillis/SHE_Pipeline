@@ -16,21 +16,17 @@
                 <DataProductType>dpdVisCalibratedFrame</DataProductType>
                 <InputQuerySpecPlan type="SQLLike"> <!-- Type of the Query to be agreed with Andrey depending on the complexity of the query that could be a  SQL or a Python function -->
                     <Id>VisCalibratedFrame_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
-                    <Query>dpdVisCalibratedFrame.Data.ObservationSequence.FieldId=="UNKNOWN"</Query>
+                    <Query>(DpdVisCalibratedFrame.Data.ObservationSequence.ObservationId=="UNKNOWN") &amp; (DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE") &amp; (DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE") &amp; (DpdVisCalibratedFrame.Header.ManualValidationStatus != 'INVALID')</Query>
                 </InputQuerySpecPlan> <!-- COORS UI to select Observation ID for VisCalibratedFrame selection -->
                 <InputQuerySpecPlan type="SQLLike">
                     <Id>VisCalibIdTemporalQuery_2018-23-02</Id>                  
-                    <Query>DpdVisCalibratedFrame.Header.CreationDate BETWEEN ('UNKNOWN') AND ('UNKNOWN')</Query>
+                    <Query>(DpdVisCalibratedFrame.Header.CreationDate TO_DATE("UNKNOWN") AND TO_DATE("UNKNOWN")) &amp; (DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE") &amp; (DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE") &amp; (DpdVisCalibratedFrame.Header.ManualValidationStatus != 'INVALID')</Query>
                 </InputQuerySpecPlan> <!-- COORS UI to select Date Beg and date End for VisCalibratedFrame selection -->
                 <!--Does SHE require a query for spatial footprint?-->
                 <InputQuerySpecPlan type="SQLLike">
-                    <Id>VisCategoryQuery_2018-23-02</Id>
-                    <Query>DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE"</Query>
-                </InputQuerySpecPlan> <!-- To avoid retrieval of calib images to be selective in the query (default clause mentioned by Andrey) -->
-                <InputQuerySpecPlan type="SQLLike">
-                    <Id>VisCalibIdThirdTypeQuery_2018-23-02</Id>
-                    <Query>DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE"</Query>
-                </InputQuerySpecPlan> <!-- default clause mentioned -->                
+                    <Id>VisSpatialQuery_2018-23-02</Id>
+                    <Query>('POLYGON("UNKNOWN")' CONTAINS DpdVisCalibratedFrame.Data.ImgSpatialFootprint.Polygon) &amp; (DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE") &amp; (DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE") &amp; (DpdVisCalibratedFrame.Header.ManualValidationStatus != 'INVALID')</Query>
+                </InputQuerySpecPlan> <!-- To avoid retrieval of calib images to be selective in the query (default clause mentioned by Andrey) -->               
                 <InputPortName>vis_image</InputPortName>
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!-- fails if no dpdVisCalibratedFrame is returned so no need to run from IAL -->
@@ -41,6 +37,10 @@
             
             <InputDataPlan>
                 <DataProductType>dpdVisStackedFrame</DataProductType>
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>VisStackedValid_2018-23-02</Id>
+                    <Query> DpdVisStackedFrame.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
                  <InputPortName>vis_stacked_image</InputPortName>
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!-- fails if no dpdVisStackedFrame is returned so no need to run from IAL -->
@@ -52,6 +52,10 @@
             <InputDataPlan>
                 <DataProductType>DpdMerFinalCatalog</DataProductType>
 				<!--extraction of NIR fluxes YJH-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdMerFinalCatalogValid_2018-23-02</Id>
+                    <Query>DpdMerFinalCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
                 <InputPortName>mer_catalog</InputPortName>
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!-- fails if no DpdMerFinalCatalog is returned so no need to run from IAL -->
@@ -64,6 +68,10 @@
             <InputDataPlan>
                 <DataProductType>dpdMerSegmentationMap</DataProductType>
                 <!--extraction of NIR fluxes YJH-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdMerSegmentationMapValid_2018-23-02</Id>
+                    <Query>DpdMerSegmentationMap.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
                 <InputPortName>mer_segmentation_map</InputPortName>
                 <Cardinality>
                     <Optionality>MANDATORY</Optionality> <!--fails if no MerSegmentationMap is returned so no need to run from IAL -->
@@ -75,6 +83,10 @@
             <InputDataPlan>
                 <DataProductType>DpdPhzPfOutputCatalog</DataProductType>
                 <!--Joint PDFs of the PHZs & SEDs-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdPhzPfOutputCatalogValid_2018-23-02</Id>
+                    <Query>DpdPhzPfOutputCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
                 <InputPortName>TBC</InputPortName>
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
@@ -87,11 +99,15 @@
             <InputDataPlan>
                 <DataProductType>DpdSpePfOutputCatalog</DataProductType>
                 <!--Galaxy & stellar spectra for colour dependent PSF corrections-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdSpePfOutputCatalogValid_2018-23-02</Id>
+                    <Query>DpdSpePfOutputCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
                 <InputPortName>TBC</InputPortName>
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
                     <Min>1</Min>
-                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
+                    <Max>1</Max>  <!-- Up to 9 tiles can intersect an observation -->
                 </Cardinality>
             </InputDataPlan>   
             <!--I've asked SPE to confirm whether there catalog is by field or tile, TBC-->            
@@ -171,36 +187,39 @@
                     <Max>1</Max>
                 </Cardinality>
             </InputDataPlan>
-
-           <Dependencies>
+        <Dependencies>
                <!--the following dependancy ensures that the FieldId of the dpdVisStackedFrame matches that of the dpdVisCalibratedFrame--> 
-               <LinkedBy type="SQLLike">
+                 <GroupedBy type="SQLLike">
+                   <Id>VIS-CAL-FRAME_Observation_ID</Id>
+                   <Query>DpdVisCalibratedFrame.Data.ObservationSequence.ObservationId</Query>
+               </LinkedBy>
+			   <LinkedBy type="SQLLike">
                    <Id>VIS-CAL-FRAME_VIS-STACKED-FRAME_FIELDID</Id>
-                   <Query>dpdVisCalibratedFrame.Data.ObservationSequence.FieldId == dpdVisStackedFrame.Data.FieldId</Query>
+                   <Query>dpdVisCalibratedFrame.Data.ObservationSequence.ObservationId == dpdVisStackedFrame.Data.ObservationId</Query>
                </LinkedBy>
 
                <!-- the following dependency allows to select the DpdMerFinalCatalog intersects the polygon of the dpdVisStackedFrame-->
                <LinkedBy type="SQLLike">
 					<Id>VIS_MER_INTERSECTS</Id>
-                   <Query>dpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon INTERSECTS DpdMerFinalCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon</Query>
+                   <Query>DpdMerFinalCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon </Query>
 				</LinkedBy>
                
                <!-- the following dependency ensures that the TileIndex of the dpdMerSegmentationMap matches that of the DpdMerFinalCatalogallows to select the DpdMerFinalCatalog-->
                <LinkedBy type="SQLLike">
-                   <Id>MER-FINAL-CATALOG_MER-SEG-MAP_TILE-INDEX</Id>
-                   <Query>DpdMerFinalCatalog.Data.TileIndex == dpdMerSegmentationMap.Data.TileIndex</Query>
+                   <Id>MER-SEG-MAP_INTERSECTS</Id>
+                   <Query>DpdMerSegmentationMap.Data.ImgSpatialFootprint.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon</Query>
                </LinkedBy>
                
                <!-- the following dependency allows to select the DpdPhzPfOutputCatalog intersects the polygon of the dpdVisStackedFrame-->
                <LinkedBy type="SQLLike">
                    <Id>VIS_PHZ_INTERSECTS</Id>
-                   <Query>dpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon INTERSECTS DpdPhzPfOutputCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon</Query>
+                   <Query>DpdPhzPfOutputCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon</Query>
                </LinkedBy>
                
                <!-- the following dependency allows to select the DpdSpePfOutputCatalog intersects the polygon of the dpdVisStackedFrame-->
                <LinkedBy type="SQLLike">
                    <Id>VIS_SPE_INTERSECTS</Id>
-                   <Query>dpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon INTERSECTS DpdSpePfOutputCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon</Query>
+                   <Query>DpdSpePfOutputCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon</Query>
                </LinkedBy>
 			</Dependencies>
         </QueryDefinition>
