@@ -87,7 +87,7 @@
                     <Id>DpdPhzPfOutputCatalogValid_2018-23-02</Id>
                     <Query>DpdPhzPfOutputCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
                 </InputQuerySpecPlan> 
-                <InputPortName>TBC</InputPortName>
+                <InputPortName>phz_output_cat</InputPortName>
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
                     <Min>1</Min>
@@ -103,7 +103,7 @@
                     <Id>DpdSpePfOutputCatalogValid_2018-23-02</Id>
                     <Query>DpdSpePfOutputCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
                 </InputQuerySpecPlan> 
-                <InputPortName>TBC</InputPortName>
+                <InputPortName>spe_output_cat</InputPortName>
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
                     <Min>1</Min>
