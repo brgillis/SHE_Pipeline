@@ -107,7 +107,7 @@
                 <Cardinality>
                     <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
                     <Min>1</Min>
-                    <Max>1</Max>  <!-- Up to 9 tiles can intersect an observation -->
+                    <Max>1</Max>  <!-- Up to 1 tiles can intersect an observation -->
                 </Cardinality>
             </InputDataPlan>   
             <!--I've asked SPE to confirm whether there catalog is by field or tile, TBC-->            
