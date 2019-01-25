@@ -6,3 +6,5 @@ detections_tables=DetectionsCatalogs.json
 # psf_calibration_products=mock_psf_calibration_products.json
 galaxy_population_priors_table=mock_galaxy_population_priors_table.fits
 # calibration_parameters_product=mock_calibration_parameters_product.bin
+phz_output_cat=None
+spe_output_cat=None
