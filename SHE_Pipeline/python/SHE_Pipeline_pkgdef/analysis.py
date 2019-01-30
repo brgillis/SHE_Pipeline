@@ -40,7 +40,7 @@ def shear_analysis_pipeline(data_images,
                             detections_tables,
                             # aocs_time_series_products, # Disabled for now
                             # psf_calibration_products, # Disabled for now
-                            galaxy_population_priors_table,
+                            # galaxy_population_priors_table, # Disabled for now
                             # calibration_parameters_product, # Disabled for now
                             phz_output_cat,
                             spe_output_cat,
@@ -78,7 +78,7 @@ def shear_analysis_pipeline(data_images,
                                                  # lensmc_training_data = lensmc_training_data, # Disabled for now
                                                  # momentsml_training_data = momentsml_training_data, # Disabled for now
                                                  # regauss_training_data = regauss_training_data, # Disabled for now
-                                                 galaxy_population_priors_table=galaxy_population_priors_table,
+                                                 # galaxy_population_priors_table=galaxy_population_priors_table,
                                                  # calibration_parameters_product = calibration_parameters_product, #
                                                  # Disabled for now
                                                  )
