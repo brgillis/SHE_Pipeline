@@ -26,6 +26,7 @@ from copy import deepcopy
 import os
 from shutil import copyfile
 from time import sleep
+import xml.sax._exceptions
 
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
@@ -33,9 +34,8 @@ from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, rea
 from SHE_PPT.logging import getLogger
 from astropy.table import Table
 
-import _pickle.UnpicklingError
+import _pickle
 import subprocess as sbp
-import xml.sax._exceptions.SAXParseException
 
 
 default_workdir = "/home/user/Work/workspace"
