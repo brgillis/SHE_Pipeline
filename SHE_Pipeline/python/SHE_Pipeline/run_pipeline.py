@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2018-09-03"
+__updated__ = "2019-03-08"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,13 +27,15 @@ import os
 from shutil import copyfile
 from time import sleep
 
-from astropy.table import Table
-
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product)
 from SHE_PPT.logging import getLogger
+from astropy.table import Table
+
+import _pickle.UnpicklingError
 import subprocess as sbp
+import xml.sax._exceptions.SAXParseException
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -429,7 +431,12 @@ def create_isf(args,
             logger.warn("Input file " + filename + " is not an XML data product.")
             continue
 
-        p = read_xml_product(qualified_filename)
+        try:
+            p = read_xml_product(qualified_filename)
+        except xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError as e:
+            logger.error("Cannot read file " + qualified_filename + ".")
+            raise
+        
         if not hasattr(p, "get_all_filenames"):
             raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
                                       "initialized first.")
