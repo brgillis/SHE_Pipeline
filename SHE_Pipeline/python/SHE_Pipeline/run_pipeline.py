@@ -390,7 +390,7 @@ def create_isf(args,
     for input_port_name in args_to_set:
 
         # Skip ISF arguments that don't correspond to input ports
-        if input_port_name in non_filename_args:
+        if input_port_name in non_filename_args or input_port_name == "mdb":
             continue
 
         filename = args_to_set[input_port_name]
