@@ -453,6 +453,9 @@ def create_isf(args,
         # Search for and symlink each data file
         for data_filename in data_filenames:
 
+            if data_filename is None or data_filename is "None":
+                continue
+
             # Find the qualified location of the data file
             try:
                 qualified_data_filename = find_file(data_filename, path=data_search_path)
