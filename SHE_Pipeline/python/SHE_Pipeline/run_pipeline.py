@@ -56,7 +56,7 @@ known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
                      "SHE_CTE_MeasureStatistics_webdav_archive",
                      "SHE_CTE_MeasureStatistics_webdav_dir",)
 
-known_output_filenames = {"bias_measurement":"she_measure_bias/shear_bias_measurements.xml"}
+known_output_filenames = {"bias_measurement": "she_measure_bias/shear_bias_measurements.xml"}
 
 
 def get_pipeline_dir():
@@ -295,11 +295,12 @@ def create_plan(args, retTable=False):
 
     # Write out the new plan
     simulation_plan_table.write(qualified_new_plan_filename, format="fits")
-    
+
     if retTable:
-        return simulation_plan_table,qualified_new_plan_filename
+        return simulation_plan_table, qualified_new_plan_filename
     else:
         return
+
 
 def create_config(args):
     """Function to create a new pipeline_config file for this run.
@@ -433,10 +434,10 @@ def create_isf(args,
 
         try:
             p = read_xml_product(qualified_filename)
-        except xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError as e:
+        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
             logger.error("Cannot read file " + qualified_filename + ".")
             raise
-        
+
         if not hasattr(p, "get_all_filenames"):
             raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
                                       "initialized first.")
@@ -486,11 +487,11 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
     """
 
     logger = getLogger(__name__)
-    
+
     # If we're waiting, we'll need to store the output in a temporary file
     if wait:
         output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.03")
-        qualified_output_filename = os.path.join(workdir,output_filename)
+        qualified_output_filename = os.path.join(workdir, output_filename)
         output_tail = " > " + qualified_output_filename
     else:
         output_tail = ""
@@ -499,107 +500,108 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
            + output_tail)
     logger.info("Calling pipeline with command: '" + cmd + "'")
     sbp.call(cmd, shell=True)
-    
+
     # If we're waiting, print the output for records, then poll for when it's finished
     if wait:
         cmd = "cat " + qualified_output_filename
         sbp.call(cmd, shell=True)
-        
+
         # Get the run ID
         ex_head = "Run submitted to server with id "
-        with open(qualified_output_filename,'r') as fo:
+        with open(qualified_output_filename, 'r') as fo:
             run_id = None
             for line in fo:
                 if ex_head in line:
-                    run_id = line.replace(ex_head,"").strip()[0:-1]
+                    run_id = line.replace(ex_head, "").strip()[0:-1]
                     break
             if run_id is None:
                 raise RuntimeError("Cannot determine runid from output in " + qualified_output_filename)
             else:
                 logger.info("Run id is '" + run_id + "'")
-        
+
         # Periodically poll for the status
-        
+
         time_elapsed = 0
         while time_elapsed < max_wait:
             sleep(poll_interval)
             time_elapsed += poll_interval
-            
-            cmd = 'curl -H "Accept: application/json" "'+serverurl+'/runs/'+run_id+'/status"'
+
+            cmd = 'curl -H "Accept: application/json" "' + serverurl + '/runs/' + run_id + '/status"'
             logger.debug('Polling with command: ' + cmd)
-            status_line=sbp.run(cmd,shell=True,stdout=sbp.PIPE).stdout.decode('utf-8')
+            status_line = sbp.run(cmd, shell=True, stdout=sbp.PIPE).stdout.decode('utf-8')
             logger.debug("Full status is: " + status_line)
             state = ast.literal_eval(status_line)["executionStatus"]
-            if state=="COMPLETED":
+            if state == "COMPLETED":
                 logger.info("Pipeline execution completed.")
                 break
-            elif state=="ERROR":
+            elif state == "ERROR":
                 logger.error("Pipeline ended in error")
                 break
             else:
                 logger.debug("Pipeline in state: " + state)
-                
+
         if time_elapsed >= max_wait:
             logger.error("Pipeline timed out.")
 
     return
 
+
 def create_pickled_args(args,
                         controlled_run=False):
     """Function to create pickled args for when calling a meta pipeline.
     """
-    
+
     local_args = deepcopy(args)
-    
+
     # Set up the args we'll want for the local run
     local_args.workdir = args.local_workdir
     local_args.parent_workdir = args.workdir
     local_args.serverurl = args.local_serverurl
     local_args.isf = args.local_isf
     local_args.config = args.local_config
-    
+
     if not controlled_run:
         local_args.wait = not args.no_local_wait
-        local_args.pipeline = args.pipeline.replace("meta_","")
-        
-    
-    pickled_args_filename = os.path.join(args.workdir,get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
-                                                              extension=".bin", release="00.03"))
-    
+        local_args.pipeline = args.pipeline.replace("meta_", "")
+
+    pickled_args_filename = os.path.join(args.workdir, get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
+                                                                            extension=".bin", release="00.03"))
+
     write_pickled_product(local_args, pickled_args_filename)
-    
+
     return pickled_args_filename
+
 
 def run_pipeline_from_args(args):
     """Main executable to run pipelines.
     """
 
     logger = getLogger(__name__)
-    
+
     # Check for pickled arguments, and override if found
     if args.pickled_args is not None:
-        qualified_pickled_args_filename = find_file(args.pickled_args,args.workdir)
+        qualified_pickled_args_filename = find_file(args.pickled_args, args.workdir)
         args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     check_args(args)
-    
+
     # Are we doing a meta run?
-    meta_run = args.pipeline[0:4]=="meta"
-    controlled_run = args.pipeline[0:10]=="controlled"
+    meta_run = args.pipeline[0:4] == "meta"
+    controlled_run = args.pipeline[0:10] == "controlled"
     if meta_run or controlled_run:
         config_filename = None
-        
-        pickled_args_filename = create_pickled_args(args,controlled_run=controlled_run)
+
+        pickled_args_filename = create_pickled_args(args, controlled_run=controlled_run)
     else:
 
         # If necessary, update the simulation plan
         if len(args.plan_args) > 0:
             create_plan(args)
-    
+
         # Create the pipeline_config for this run
         config_filename = create_config(args)
-        
+
         pickled_args_filename = None
 
     # Create the ISF for this run
