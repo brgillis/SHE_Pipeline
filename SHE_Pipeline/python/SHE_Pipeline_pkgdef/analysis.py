@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2019-03-08"
+__updated__ = "2019-03-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -31,6 +31,49 @@ def she_remap_mosaics(mer_tile_listfile, vis_prod_filenames):
                                           vis_prod_filename=vis_prod_filenames,)
 
     return segmentation_image
+
+
+@parallel(iterable="object_ids")
+def she_model_psf_and_estimate_shear(object_ids,
+                                     vis_image,
+                                     vis_stacked_image,
+                                     segmentation_images,
+                                     stacked_segmentation_image,
+                                     mer_catalog,
+                                     bfd_training_data,
+                                     ksb_training_data,
+                                     lensmc_training_data,
+                                     momentsml_training_data,
+                                     regauss_training_data,
+                                     mdb,
+                                     ):
+    """ Parallel branch, where we model PSFs and estimate shears for a batch of galaxies.
+    """
+
+    psf_images_and_tables = she_model_psf(object_ids=object_ids,
+                                          data_images=vis_image,
+                                          segmentation_images=segmentation_images,
+                                          detections_tables=mer_catalog,
+                                          mdb=mdb,
+                                          psf_field_params=psf_field_params,
+                                          )
+
+    shear_estimates_product = she_estimate_shear(object_ids=object_ids,
+                                                 data_images=vis_image,
+                                                 stacked_image=vis_stacked_image,
+                                                 psf_images_and_tables=psf_images_and_tables,
+                                                 segmentation_images=segmentation_images,
+                                                 stacked_segmentation_image=stacked_segmentation_image,
+                                                 detections_tables=mer_catalog,
+                                                 bfd_training_data=bfd_training_data,
+                                                 ksb_training_data=ksb_training_data,
+                                                 lensmc_training_data=lensmc_training_data,
+                                                 momentsml_training_data=momentsml_training_data,
+                                                 regauss_training_data=regauss_training_data,
+                                                 mdb=mdb,
+                                                 )
+
+    return shear_estimates_product
 
 
 @pipeline(outputs=('validated_shear_estimates_table'))
@@ -59,38 +102,31 @@ def shear_analysis_pipeline(mdb,
                                             vis_prod_filenames=vis_image)
 
     psf_field_params = she_fit_psf(data_images=vis_image,
-                                   segmentation_images=mer_segmentation_map,
+                                   segmentation_images=segmentation_images,
                                    detections_tables=mer_catalog,
                                    mdb=mdb,
-                                   # aocs_time_series_products = aocs_time_series_products, # Disabled for now
-                                   # psf_calibration_products = psf_calibration_products, # Disabled for now
                                    )
 
-    psf_images_and_tables = she_model_psf(data_images=vis_image,
-                                          segmentation_images=mer_segmentation_map,
-                                          detections_tables=mer_catalog,
-                                          mdb=mdb,
-                                          # aocs_time_series_products = aocs_time_series_products, # Disabled for now
-                                          # psf_calibration_products = psf_calibration_products, # Disabled for now
-                                          psf_field_params=psf_field_params,
-                                          )
+    # Create list of object ID lists for each batch to process
+    object_ids = she_object_id_split(detections_tables=mer_catalog)
 
-    shear_estimates_product = she_estimate_shear(data_images=vis_image,
-                                                 stacked_image=vis_stacked_image,
-                                                 psf_images_and_tables=psf_images_and_tables,
-                                                 segmentation_images=mer_segmentation_map,
-                                                 stacked_segmentation_image=stacked_segmentation_image,
-                                                 detections_tables=mer_catalog,
-                                                 bfd_training_data=bfd_training_data,
-                                                 ksb_training_data=ksb_training_data,
-                                                 lensmc_training_data=lensmc_training_data,
-                                                 momentsml_training_data=momentsml_training_data,
-                                                 regauss_training_data=regauss_training_data,
-                                                 mdb=mdb,
-                                                 # galaxy_population_priors_table=galaxy_population_priors_table,
-                                                 # calibration_parameters_product = calibration_parameters_product, #
-                                                 # Disabled for now
-                                                 )
+    # Estimate shear in parallel for each batch
+    shear_estimates_products = she_model_psf_and_estimate_shear(object_ids=object_ids,
+                                                                vis_image=vis_image,
+                                                                vis_stacked_image=vis_stacked_image,
+                                                                segmentation_images=segmentation_images,
+                                                                stacked_segmentation_image=stacked_segmentation_image,
+                                                                mer_catalog=mer_catalog,
+                                                                bfd_training_data=bfd_training_data,
+                                                                ksb_training_data=ksb_training_data,
+                                                                lensmc_training_data=lensmc_training_data,
+                                                                momentsml_training_data=momentsml_training_data,
+                                                                regauss_training_data=regauss_training_data,
+                                                                mdb=mdb,
+                                                                )
+
+    # Merge shear estimates together
+    shear_estimates_product = she_object_id_merge(shear_estimates_products=shear_estimates_products)
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 
