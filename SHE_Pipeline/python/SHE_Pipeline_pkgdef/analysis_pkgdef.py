@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-03-08"
+__updated__ = "2019-03-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -40,6 +40,10 @@ she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                                  ],
                          outputs=[Output("psf_field_params", mime_type="json", content_type="listfile")])
 
+she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
+                                 inputs=[Input("detections_tables", content_type="listfile"), ],
+                                 outputs=[Output("object_ids", mime_type='xml')])
+
 she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
                                    Input("detections_tables", content_type="listfile"),
@@ -69,6 +73,10 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ])
+
+she_object_id_merge = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdMerge",
+                                 inputs=[Input("shear_estimates_products", content_type="listfile"), ],
+                                 outputs=[Output("shear_estimates_product", mime_type='xml')])
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
