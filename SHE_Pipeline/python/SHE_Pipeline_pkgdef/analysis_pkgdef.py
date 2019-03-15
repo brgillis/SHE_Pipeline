@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-03-14"
+__updated__ = "2019-03-15"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -49,6 +49,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    Input("detections_tables", content_type="listfile"),
                                    Input("segmentation_images", content_type="listfile"),
                                    Input("psf_field_params"),
+                                   Input("object_ids"),
                                    Input("mdb"),
                                    # Input("aocs_time_series_products", content_type="listfile"), # Disabled for now
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
@@ -62,6 +63,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("segmentation_images", content_type="listfile"),
                                         Input("stacked_segmentation_image"),
                                         Input("detections_tables", content_type="listfile"),
+                                        Input("object_ids"),
                                         Input("bfd_training_data"),
                                         Input("ksb_training_data"),
                                         Input("lensmc_training_data"),
