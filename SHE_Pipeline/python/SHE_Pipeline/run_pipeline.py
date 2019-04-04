@@ -463,14 +463,14 @@ def create_isf(args,
                 raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
-            if os.path.exists(os.path.join(args.workdir, data_filename)):
-                os.remove(os.path.join(args.workdir, data_filename))
-                try:
-                    os.unlink(os.path.join(args.workdir, data_filename))
-                except Exception as _:
-                    pass
             if not qualified_data_filename == os.path.join(args.workdir, data_filename):
-                os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+                if os.path.exists(os.path.join(args.workdir, data_filename)):
+                    os.remove(os.path.join(args.workdir, data_filename))
+                    try:
+                        os.unlink(os.path.join(args.workdir, data_filename))
+                    except Exception as _:
+                        pass
+                    os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 
