@@ -43,7 +43,7 @@ she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
 she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  inputs=[Input("detections_tables", content_type="listfile"),
                                          Input("pipeline_config", content_type="listfile"), ],
-                                 outputs=[Output("object_ids", mime_type='xml')])
+                                 outputs=[Output("object_ids", mime_type='json')])
 
 she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
