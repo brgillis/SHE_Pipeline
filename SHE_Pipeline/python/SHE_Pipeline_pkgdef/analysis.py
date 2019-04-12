@@ -47,6 +47,7 @@ def she_model_psf_and_estimate_shear(object_ids,
                                      lensmc_training_data,
                                      momentsml_training_data,
                                      regauss_training_data,
+                                     psf_field_params,
                                      mdb,
                                      ):
     """ Parallel branch, where we model PSFs and estimate shears for a batch of galaxies.
@@ -124,6 +125,7 @@ def shear_analysis_pipeline(mdb,
                                                                 lensmc_training_data=lensmc_training_data,
                                                                 momentsml_training_data=momentsml_training_data,
                                                                 regauss_training_data=regauss_training_data,
+                                                                psf_field_params=psf_field_params,
                                                                 mdb=mdb,
                                                                 )
 
