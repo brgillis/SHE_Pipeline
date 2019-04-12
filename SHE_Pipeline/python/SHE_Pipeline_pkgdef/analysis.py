@@ -23,7 +23,7 @@ __updated__ = "2019-04-12"
 from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_remap_mosaic, she_fit_psf, she_model_psf,
                                                  she_object_id_split, she_object_id_merge,
                                                  she_estimate_shear, she_cross_validate_shear)
-from euclidwf.framework.workflow_dsl import pipeline
+from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
 @parallel(iterable="vis_prod_filenames")
