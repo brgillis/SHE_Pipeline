@@ -48,6 +48,7 @@ def she_model_psf_and_estimate_shear(object_ids,
                                      momentsml_training_data,
                                      regauss_training_data,
                                      psf_field_params,
+                                     pipeline_config,
                                      mdb,
                                      ):
     """ Parallel branch, where we model PSFs and estimate shears for a batch of galaxies.
@@ -73,6 +74,7 @@ def she_model_psf_and_estimate_shear(object_ids,
                                                  lensmc_training_data=lensmc_training_data,
                                                  momentsml_training_data=momentsml_training_data,
                                                  regauss_training_data=regauss_training_data,
+                                                 pipeline_config=pipeline_config,
                                                  mdb=mdb,
                                                  )
 
@@ -96,6 +98,7 @@ def shear_analysis_pipeline(mdb,
                             regauss_training_data,
                             bfd_training_data,
                             momentsml_training_data,
+                            pipeline_config,
                             ):
 
     stacked_segmentation_image = she_remap_mosaic(mer_tile_listfile=mer_segmentation_map,
@@ -111,7 +114,8 @@ def shear_analysis_pipeline(mdb,
                                    )
 
     # Create list of object ID lists for each batch to process
-    object_ids = she_object_id_split(detections_tables=mer_catalog)
+    object_ids = she_object_id_split(detections_tables=mer_catalog,
+                                     pipeline_config=pipeline_config,)
 
     # Estimate shear in parallel for each batch
     shear_estimates_products = she_model_psf_and_estimate_shear(object_ids=object_ids,
@@ -126,6 +130,7 @@ def shear_analysis_pipeline(mdb,
                                                                 momentsml_training_data=momentsml_training_data,
                                                                 regauss_training_data=regauss_training_data,
                                                                 psf_field_params=psf_field_params,
+                                                                pipeline_config=pipeline_config,
                                                                 mdb=mdb,
                                                                 )
 
