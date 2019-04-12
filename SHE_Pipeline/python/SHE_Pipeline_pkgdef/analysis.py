@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2019-03-14"
+__updated__ = "2019-04-12"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,7 +20,9 @@ __updated__ = "2019-03-14"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-from SHE_Pipeline_pkgdef.analysis_pkgdef import she_fit_psf, she_estimate_shear, she_validate_shear
+from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_remap_mosaic, she_fit_psf, she_model_psf,
+                                                 she_object_id_split, she_object_id_merge,
+                                                 she_estimate_shear, she_cross_validate_shear)
 from euclidwf.framework.workflow_dsl import pipeline
 
 
