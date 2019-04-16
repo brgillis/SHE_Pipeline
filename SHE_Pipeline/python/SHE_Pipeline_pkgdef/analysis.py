@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2019-04-12"
+__updated__ = "2019-04-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,10 +27,13 @@ from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
 @parallel(iterable="vis_prod_filenames")
-def she_remap_mosaics(mer_tile_listfile, vis_prod_filenames):
+def she_remap_mosaics(mer_tile_listfile,
+                      vis_prod_filenames,
+                      pipeline_config):
 
     segmentation_image = she_remap_mosaic(mer_tile_listfile=mer_tile_listfile,
-                                          vis_prod_filename=vis_prod_filenames,)
+                                          vis_prod_filename=vis_prod_filenames,
+                                          pipeline_config=pipeline_config,)
 
     return segmentation_image
 
@@ -102,10 +105,12 @@ def shear_analysis_pipeline(mdb,
                             ):
 
     stacked_segmentation_image = she_remap_mosaic(mer_tile_listfile=mer_segmentation_map,
-                                                  vis_prod_filename=vis_stacked_image,)
+                                                  vis_prod_filename=vis_stacked_image,
+                                                  pipeline_config=pipeline_config,)
 
     segmentation_images = she_remap_mosaics(mer_tile_listfile=mer_segmentation_map,
-                                            vis_prod_filenames=vis_image)
+                                            vis_prod_filenames=vis_image,
+                                            pipeline_config=pipeline_config,)
 
     psf_field_params = she_fit_psf(data_images=vis_image,
                                    segmentation_images=segmentation_images,

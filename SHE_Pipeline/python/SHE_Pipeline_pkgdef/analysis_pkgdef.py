@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-04-12"
+__updated__ = "2019-04-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,7 +27,8 @@ ERun_MER = "E-Run SHE_MER 0.3 "
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                               inputs=[Input("mer_tile_listfile", content_type="listfile"),
-                                      Input("vis_prod_filename")],
+                                      Input("vis_prod_filename"),
+                                      Input("pipeline_config")],
                               outputs=[Output("output_filename", mime_type='xml')])
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
