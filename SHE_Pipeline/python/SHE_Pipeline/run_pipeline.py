@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-03-08"
+__updated__ = "2019-04-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -32,6 +32,7 @@ from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product)
 from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 from astropy.table import Table
 
 import _pickle
@@ -43,18 +44,6 @@ default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
-
-known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
-
-                     "SHE_CTE_EstimateShear_methods",
-
-                     "SHE_CTE_MeasureBias_archive_dir",
-                     "SHE_CTE_MeasureBias_webdav_archive",
-                     "SHE_CTE_MeasureBias_webdav_dir",
-
-                     "SHE_CTE_MeasureStatistics_archive_dir",
-                     "SHE_CTE_MeasureStatistics_webdav_archive",
-                     "SHE_CTE_MeasureStatistics_webdav_dir",)
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/shear_bias_measurements.xml"}
 
@@ -122,9 +111,11 @@ def check_args(args):
     # Check that all config args are recognized
     for i in range(len(args.config_args) // 2):
         test_arg = args.config_args[2 * i]
-        if test_arg not in known_config_args:
-            raise ValueError("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: " +
-                             str(known_config_args))
+        if not ConfigKeys.is_allowed_value(test_arg):
+            err_string = ("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: ")
+            for allowed_key in ConfigKeys:
+                err_string += "\n--" + allowed_key.value
+            raise ValueError(err_string)
 
     # Use the default workdir if necessary
     if args.workdir is None:
@@ -231,7 +222,7 @@ def create_plan(args, retTable=False):
 
     # Find the base plan we'll be creating a modified copy of
 
-    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.03")
+    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.05")
     qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
 
     # Check if the plan is in the ISF args first
@@ -310,7 +301,7 @@ def create_config(args):
 
     # Find the base config we'll be creating a modified copy of
     base_config = find_file(args.config, path=args.workdir)
-    new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.03")
+    new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.05")
     qualified_config_filename = os.path.join(args.workdir, new_config_filename)
 
     # Set up the args we'll be replacing or setting
@@ -333,10 +324,7 @@ def create_config(args):
                 args_to_set[key] = split_line[1].strip()
 
     # Write out the new config
-    with open(qualified_config_filename, 'w') as fo:
-        # Write out values we want set specifically
-        for arg in args_to_set:
-            fo.write(arg + "=" + args_to_set[arg] + "\n")
+    write_config(config_dict=args_to_set, config_filename=new_config_filename, workdir=args.workdir)
 
     return new_config_filename
 
@@ -352,7 +340,7 @@ def create_isf(args,
 
     # Find the base ISF we'll be creating a modified copy of
     base_isf = find_file(args.isf, path=args.workdir)
-    new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.03")
+    new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.05")
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
     # Set up the args we'll be replacing or setting
@@ -493,7 +481,7 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
 
     # If we're waiting, we'll need to store the output in a temporary file
     if wait:
-        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.03")
+        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.05")
         qualified_output_filename = os.path.join(workdir, output_filename)
         output_tail = " > " + qualified_output_filename
     else:
@@ -568,7 +556,7 @@ def create_pickled_args(args,
         local_args.pipeline = args.pipeline.replace("meta_", "")
 
     pickled_args_filename = os.path.join(args.workdir, get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
-                                                                            extension=".bin", release="00.03"))
+                                                                            extension=".bin", release="00.05"))
 
     write_pickled_product(local_args, pickled_args_filename)
 

@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-03-08"
+__updated__ = "2019-04-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -28,20 +28,13 @@ import time
 import xml.sax._exceptions
 
 from SHE_PPT import products
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
 from SHE_PPT.logging import getLogger
-from SHE_PPT.logging import getLogger
-from astropy.io import fits
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 from astropy.io import fits
 from astropy.table import Table
-from astropy.table import Table
-import numpy
 import numpy
 
 import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
@@ -400,9 +393,11 @@ def check_args(args):
     # Check that all config args are recognized
     for i in range(len(args.config_args) // 2):
         test_arg = args.config_args[2 * i]
-        if test_arg not in known_config_args:
-            raise ValueError("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: " +
-                             str(known_config_args))
+        if not ConfigKeys.is_allowed_value(test_arg):
+            err_string = ("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: ")
+            for allowed_key in ConfigKeys:
+                err_string += "\n--" + allowed_key.value
+            raise ValueError(err_string)
 
     # Use the default workdir if necessary
     if args.workdir is None:
