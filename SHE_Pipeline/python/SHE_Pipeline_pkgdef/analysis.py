@@ -21,7 +21,7 @@ __updated__ = "2019-04-19"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_remap_mosaic, she_fit_psf, she_model_psf,
-                                                 she_object_id_split, she_object_id_merge,
+                                                 she_object_id_split, she_shear_estimates_merge,
                                                  she_estimate_shear, she_cross_validate_shear)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
@@ -140,7 +140,7 @@ def shear_analysis_pipeline(mdb,
                                                                 )
 
     # Merge shear estimates together
-    shear_estimates_product = she_object_id_merge(input_shear_estimates_listfile=shear_estimates_products)
+    shear_estimates_product = she_shear_estimates_merge(input_shear_estimates_listfile=shear_estimates_products)
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 

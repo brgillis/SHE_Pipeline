@@ -78,9 +78,9 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ])
 
-she_object_id_merge = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdMerge",
-                                 inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
-                                 outputs=[Output("output_shear_estimates", mime_type='xml')])
+she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdMerge",
+                                       inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
+                                       outputs=[Output("output_shear_estimates", mime_type='xml')])
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
