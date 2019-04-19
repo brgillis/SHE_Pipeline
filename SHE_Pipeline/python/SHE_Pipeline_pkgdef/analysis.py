@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2019-04-16"
+__updated__ = "2019-04-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -140,7 +140,7 @@ def shear_analysis_pipeline(mdb,
                                                                 )
 
     # Merge shear estimates together
-    shear_estimates_product = she_object_id_merge(shear_estimates_products=shear_estimates_products)
+    shear_estimates_product = she_object_id_merge(input_shear_estimates_listfile=shear_estimates_products)
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 
