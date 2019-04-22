@@ -274,29 +274,17 @@ def create_config(args):
 
     logger = getLogger(__name__)
 
-    # Find the base config we'll be creating a modified copy of
+    # Find and read in the base config we'll be creating a modified copy of
     args_to_set = read_config(args.config, workdir=args.workdir)
+
+    # Set up the filename for the new config file
     new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.05")
     qualified_config_filename = os.path.join(args.workdir, new_config_filename)
-
-    # Set up the args we'll be replacing or setting
-
-    args_to_set = {}
 
     arg_i = 0
     while arg_i < len(args.config_args):
         args_to_set[args.config_args[arg_i]] = args.config_args[arg_i + 1]
         arg_i += 2
-
-    with open(base_config, 'r') as fi:
-        # Check each line to see if values we'll overwrite are specified in it,
-        # and only write out lines with other values
-        for line in fi:
-            split_line = line.strip().split('=')
-            # Add any new args here to the list of args we want to set
-            key = split_line[0].strip()
-            if not (key in args_to_set) and len(split_line) > 1:
-                args_to_set[key] = split_line[1].strip()
 
     # Write out the new config
     write_config(config_dict=args_to_set, config_filename=new_config_filename, workdir=args.workdir)
