@@ -34,6 +34,7 @@ from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, rea
 from SHE_PPT.logging import getLogger
 from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
 from astropy.table import Table
+import SHE_Pipeline
 
 import _pickle
 import subprocess as sbp
@@ -197,7 +198,8 @@ def create_plan(args, retTable=False):
 
     # Find the base plan we'll be creating a modified copy of
 
-    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.05")
+    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()),
+                                             extension=".fits", version=SHE_Pipeline.__version__)
     qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
 
     # Check if the plan is in the ISF args first
@@ -278,7 +280,8 @@ def create_config(args):
     args_to_set = read_config(args.config, workdir=args.workdir)
 
     # Set up the filename for the new config file
-    new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.05")
+    new_config_filename = get_allowed_filename(
+        "PIPELINE-CFG", str(os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
     qualified_config_filename = os.path.join(args.workdir, new_config_filename)
 
     arg_i = 0
@@ -303,7 +306,8 @@ def create_isf(args,
 
     # Find the base ISF we'll be creating a modified copy of
     base_isf = find_file(args.isf, path=args.workdir)
-    new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.05")
+    new_isf_filename = get_allowed_filename("ISF", str(
+        os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
     # Set up the args we'll be replacing or setting
@@ -444,7 +448,8 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_int
 
     # If we're waiting, we'll need to store the output in a temporary file
     if wait:
-        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.05")
+        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()),
+                                               extension=".txt", version=SHE_Pipeline.__version__)
         qualified_output_filename = os.path.join(workdir, output_filename)
         output_tail = " > " + qualified_output_filename
     else:
@@ -518,8 +523,10 @@ def create_pickled_args(args,
         local_args.wait = not args.no_local_wait
         local_args.pipeline = args.pipeline.replace("meta_", "")
 
-    pickled_args_filename = os.path.join(args.workdir, get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
-                                                                            extension=".bin", release="00.05"))
+    pickled_args_filename = os.path.join(args.workdir, get_allowed_filename("PICKLED-ARGS",
+                                                                            str(os.getpid()),
+                                                                            extension=".bin",
+                                                                            version=SHE_Pipeline.__version__))
 
     write_pickled_product(local_args, pickled_args_filename)
 
