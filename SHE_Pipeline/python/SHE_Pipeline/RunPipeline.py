@@ -57,6 +57,11 @@ def defineSpecificProgramOptions():
     parser.add_argument('--config_args', type=str, nargs='*',
                         help='Additional arguments to write to the pipeline_config (must be in pairs of key value)')
     parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
+    parser.add_argument('--server_config', type=str,
+                        default="/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties",
+                        help="The name of the server configuration file to use.")
+    parser.add_argument('--use_debug_server_config', action="store_true",
+                        help="If set to true, will use a server configuration file which outputs all logs to stdout.")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
 
@@ -89,7 +94,7 @@ def mainMethod(args):
     logger.debug('#')
 
     exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.5 SHE_Pipeline_Run",
-                                    store_true=["profile", "debug", "cluster", "wait", "no_local_wait"])
+                                    store_true=["profile", "debug", "cluster", "use_debug_server_config"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
