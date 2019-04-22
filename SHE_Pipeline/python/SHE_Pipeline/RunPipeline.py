@@ -56,7 +56,7 @@ def defineSpecificProgramOptions():
                         help='Fully-qualified name of pipeline config file for this run')
     parser.add_argument('--config_args', type=str, nargs='*',
                         help='Additional arguments to write to the pipeline_config (must be in pairs of key value)')
-    parser.add_argument('--serverurl', type=str, default="http://localhost:50000")
+    parser.add_argument('--serverurl', type=str, default=None)
     parser.add_argument('--server_config', type=str,
                         default="/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties",
                         help="The name of the server configuration file to use.")

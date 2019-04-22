@@ -1,0 +1,108 @@
+#########################################################################
+# IAL CONFIGURATION ITEMS for PPO Processing
+# 
+# LODEEN SGS-SETTINGS
+#
+# GENERAL REMARKS
+# - ALL properties that specify a time are given as double in units secs
+# - This is a modified config file that will output everything to stdout
+#
+#########################################################################
+
+#####################
+# GENERAL Properties
+#####################
+# Unique identifier for IAL instance
+general.instancename=NOSDC
+# Absolute path to base directory on IAL host
+general.rootdirectory=/home/$USER/euclid-ial
+pipelinerunner.concurrentruns=50
+
+###########################
+# WORKSPACE-Access, SHARED
+###########################
+# Protocol to access the workspace (FILE | SFTP)
+workspace.protocol=FILE
+workspace.rootpath=/home/$USER/euclid-ial/workspace
+
+################################
+# SUBMISSIONHOST Access, SHARED
+################################
+# Protocol to access the submission host (LOCAL | SSH)
+submissionhost.protocol=LOCAL
+
+###########################
+# PIPELINE RUNNER Internal
+###########################
+# Logging settings
+pipelinerunner.logging.module_port=50001                            # TCP Port used logging service
+pipelinerunner.logging.directory=/home/$USER/euclid-ial/logs        # Logging directory
+pipelinerunner.logging.filename=pipeline_runner.log                 # Name of log file
+pipelinerunner.logging.level=INFO                                   # Logging level
+pipelinerunner.logging.numberRotatingFiles=10                       # Number of stored log files
+pipelinerunner.logging.debugSQL=0                                   # Log SQL statements
+pipelinerunner.logging.redirectStdErr=1                             # Redirect stdErr and stdOut to files
+
+# pipelinerunner.engine settings
+pipelinerunner.engine.module_port=50002                             # TCP Port used for engine service
+pipelinerunner.engine.intervalInSec=5                               # Time interval between subsequent run submissions
+
+# pipelinerunner.traverser settings
+pipelinerunner.traverser.intervalInSec=5                            # Time interval between subsequent job status updates
+
+# pipelinerunner.payload_job settings
+pipelinerunner.payload_job.retries=1                                # Retries of the actual payload job execution
+pipelinerunner.payload_job.tarLogFiles=1                            # Compress and store the logs of the payload jobs
+pipelinerunner.payload_job.updateIntervalInSec=5                    # Interval for checking if new jobs are available
+
+# pipelinerunner.webserver settings
+pipelinerunner.webserver.web_port=50000                             # TCP Port used to access the webinterface
+pipelinerunner.webserver.bindIP=0.0.0.0                             # IP address to bind the webinterface on (0.0.0.0  all interfaces)
+pipelinerunner.webserver.plotDataflowGraph=1                        # Set to 0 to disable plotting of the Dataflow graph (save resources)
+
+# pipelinerunner.drm_access settingss
+pipelinerunner.drm_access.DRMCallsTimeoutInSec=60                   # Timeout in seconds of a DRM call
+pipelinerunner.drm_access.submitUpdateIntervalInSec=2               # Time interval between subsequent pilot job submits 
+pipelinerunner.drm_access.checkUpdateIntervalInSec=40               # Time interval between subsequent pilot job checks
+
+# Only needed if SSH is used to access the submission host
+pipelinerunner.sshpool.maxconnections=10                            # Max session per endpoint
+pipelinerunner.sshpool.maxidle=5                                    # Max number of idle connections
+pipelinerunner.sshpool.retries=3                                    # Max number of retries to create a connection
+pipelinerunner.sshpool.retrydelay=60                                # Delay between subsequent attempts to create a connection
+pipelinerunner.sshpool.connecttimeout=60                            # Timeout for establishing a connection
+pipelinerunner.sshpool.connectionrequesttimeout=60                  # Timeout for getting connection from pool, value of <0 means unlimited
+
+# Environment settings
+environmentSourcingScripts.Eden-2.0=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environmentSourcingScripts.Eden-2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environmentSourcingScripts.Eden-1.2=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-1.2_env.sh
+environmentSourcingScripts.Eden-1.2-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-1.2_env.sh
+#The default script will be used if no "edenVersion" is defined in the pipeline submission data.
+environmentSourcingScriptsDefault=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+
+#pipelinerunner.pilotManager settings
+pipelinerunner.pilotManager.module_port=50003                       # TCP Port used to access the pilotManager
+pipelinerunner.pilotManager.updateIntervalInSec=5                   # Time interval between subsequent pilotManager tasks
+pipelinerunner.pilotManager.httpTimeoutInSec=5                      # Timeout TCP requests
+
+# pipelinerunner.pilots general pilot settings
+pipelinerunner.pilots.url_to_pilot_manager=http://localhost:50003   # Pilot nodes use this URL to contact the PilotManager (FW Rules!)
+
+pipelinerunner.pilots.url_to_logger=localhost:50001                 # host:port of logging service which pilots call (FW Rules!)
+
+pipelinerunner.pilots.updateIntervalInSec=5                         # Time interval between subsequent job status updates
+pipelinerunner.pilots.httpTimeoutInSec=5                            # HTTP call timeout, keep in snyc with IntervalInSec
+pipelinerunner.pilots.connectionRetries=5                           # Make this graceful in order to survive a server restart/update
+pipelinerunner.pilots.maxIdleTimeInSec=120                          # Time in Sec which a pilot stays idle before shutting down
+pipelinerunner.pilots.taskcmd=E-Run IAL_WFM_Pilot pilot_job         # Command used to start a Pilot on HPC Node
+
+pipelinerunner.pilot.generic_heavy.cores=8
+pipelinerunner.pilot.generic_heavy.ramInMB=16384
+pipelinerunner.pilot.generic_heavy.walltimeInMin=1440
+pipelinerunner.pilot.generic_heavy.loglevel=INFO
+pipelinerunner.pilot.generic_heavy.maxInstances=1
+
+pipelinerunner.logging.filename=None
+pipelinerunner.logging.useStdOut=1
+pipelinerunner.logging.redirectStdErr=0
