@@ -61,7 +61,8 @@ def defineSpecificProgramOptions():
                         default="/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties",
                         help="The name of the server configuration file to use.")
     parser.add_argument('--use_debug_server_config', action="store_true",
-                        help="If set to true, will use a server configuration file which outputs all logs to stdout.")
+                        help="If set, will use a server configuration file which outputs all logs to stdout, " +
+                        "overriding any provided to the --server_config option.")
     parser.add_argument('--cluster', action='store_true',
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
 
