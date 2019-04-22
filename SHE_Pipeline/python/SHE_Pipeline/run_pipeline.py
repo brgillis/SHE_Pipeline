@@ -32,7 +32,7 @@ from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product)
 from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
 from astropy.table import Table
 
 import _pickle
@@ -92,15 +92,15 @@ def check_args(args):
         try:
             args.config = find_aux_file("SHE_Pipeline/" + args.pipeline + "_config.txt")
         except Exception:
-            logger.error("No config file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt).")
-            raise
+            logger.info("No config file specified, and cannot find one in default location (" +
+                        "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt). Will run with no " +
+                        "configuration parameters set.")
 
     # Check that we have an even number of ISF arguments
     if args.isf_args is None:
         args.isf_args = []
     if not len(args.isf_args) % 2 == 0:
-        raise ValueError("Invalid values passed to 'args': Must be a set of paired arguments.")
+        raise ValueError("Invalid values passed to 'isf_args': Must be a set of paired arguments.")
 
     # Check that we have an even number of pipeline_config arguments
     if args.config_args is None:
@@ -125,82 +125,57 @@ def check_args(args):
             args.workdir = default_workdir
         logger.info('No workdir supplied at command-line. Using default workdir: ' + args.workdir)
 
-    # Use the default app_workdir if necessary
-    if args.app_workdir is None:
-        if args.cluster:
-            args.app_workdir = default_cluster_workdir
-        else:
-            args.app_workdir = default_workdir
-        logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
-
-    # Use the default local_workdir if necessary
-    if args.local_workdir is None:
-        if args.cluster:
-            args.local_workdir = default_cluster_workdir
-        else:
-            args.local_workdir = default_workdir
-        logger.info('No local_workdir supplied at command-line. Using default local_workdir: ' + args.local_workdir)
-
     # Use the default logdir if necessary
     if args.logdir is None:
         args.logdir = default_logdir
         logger.info('No logdir supplied at command-line. Using default logdir: ' + args.logdir)
 
-    # Set up the workdir and app_workdir the same way
+    # Does the workdir exist?
+    if not os.path.exists(args.workdir):
+        # Can we create it?
+        try:
+            os.mkdir(args.workdir)
+        except Exception as e:
+            logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(args.workdir, 0o777)
 
-    if args.workdir == args.app_workdir:
-        workdirs = (args.workdir,)
-    else:
-        workdirs = (args.workdir, args.app_workdir,)
+    # Does the cache directory exist within the workdir?
+    cache_dir = os.path.join(args.workdir, "cache")
+    if not os.path.exists(cache_dir):
+        # Can we create it?
+        try:
+            os.mkdir(cache_dir)
+        except Exception as e:
+            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(cache_dir, 0o777)
 
-    for workdir in workdirs:
+    # Does the data directory exist within the workdir?
+    data_dir = os.path.join(args.workdir, "data")
+    if not os.path.exists(data_dir):
+        # Can we create it?
+        try:
+            os.mkdir(data_dir)
+        except Exception as e:
+            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(data_dir, 0o777)
 
-        # Does the workdir exist?
-        if not os.path.exists(workdir):
-            # Can we create it?
-            try:
-                os.mkdir(workdir)
-            except Exception as e:
-                logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(workdir, 0o777)
-
-        # Does the cache directory exist within the workdir?
-        cache_dir = os.path.join(workdir, "cache")
-        if not os.path.exists(cache_dir):
-            # Can we create it?
-            try:
-                os.mkdir(cache_dir)
-            except Exception as e:
-                logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(cache_dir, 0o777)
-
-        # Does the data directory exist within the workdir?
-        data_dir = os.path.join(workdir, "data")
-        if not os.path.exists(data_dir):
-            # Can we create it?
-            try:
-                os.mkdir(data_dir)
-            except Exception as e:
-                logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(data_dir, 0o777)
-
-        # Does the logdir exist?
-        qualified_logdir = os.path.join(workdir, args.logdir)
-        if not os.path.exists(qualified_logdir):
-            # Can we create it?
-            try:
-                os.mkdir(qualified_logdir)
-            except Exception as e:
-                logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(qualified_logdir, 0o777)
+    # Does the logdir exist?
+    qualified_logdir = os.path.join(args.workdir, args.logdir)
+    if not os.path.exists(qualified_logdir):
+        # Can we create it?
+        try:
+            os.mkdir(qualified_logdir)
+        except Exception as e:
+            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(qualified_logdir, 0o777)
 
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
@@ -300,7 +275,7 @@ def create_config(args):
     logger = getLogger(__name__)
 
     # Find the base config we'll be creating a modified copy of
-    base_config = find_file(args.config, path=args.workdir)
+    args_to_set = read_config(args.config, workdir=args.workdir)
     new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.05")
     qualified_config_filename = os.path.join(args.workdir, new_config_filename)
 
