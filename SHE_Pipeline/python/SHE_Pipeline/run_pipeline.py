@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-04-16"
+__updated__ = "2019-04-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -39,7 +39,7 @@ import _pickle
 import subprocess as sbp
 
 
-default_workdir = "/home/user/Work/workspace"
+default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
