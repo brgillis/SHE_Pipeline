@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-04-16"
+__updated__ = "2019-04-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -32,20 +32,23 @@ from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product)
 from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
 from astropy.table import Table
+import SHE_Pipeline
 
 import _pickle
 import subprocess as sbp
 
 
-default_workdir = "/home/user/Work/workspace"
+default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/shear_bias_measurements.xml"}
+
+pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.0/opt/euclid/ST_PipelineRunner/bin/pipeline_runner.py"
 
 
 def get_pipeline_dir():
@@ -92,15 +95,15 @@ def check_args(args):
         try:
             args.config = find_aux_file("SHE_Pipeline/" + args.pipeline + "_config.txt")
         except Exception:
-            logger.error("No config file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt).")
-            raise
+            logger.info("No config file specified, and cannot find one in default location (" +
+                        "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt). Will run with no " +
+                        "configuration parameters set.")
 
     # Check that we have an even number of ISF arguments
     if args.isf_args is None:
         args.isf_args = []
     if not len(args.isf_args) % 2 == 0:
-        raise ValueError("Invalid values passed to 'args': Must be a set of paired arguments.")
+        raise ValueError("Invalid values passed to 'isf_args': Must be a set of paired arguments.")
 
     # Check that we have an even number of pipeline_config arguments
     if args.config_args is None:
@@ -114,7 +117,7 @@ def check_args(args):
         if not ConfigKeys.is_allowed_value(test_arg):
             err_string = ("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: ")
             for allowed_key in ConfigKeys:
-                err_string += "\n--" + allowed_key.value
+                err_string += "\n  " + allowed_key.value
             raise ValueError(err_string)
 
     # Use the default workdir if necessary
@@ -125,82 +128,57 @@ def check_args(args):
             args.workdir = default_workdir
         logger.info('No workdir supplied at command-line. Using default workdir: ' + args.workdir)
 
-    # Use the default app_workdir if necessary
-    if args.app_workdir is None:
-        if args.cluster:
-            args.app_workdir = default_cluster_workdir
-        else:
-            args.app_workdir = default_workdir
-        logger.info('No app_workdir supplied at command-line. Using default app_workdir: ' + args.app_workdir)
-
-    # Use the default local_workdir if necessary
-    if args.local_workdir is None:
-        if args.cluster:
-            args.local_workdir = default_cluster_workdir
-        else:
-            args.local_workdir = default_workdir
-        logger.info('No local_workdir supplied at command-line. Using default local_workdir: ' + args.local_workdir)
-
     # Use the default logdir if necessary
     if args.logdir is None:
         args.logdir = default_logdir
         logger.info('No logdir supplied at command-line. Using default logdir: ' + args.logdir)
 
-    # Set up the workdir and app_workdir the same way
+    # Does the workdir exist?
+    if not os.path.exists(args.workdir):
+        # Can we create it?
+        try:
+            os.mkdir(args.workdir)
+        except Exception as e:
+            logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(args.workdir, 0o777)
 
-    if args.workdir == args.app_workdir:
-        workdirs = (args.workdir,)
-    else:
-        workdirs = (args.workdir, args.app_workdir,)
+    # Does the cache directory exist within the workdir?
+    cache_dir = os.path.join(args.workdir, "cache")
+    if not os.path.exists(cache_dir):
+        # Can we create it?
+        try:
+            os.mkdir(cache_dir)
+        except Exception as e:
+            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(cache_dir, 0o777)
 
-    for workdir in workdirs:
+    # Does the data directory exist within the workdir?
+    data_dir = os.path.join(args.workdir, "data")
+    if not os.path.exists(data_dir):
+        # Can we create it?
+        try:
+            os.mkdir(data_dir)
+        except Exception as e:
+            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(data_dir, 0o777)
 
-        # Does the workdir exist?
-        if not os.path.exists(workdir):
-            # Can we create it?
-            try:
-                os.mkdir(workdir)
-            except Exception as e:
-                logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(workdir, 0o777)
-
-        # Does the cache directory exist within the workdir?
-        cache_dir = os.path.join(workdir, "cache")
-        if not os.path.exists(cache_dir):
-            # Can we create it?
-            try:
-                os.mkdir(cache_dir)
-            except Exception as e:
-                logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(cache_dir, 0o777)
-
-        # Does the data directory exist within the workdir?
-        data_dir = os.path.join(workdir, "data")
-        if not os.path.exists(data_dir):
-            # Can we create it?
-            try:
-                os.mkdir(data_dir)
-            except Exception as e:
-                logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(data_dir, 0o777)
-
-        # Does the logdir exist?
-        qualified_logdir = os.path.join(workdir, args.logdir)
-        if not os.path.exists(qualified_logdir):
-            # Can we create it?
-            try:
-                os.mkdir(qualified_logdir)
-            except Exception as e:
-                logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
-                raise e
-        if args.cluster:
-            os.chmod(qualified_logdir, 0o777)
+    # Does the logdir exist?
+    qualified_logdir = os.path.join(args.workdir, args.logdir)
+    if not os.path.exists(qualified_logdir):
+        # Can we create it?
+        try:
+            os.mkdir(qualified_logdir)
+        except Exception as e:
+            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            raise e
+    if args.cluster:
+        os.chmod(qualified_logdir, 0o777)
 
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
@@ -222,7 +200,8 @@ def create_plan(args, retTable=False):
 
     # Find the base plan we'll be creating a modified copy of
 
-    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()), extension=".fits", release="00.05")
+    new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()),
+                                             extension=".fits", version=SHE_Pipeline.__version__)
     qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
 
     # Check if the plan is in the ISF args first
@@ -299,29 +278,18 @@ def create_config(args):
 
     logger = getLogger(__name__)
 
-    # Find the base config we'll be creating a modified copy of
-    base_config = find_file(args.config, path=args.workdir)
-    new_config_filename = get_allowed_filename("PIPELINE-CFG", str(os.getpid()), extension=".txt", release="00.05")
+    # Find and read in the base config we'll be creating a modified copy of
+    args_to_set = read_config(args.config, workdir=args.workdir)
+
+    # Set up the filename for the new config file
+    new_config_filename = get_allowed_filename(
+        "PIPELINE-CFG", str(os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
     qualified_config_filename = os.path.join(args.workdir, new_config_filename)
-
-    # Set up the args we'll be replacing or setting
-
-    args_to_set = {}
 
     arg_i = 0
     while arg_i < len(args.config_args):
         args_to_set[args.config_args[arg_i]] = args.config_args[arg_i + 1]
         arg_i += 2
-
-    with open(base_config, 'r') as fi:
-        # Check each line to see if values we'll overwrite are specified in it,
-        # and only write out lines with other values
-        for line in fi:
-            split_line = line.strip().split('=')
-            # Add any new args here to the list of args we want to set
-            key = split_line[0].strip()
-            if not (key in args_to_set) and len(split_line) > 1:
-                args_to_set[key] = split_line[1].strip()
 
     # Write out the new config
     write_config(config_dict=args_to_set, config_filename=new_config_filename, workdir=args.workdir)
@@ -330,8 +298,7 @@ def create_config(args):
 
 
 def create_isf(args,
-               config_filename,
-               pickled_args_filename):
+               config_filename):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -340,7 +307,8 @@ def create_isf(args,
 
     # Find the base ISF we'll be creating a modified copy of
     base_isf = find_file(args.isf, path=args.workdir)
-    new_isf_filename = get_allowed_filename("ISF", str(os.getpid()), extension=".txt", release="00.05")
+    new_isf_filename = get_allowed_filename("ISF", str(
+        os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
     # Set up the args we'll be replacing or setting
@@ -352,8 +320,6 @@ def create_isf(args,
     args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef")
     if config_filename is not None:
         args_to_set["pipeline_config"] = config_filename
-    if pickled_args_filename is not None:
-        args_to_set["pickled_args"] = pickled_args_filename
 
     arg_i = 0
     while arg_i < len(args.isf_args):
@@ -473,94 +439,20 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline, isf, serverurl, workdir, wait, max_wait, poll_interval):
+def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
     """Sets up and calls a command to execute the pipeline.
     """
 
     logger = getLogger(__name__)
 
-    # If we're waiting, we'll need to store the output in a temporary file
-    if wait:
-        output_filename = get_allowed_filename("RUN-PIP-OUTPUT", str(os.getpid()), extension=".txt", release="00.05")
-        qualified_output_filename = os.path.join(workdir, output_filename)
-        output_tail = " > " + qualified_output_filename
-    else:
-        output_tail = ""
+    cmd = pipeline_runner_exec + ' --pipeline=' + pipeline + '.py --data=' + isf + ' --config=' + server_config
+    if serverurl is not None:
+        cmd += ' --serverurl="' + serverurl + '"'
 
-    cmd = ('pipeline_runner.py --pipeline=' + pipeline + '.py --data=' + isf + ' --serverurl="' + serverurl + '"'
-           + output_tail)
     logger.info("Calling pipeline with command: '" + cmd + "'")
     sbp.call(cmd, shell=True)
 
-    # If we're waiting, print the output for records, then poll for when it's finished
-    if wait:
-        cmd = "cat " + qualified_output_filename
-        sbp.call(cmd, shell=True)
-
-        # Get the run ID
-        ex_head = "Run submitted to server with id "
-        with open(qualified_output_filename, 'r') as fo:
-            run_id = None
-            for line in fo:
-                if ex_head in line:
-                    run_id = line.replace(ex_head, "").strip()[0:-1]
-                    break
-            if run_id is None:
-                raise RuntimeError("Cannot determine runid from output in " + qualified_output_filename)
-            else:
-                logger.info("Run id is '" + run_id + "'")
-
-        # Periodically poll for the status
-
-        time_elapsed = 0
-        while time_elapsed < max_wait:
-            sleep(poll_interval)
-            time_elapsed += poll_interval
-
-            cmd = 'curl -H "Accept: application/json" "' + serverurl + '/runs/' + run_id + '/status"'
-            logger.debug('Polling with command: ' + cmd)
-            status_line = sbp.run(cmd, shell=True, stdout=sbp.PIPE).stdout.decode('utf-8')
-            logger.debug("Full status is: " + status_line)
-            state = ast.literal_eval(status_line)["executionStatus"]
-            if state == "COMPLETED":
-                logger.info("Pipeline execution completed.")
-                break
-            elif state == "ERROR":
-                logger.error("Pipeline ended in error")
-                break
-            else:
-                logger.debug("Pipeline in state: " + state)
-
-        if time_elapsed >= max_wait:
-            logger.error("Pipeline timed out.")
-
     return
-
-
-def create_pickled_args(args,
-                        controlled_run=False):
-    """Function to create pickled args for when calling a meta pipeline.
-    """
-
-    local_args = deepcopy(args)
-
-    # Set up the args we'll want for the local run
-    local_args.workdir = args.local_workdir
-    local_args.parent_workdir = args.workdir
-    local_args.serverurl = args.local_serverurl
-    local_args.isf = args.local_isf
-    local_args.config = args.local_config
-
-    if not controlled_run:
-        local_args.wait = not args.no_local_wait
-        local_args.pipeline = args.pipeline.replace("meta_", "")
-
-    pickled_args_filename = os.path.join(args.workdir, get_allowed_filename("PICKLED-ARGS", str(os.getpid()),
-                                                                            extension=".bin", release="00.05"))
-
-    write_pickled_product(local_args, pickled_args_filename)
-
-    return pickled_args_filename
 
 
 def run_pipeline_from_args(args):
@@ -569,34 +461,23 @@ def run_pipeline_from_args(args):
 
     logger = getLogger(__name__)
 
-    # Check for pickled arguments, and override if found
-    if args.pickled_args is not None:
-        qualified_pickled_args_filename = find_file(args.pickled_args, args.workdir)
-        args = read_pickled_product(qualified_pickled_args_filename)
-
     # Check the arguments
     check_args(args)
 
-    # Are we doing a meta run?
-    meta_run = args.pipeline[0:4] == "meta"
-    controlled_run = args.pipeline[0:10] == "controlled"
-    if meta_run or controlled_run:
-        config_filename = None
+    # If necessary, update the simulation plan
+    if len(args.plan_args) > 0:
+        create_plan(args)
 
-        pickled_args_filename = create_pickled_args(args, controlled_run=controlled_run)
-    else:
-
-        # If necessary, update the simulation plan
-        if len(args.plan_args) > 0:
-            create_plan(args)
-
-        # Create the pipeline_config for this run
-        config_filename = create_config(args)
-
-        pickled_args_filename = None
+    # Create the pipeline_config for this run
+    config_filename = create_config(args)
 
     # Create the ISF for this run
-    qualified_isf_filename = create_isf(args, config_filename, pickled_args_filename)
+    qualified_isf_filename = create_isf(args, config_filename)
+
+    if args.use_debug_server_config:
+        server_config = find_aux_file("SHE_Pipeline/debug_server_config.txt")
+    else:
+        server_config = args.server_config
 
     # Try to call the pipeline
     try:
@@ -604,9 +485,7 @@ def run_pipeline_from_args(args):
                          isf=qualified_isf_filename,
                          serverurl=args.serverurl,
                          workdir=args.workdir,
-                         wait=args.wait,
-                         max_wait=args.max_wait,
-                         poll_interval=args.poll_interval)
+                         server_config=server_config)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:

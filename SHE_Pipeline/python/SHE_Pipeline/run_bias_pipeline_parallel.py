@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-04-16"
+__updated__ = "2019-04-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -50,6 +50,7 @@ from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
+import SHE_Pipeline
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
@@ -574,8 +575,10 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     # Find the base ISF we'll be creating a modified copy of
     # @TODO: include batch_no in name
     base_isf = find_file(args.isf, path=args.workdir)
-    new_isf_filename = get_allowed_filename("ISF", str(os.getpid()),
-                                            extension=".txt", release="00.03")
+    new_isf_filename = get_allowed_filename("ISF",
+                                            str(os.getpid()),
+                                            extension=".txt",
+                                            version=SHE_Pipeline.__version__)
     qualified_isf_filename = os.path.join(workdir.workdir,
                                           new_isf_filename)
 
