@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-04-22"
+__updated__ = "2019-04-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -117,7 +117,7 @@ def check_args(args):
         if not ConfigKeys.is_allowed_value(test_arg):
             err_string = ("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: ")
             for allowed_key in ConfigKeys:
-                err_string += "\n--" + allowed_key.value
+                err_string += "\n  " + allowed_key.value
             raise ValueError(err_string)
 
     # Use the default workdir if necessary
