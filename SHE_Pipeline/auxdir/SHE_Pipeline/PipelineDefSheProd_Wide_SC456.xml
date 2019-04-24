@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsk1:PipelineDef xmlns:sys="http://euclid.esa.org/schema/sys"
+    xmlns:dss="http://euclid.esa.org/schema/sys/dss"
+    xmlns:tsk="http://euclid.esa.org/schema/sys/tsk"
+    xmlns:tsk1="http://euclid.esa.org/schema/interfaces/sys/tsk"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://euclid.esa.org/schema/interfaces/sys/tsk">
+    <Id>PS_DEV_SHEPROD_Wide_03052018</Id> <!-- ID processed by CODEEN Script with pattern from the Schema -->
+    <PipelineVersion>1.0</PipelineVersion>
+    <ArchiveProcessingFlag>PROCESSING_ONLY</ArchiveProcessingFlag> <!--This new flag is used by IAL/EAS to specify if this pipeline is a EAS pipeline (AF) or a PF pipeline (default is : PROCESSING_ONLY)   -->
+    <PipelineContext>PipelineSC456</PipelineContext>
+    <PipelineScriptName>/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/opt/euclid/Pipeline/0.2.1/PF_SHE_Prod_Wide.py</PipelineScriptName>
+    <InputDataSet>
+        <QueryDefinition>
+            <InputDataPlan>
+                <DataProductType>dpdVisCalibratedFrame</DataProductType>
+                <InputQuerySpecPlan type="SQLLike"> <!-- Type of the Query to be agreed with Andrey depending on the complexity of the query that could be a  SQL or a Python function -->
+                    <Id>VisCalibratedFrame_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
+                    <Query>(DpdVisCalibratedFrame.Data.ObservationSequence.ObservationId=="UNKNOWN") &amp; (DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE") &amp; (DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE") &amp; (DpdVisCalibratedFrame.Header.ManualValidationStatus != 'INVALID')</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select Observation ID for VisCalibratedFrame selection -->
+                <InputQuerySpecPlan type="SQLLike">
+                    <Id>VisCalibIdTemporalQuery_2018-23-02</Id>                  
+                    <Query>(DpdVisCalibratedFrame.Header.CreationDate TO_DATE("UNKNOWN") AND TO_DATE("UNKNOWN")) &amp; (DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE") &amp; (DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE") &amp; (DpdVisCalibratedFrame.Header.ManualValidationStatus != 'INVALID')</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select Date Beg and date End for VisCalibratedFrame selection -->
+                <!--Does SHE require a query for spatial footprint?-->
+                <InputQuerySpecPlan type="SQLLike">
+                    <Id>VisSpatialQuery_2018-23-02</Id>
+                    <Query>('POLYGON("UNKNOWN")' CONTAINS DpdVisCalibratedFrame.Data.ImgSpatialFootprint.Polygon) &amp; (DpdVisCalibratedFrame.Data.ImgType.Category == "SCIENCE") &amp; (DpdVisCalibratedFrame.Data.ImgType.ThirdType == "WIDE") &amp; (DpdVisCalibratedFrame.Header.ManualValidationStatus != 'INVALID')</Query>
+                </InputQuerySpecPlan> <!-- To avoid retrieval of calib images to be selective in the query (default clause mentioned by Andrey) -->               
+                <InputPortName>vis_image</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality> <!-- fails if no dpdVisCalibratedFrame is returned so no need to run from IAL -->
+                    <Min>1</Min> <!-- Can be run on just 1, if that's all that's available -->
+                    <Max>4</Max>  
+                </Cardinality>
+            </InputDataPlan>
+            
+            <InputDataPlan>
+                <DataProductType>dpdVisStackedFrame</DataProductType>
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>VisStackedValid_2018-23-02</Id>
+                    <Query> DpdVisStackedFrame.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
+                 <InputPortName>vis_stacked_image</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality> <!-- fails if no dpdVisStackedFrame is returned so no need to run from IAL -->
+                    <Min>1</Min>
+                    <Max>1</Max>  
+                </Cardinality>
+            </InputDataPlan>   
+						
+            <InputDataPlan>
+                <DataProductType>DpdMerFinalCatalog</DataProductType>
+				<!--extraction of NIR fluxes YJH-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdMerFinalCatalogValid_2018-23-02</Id>
+                    <Query>DpdMerFinalCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
+                <InputPortName>mer_catalog</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality> <!-- fails if no DpdMerFinalCatalog is returned so no need to run from IAL -->
+                    <Min>1</Min>
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
+                </Cardinality>
+            </InputDataPlan>
+            <!--WARNING : SHE DOES NOT WANT PIPELINE TO RUN IF MISSING TILE SPATIAL COVERAGE OF OBSERVATION!!!--> 
+
+            <InputDataPlan>
+                <DataProductType>dpdMerSegmentationMap</DataProductType>
+                <!--extraction of NIR fluxes YJH-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdMerSegmentationMapValid_2018-23-02</Id>
+                    <Query>DpdMerSegmentationMap.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
+                <InputPortName>mer_segmentation_map</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality> <!--fails if no MerSegmentationMap is returned so no need to run from IAL -->
+                    <Min>1</Min>
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
+                </Cardinality>
+            </InputDataPlan>            
+            
+            <InputDataPlan>
+                <DataProductType>DpdPhzPfOutputCatalog</DataProductType>
+                <!--Joint PDFs of the PHZs & SEDs-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdPhzPfOutputCatalogValid_2018-23-02</Id>
+                    <Query>DpdPhzPfOutputCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
+                <InputPortName>phz_output_cat</InputPortName>
+                <Cardinality>
+                    <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
+                    <Min>1</Min>
+                    <Max>9</Max>  <!-- Up to 9 tiles can intersect an observation -->
+                </Cardinality>
+            </InputDataPlan>
+            <!--I've asked PHZ to confirm whether there catalog is by field or tile, TBC-->            
+            
+            <InputDataPlan>
+                <DataProductType>DpdSpePfOutputCatalog</DataProductType>
+                <!--Galaxy & stellar spectra for colour dependent PSF corrections-->
+				 <InputQuerySpecPlan type="SQLLike">
+                    <Id>DpdSpePfOutputCatalogValid_2018-23-02</Id>
+                    <Query>DpdSpePfOutputCatalog.Header.ManualValidationStatus != 'INVALID'</Query>
+                </InputQuerySpecPlan> 
+                <InputPortName>spe_output_cat</InputPortName>
+                <Cardinality>
+                    <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
+                    <Min>1</Min>
+                    <Max>1</Max>  <!-- Up to 1 tiles can intersect an observation -->
+                </Cardinality>
+            </InputDataPlan>   
+            <!--I've asked SPE to confirm whether there catalog is by field or tile, TBC-->            
+                        
+            <!-- Placeholder for EXT HST data not available during SC456 -->
+            
+            <InputDataPlan>
+                <DataProductType>dpdShearKSBTraining</DataProductType>
+                <InputQuerySpecPlan type="SQLLike">
+                    <Id>ShearKSBTraining_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
+                    <Query>dpdShearKSBTraining.Header.ProductId.ObjectId=="UNKNOWN"</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select the unique Id of the masterBias -->
+                <InputPortName>ksb_training_data</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality>
+                    <Min>1</Min>
+                    <Max>1</Max>
+                </Cardinality>
+            </InputDataPlan>
+            
+            <InputDataPlan>
+                <DataProductType>dpdShearLensMCTraining</DataProductType>
+                <InputQuerySpecPlan type="SQLLike"> <!-- Type of the Query to be agreed with Andrey depending on the complexity 
+            of the query that could be a  SQL or a Python function -->
+                    <Id>ShearLensMCTraining_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
+                    <Query>dpdShearLensMCTraining.Header.ProductId.ObjectId=="UNKNOWN"</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select the unique Id of the masterBias -->
+                <InputPortName>lensmc_training_data</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality>
+                    <Min>1</Min>
+                    <Max>1</Max>
+                </Cardinality>
+            </InputDataPlan>
+
+            <InputDataPlan>
+                <DataProductType>dpdRegaussTraining</DataProductType>
+                <InputQuerySpecPlan type="SQLLike"> <!-- Type of the Query to be agreed with Andrey depending on the complexity 
+            of the query that could be a  SQL or a Python function -->
+                    <Id>RegaussTraining_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
+                    <Query>dpdRegaussTraining.Header.ProductId.ObjectId=="UNKNOWN"</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select the unique Id of the masterBias -->
+                <InputPortName>regauss_training_data</InputPortName>
+                <Cardinality>
+                    <Optionality>MANDATORY</Optionality>
+                    <Min>1</Min>
+                    <Max>1</Max>
+                </Cardinality>
+            </InputDataPlan>
+            
+            <InputDataPlan>
+                <DataProductType>dpdShearBFDTraining</DataProductType>
+                <InputQuerySpecPlan type="SQLLike"> <!-- Type of the Query to be agreed with Andrey depending on the complexity 
+            of the query that could be a  SQL or a Python function -->
+                    <Id>ShearBFDTraining_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
+                    <Query>dpdShearBFDTraining.Header.ProductId.ObjectId=="UNKNOWN"</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select the unique Id of the masterBias -->
+                <InputPortName>bfd_training_data</InputPortName>
+                <Cardinality>
+                    <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
+                    <Min>1</Min>
+                    <Max>1</Max>
+                </Cardinality>
+            </InputDataPlan>
+            
+            <InputDataPlan>
+                <DataProductType>dpdShearMomentsMLTraining</DataProductType>
+                <InputQuerySpecPlan type="SQLLike"> <!-- Type of the Query to be agreed with Andrey depending on the complexity 
+            of the query that could be a  SQL or a Python function -->
+                    <Id>ShearMomentsMLTraining_2018-23-02</Id>  <!-- The Id is assigned by EAS when the plan is created into EAS, not by the user as this query is defined at run time -->                  
+                    <Query>dpdShearMomentsMLTraining.Header.ProductId.ObjectId=="UNKNOWN"</Query>
+                </InputQuerySpecPlan> <!-- COORS UI to select the unique Id of the masterBias -->
+                <InputPortName>momentsml_training_data</InputPortName>
+                <Cardinality>
+                    <Optionality>OPTIONAL</Optionality><!--for SC456 leave as optional-->
+                    <Min>1</Min>
+                    <Max>1</Max>
+                </Cardinality>
+            </InputDataPlan>
+        <Dependencies>
+               <!--the following dependancy ensures that the FieldId of the dpdVisStackedFrame matches that of the dpdVisCalibratedFrame--> 
+                 <GroupedBy type="SQLLike">
+                   <Id>VIS-CAL-FRAME_Observation_ID</Id>
+                   <Query>DpdVisCalibratedFrame.Data.ObservationSequence.ObservationId</Query>
+               </LinkedBy>
+			   <LinkedBy type="SQLLike">
+                   <Id>VIS-CAL-FRAME_VIS-STACKED-FRAME_FIELDID</Id>
+                   <Query>dpdVisCalibratedFrame.Data.ObservationSequence.ObservationId == dpdVisStackedFrame.Data.ObservationId</Query>
+               </LinkedBy>
+
+               <!-- the following dependency allows to select the DpdMerFinalCatalog intersects the polygon of the dpdVisStackedFrame-->
+               <LinkedBy type="SQLLike">
+					<Id>VIS_MER_INTERSECTS</Id>
+                   <Query>DpdMerFinalCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon </Query>
+				</LinkedBy>
+               
+               <!-- the following dependency ensures that the TileIndex of the dpdMerSegmentationMap matches that of the DpdMerFinalCatalogallows to select the DpdMerFinalCatalog-->
+               <LinkedBy type="SQLLike">
+                   <Id>MER-SEG-MAP_INTERSECTS</Id>
+                   <Query>DpdMerSegmentationMap.Data.ImgSpatialFootprint.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon</Query>
+               </LinkedBy>
+               
+               <!-- the following dependency allows to select the DpdPhzPfOutputCatalog intersects the polygon of the dpdVisStackedFrame-->
+               <LinkedBy type="SQLLike">
+                   <Id>VIS_PHZ_INTERSECTS</Id>
+                   <Query>DpdPhzPfOutputCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon</Query>
+               </LinkedBy>
+               
+               <!-- the following dependency allows to select the DpdSpePfOutputCatalog intersects the polygon of the dpdVisStackedFrame-->
+               <LinkedBy type="SQLLike">
+                   <Id>VIS_SPE_INTERSECTS</Id>
+                   <Query>DpdSpePfOutputCatalog.Data.CatalogCoverage.SpatialCoverage.Polygon INTERSECTS (1,100) DpdVisStackedFrame.Data.ImgSpatialFootprint.Polygon</Query>
+               </LinkedBy>
+			</Dependencies>
+        </QueryDefinition>
+    </InputDataSet> 
+    <EdenVersion>2.0</EdenVersion>
+    <CommonDataModelVersion>2.0</CommonDataModelVersion>
+</tsk1:PipelineDef>

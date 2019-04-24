@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2019-01-22"
+__updated__ = "2019-04-24"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -107,7 +107,7 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline 0.6 SHE_Pipeline_RunBiasParallel",
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline "+SHE_Pipeline.__version__+" SHE_Pipeline_RunBiasParallel",
                                     store_true=["profile", "debug", "cluster"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
