@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-04-24"
+__updated__ = "2019-04-25"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -23,7 +23,7 @@ __updated__ = "2019-04-24"
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
 ERun_CTE = "E-Run SHE_CTE 0.8 "
-ERun_MER = "E-Run SHE_MER 0.4 "
+ERun_MER = "E-Run SHE_MER 0.4.1 "
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                               inputs=[Input("mer_tile_listfile", content_type="listfile"),
