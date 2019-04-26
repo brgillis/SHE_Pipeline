@@ -99,7 +99,7 @@ pipelinerunner.pilots.taskcmd=E-Run IAL_WFM_Pilot pilot_job         # Command us
 
 pipelinerunner.pilot.generic_heavy.cores=8
 pipelinerunner.pilot.generic_heavy.ramInMB=16384
-pipelinerunner.pilot.generic_heavy.walltimeInMin=1440
+pipelinerunner.pilot.generic_heavy.walltimeInMin=4320
 pipelinerunner.pilot.generic_heavy.loglevel=INFO
 pipelinerunner.pilot.generic_heavy.maxInstances=1
 
