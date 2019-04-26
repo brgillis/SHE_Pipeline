@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2019-04-19"
+__updated__ = "2019-04-26"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -31,9 +31,9 @@ def she_remap_mosaics(mer_tile_listfile,
                       vis_prod_filenames,
                       pipeline_config):
 
-    segmentation_image = she_remap_mosaic(mer_tile_listfile=mer_tile_listfile,
-                                          vis_prod_filename=vis_prod_filenames,
-                                          pipeline_config=pipeline_config,)
+    segmentation_image = she_remap_mosaic_exposure(mer_tile_listfile=mer_tile_listfile,
+                                                   vis_prod_filename=vis_prod_filenames,
+                                                   pipeline_config=pipeline_config,)
 
     return segmentation_image
 
@@ -104,9 +104,9 @@ def shear_analysis_pipeline(mdb,
                             pipeline_config,
                             ):
 
-    stacked_segmentation_image = she_remap_mosaic(mer_tile_listfile=mer_segmentation_map,
-                                                  vis_prod_filename=vis_stacked_image,
-                                                  pipeline_config=pipeline_config,)
+    stacked_segmentation_image = she_remap_mosaic_stack(mer_tile_listfile=mer_segmentation_map,
+                                                        vis_prod_filename=vis_stacked_image,
+                                                        pipeline_config=pipeline_config,)
 
     segmentation_images = she_remap_mosaics(mer_tile_listfile=mer_segmentation_map,
                                             vis_prod_filenames=vis_image,
