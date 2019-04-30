@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-04-26"
+__updated__ = "2019-04-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -48,7 +48,7 @@ she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                                  # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                  ],
                          outputs=[Output("psf_field_params", mime_type="json", content_type="listfile")],
-                         resources=ComputingResources(cores=8, ram=10.0, walltime=24.0))
+                         resources=ComputingResources(cores=8, ram=10.0, walltime=4.0))
 
 she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  inputs=[Input("detections_tables", content_type="listfile"),
