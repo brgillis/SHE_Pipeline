@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2019-04-26"
+__updated__ = "2019-04-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -59,7 +59,7 @@ def defineSpecificProgramOptions():
                         help='Additional arguments to write to the pipeline_config (must be in pairs of key value)')
     parser.add_argument('--serverurl', type=str, default=None)
     parser.add_argument('--server_config', type=str,
-                        default="/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties",
+                        default=None,
                         help="The name of the server configuration file to use.")
     parser.add_argument('--use_debug_server_config', action="store_true",
                         help="If set, will use a server configuration file which outputs all logs to stdout, " +

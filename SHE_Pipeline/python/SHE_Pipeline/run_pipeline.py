@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-04-23"
+__updated__ = "2019-04-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -43,6 +43,7 @@ import subprocess as sbp
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
+default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
 
@@ -445,7 +446,9 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
 
     logger = getLogger(__name__)
 
-    cmd = pipeline_runner_exec + ' --pipeline=' + pipeline + '.py --data=' + isf + ' --config=' + server_config
+    cmd = pipeline_runner_exec + ' --pipeline=' + pipeline + '.py --data=' + isf
+    if server_config is not None:
+        cmd += ' --config=' + server_config
     if serverurl is not None:
         cmd += ' --serverurl="' + serverurl + '"'
 
@@ -478,6 +481,8 @@ def run_pipeline_from_args(args):
         server_config = find_aux_file("SHE_Pipeline/debug_server_config.txt")
     else:
         server_config = args.server_config
+        if server_config is None and not args.cluster:
+            server_config = default_server_config
 
     # Try to call the pipeline
     try:
