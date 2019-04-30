@@ -30,14 +30,14 @@ she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                             Input("vis_prod_filename"),
                                             Input("pipeline_config")],
                                     outputs=[Output("output_filename", mime_type='xml')],
-                                    resources=ComputingResources(cores=4, ram=2.0, walltime=1.0))
+                                    resources=ComputingResources(cores=4, ram=7.9, walltime=1.0))
 
 she_remap_mosaic_exposure = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                        inputs=[Input("mer_tile_listfile", content_type="listfile"),
                                                Input("vis_prod_filename"),
                                                Input("pipeline_config")],
                                        outputs=[Output("output_filename", mime_type='xml')],
-                                       resources=ComputingResources(cores=2, ram=2.0, walltime=1.0))
+                                       resources=ComputingResources(cores=8, ram=15.9, walltime=1.0))
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
@@ -48,7 +48,7 @@ she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                                  # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                  ],
                          outputs=[Output("psf_field_params", mime_type="json", content_type="listfile")],
-                         resources=ComputingResources(cores=8, ram=10.0, walltime=4.0))
+                         resources=ComputingResources(cores=8, ram=15.9, walltime=4.0))
 
 she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  inputs=[Input("detections_tables", content_type="listfile"),
@@ -67,7 +67,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")],
-                           resources=ComputingResources(cores=1, ram=2.0, walltime=4.0))
+                           resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
 
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
@@ -88,14 +88,14 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ],
-                                resources=ComputingResources(cores=1, ram=2.0, walltime=8.0))
+                                resources=ComputingResources(cores=1, ram=1.9, walltime=8.0))
 
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
                                        outputs=[Output("output_shear_estimates", mime_type='xml')],
-                                       resources=ComputingResources(cores=1, ram=2.0, walltime=1.0))
+                                       resources=ComputingResources(cores=1, ram=1.9, walltime=1.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
                                       outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
-                                      resources=ComputingResources(cores=1, ram=2.0, walltime=1.0))
+                                      resources=ComputingResources(cores=1, ram=1.9, walltime=1.0))
