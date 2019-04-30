@@ -106,3 +106,11 @@ pipelinerunner.pilot.generic_heavy.maxInstances=1
 pipelinerunner.logging.filename=None
 pipelinerunner.logging.useStdOut=1
 pipelinerunner.logging.redirectStdErr=0
+
+pipelinerunner.socket_dir=/tmp
+pipelinerunner.logging.module_port=logger.sock
+pipelinerunner.engine.module_port=engine.sock
+pipelinerunner.pilotManager.module_port=pilot.sock
+pipelinerunner.pilots.url_to_pilot_manager=pilot.sock
+pipelinerunner.pilots.url_to_logger=logger.sock
+
