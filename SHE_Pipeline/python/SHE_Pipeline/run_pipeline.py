@@ -45,11 +45,23 @@ default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties"
 
-non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config")
+default_eden_version_master = "Eden-2.0"
+default_eden_version_dev = "Eden-2.0-dev"
+
+non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config", "edenVersion")
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/shear_bias_measurements.xml"}
 
 pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.0/opt/euclid/ST_PipelineRunner/bin/pipeline_runner.py"
+
+
+def is_dev_version():
+    """Determines if we're running a develop version of the code.
+    """
+
+    minor_version = SHE_Pipeline.__version__.split('.')[1]
+
+    return int(minor_version) % 2 == 1
 
 
 def get_pipeline_dir():
@@ -319,6 +331,11 @@ def create_isf(args,
     args_to_set["logdir"] = args.logdir
     args_to_set["pkgRepository"] = get_pipeline_dir()
     args_to_set["pipelineDir"] = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef")
+    if is_dev_version():
+        args_to_set["edenVersion"] = default_eden_version_dev
+    else:
+        args_to_set["edenVersion"] = default_eden_version_master
+
     if config_filename is not None:
         args_to_set["pipeline_config"] = config_filename
 
