@@ -30,14 +30,14 @@ she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                             Input("vis_prod_filename"),
                                             Input("pipeline_config")],
                                     outputs=[Output("output_filename", mime_type='xml')],
-                                    resources=ComputingResources(cores=4, ram=7.9, walltime=1.0))
+                                    resources=ComputingResources(cores=4, ram=7.9, walltime=6.0))
 
 she_remap_mosaic_exposure = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                        inputs=[Input("mer_tile_listfile", content_type="listfile"),
                                                Input("vis_prod_filename"),
                                                Input("pipeline_config")],
                                        outputs=[Output("output_filename", mime_type='xml')],
-                                       resources=ComputingResources(cores=8, ram=15.9, walltime=1.0))
+                                       resources=ComputingResources(cores=8, ram=15.9, walltime=6.0))
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
@@ -48,13 +48,13 @@ she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                                  # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                  ],
                          outputs=[Output("psf_field_params", mime_type="json", content_type="listfile")],
-                         resources=ComputingResources(cores=8, ram=15.9, walltime=4.0))
+                         resources=ComputingResources(cores=8, ram=15.9, walltime=0.5))
 
 she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  inputs=[Input("detections_tables", content_type="listfile"),
                                          Input("pipeline_config", content_type="listfile"), ],
                                  outputs=[Output("object_ids", mime_type='json')],
-                                 resources=ComputingResources(cores=1, ram=1.0, walltime=1.0))
+                                 resources=ComputingResources(cores=1, ram=1.0, walltime=0.5))
 
 she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
@@ -67,7 +67,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")],
-                           resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
+                           resources=ComputingResources(cores=1, ram=1.9, walltime=0.5))
 
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
