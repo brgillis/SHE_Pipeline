@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-05-01"
+__updated__ = "2019-05-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -54,7 +54,7 @@ she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  inputs=[Input("detections_tables", content_type="listfile"),
                                          Input("pipeline_config", content_type="listfile"), ],
                                  outputs=[Output("object_ids", mime_type='json')],
-                                 resources=ComputingResources(cores=1, ram=1.0, walltime=0.5))
+                                 resources=ComputingResources(cores=1, ram=1.0, walltime=1.0))
 
 she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
@@ -88,14 +88,14 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ],
-                                resources=ComputingResources(cores=1, ram=1.9, walltime=1.0))
+                                resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
 
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
                                        outputs=[Output("output_shear_estimates", mime_type='xml')],
-                                       resources=ComputingResources(cores=1, ram=1.9, walltime=1.0))
+                                       resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
                                       outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
-                                      resources=ComputingResources(cores=1, ram=1.9, walltime=1.0))
+                                      resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
