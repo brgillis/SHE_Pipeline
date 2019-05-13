@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2019-01-22"
+__updated__ = "2019-05-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,12 +20,17 @@ __updated__ = "2019-01-22"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import SHE_CTE
+import SHE_GST
+import SHE_MER_RemapMosaic
+import SHE_Pipeline
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
-ERun_CTE = "E-Run SHE_CTE 0.6.9 "
-ERun_GST = "E-Run SHE_GST 1.6.6 "
-ERun_MER = "E-Run SHE_MER 0.2.1 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.6 "
+
+ERun_CTE = "E-Run SHE_CTE " + SHE_CTE.__version__ + " "
+ERun_MER = "E-Run SHE_MER " + SHE_MER_RemapMosaic.__version__ + " "
+ERun_GST = "E-Run SHE_GST " + SHE_GST.__version__ + " "
+ERun_Pipeline = "E-Run SHE_Pipeline " + SHE_Pipeline.__version__ + " "
 
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"),
@@ -118,8 +123,8 @@ she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
                                    inputs=[Input("pickled_args")],
                                    outputs=[Output("pipeline_output", mime_type="xml")],
-                                   resources=ComputingResources(cores=0,ram=0.1,walltime=1.0))
+                                   resources=ComputingResources(cores=0, ram=0.1, walltime=1.0))
 
 she_run_controlled_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasParallel",
-                                   inputs=[Input("pickled_args")],
-                                   outputs=[Output("shear_bias_measurements", mime_type="xml")])
+                                              inputs=[Input("pickled_args")],
+                                              outputs=[Output("shear_bias_measurements", mime_type="xml")])
