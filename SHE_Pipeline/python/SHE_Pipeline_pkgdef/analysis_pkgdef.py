@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-05-03"
+__updated__ = "2019-05-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,10 +20,13 @@ __updated__ = "2019-05-03"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import SHE_CTE
+import SHE_MER_RemapMosaic
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
-ERun_CTE = "E-Run SHE_CTE 0.7 "
-ERun_MER = "E-Run SHE_MER 0.3 "
+
+ERun_CTE = "E-Run SHE_CTE " + SHE_CTE.__version__ + " "
+ERun_MER = "E-Run SHE_MER " + SHE_MER_RemapMosaic.__version__ + " "
 
 she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                     inputs=[Input("mer_tile_listfile", content_type="listfile"),
@@ -99,3 +102,10 @@ she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateS
                                       inputs=[Input("shear_estimates_product")],
                                       outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
                                       resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
+
+she_match_to_tu = Executable(command=ERun_CTE + "SHE_CTE_MatchToTU",
+                             inputs=[Input("shear_estimates_product"),
+                                     Input("tu_galaxy_catalog"),
+                                     Input("tu_star_catalog")],
+                             outputs=[Output("matched_catalog", mime_type="xml")],
+                             resources=ComputingResources(cores=1, ram=15.9, walltime=5.0))

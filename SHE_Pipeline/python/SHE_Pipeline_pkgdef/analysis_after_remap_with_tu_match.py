@@ -1,8 +1,8 @@
-""" @file analysis.py
+""" @file analysis_after_remap_with_tu_match.py
 
-    Created 29 Aug 2017
+    Created 13 May 2019
 
-    Pipeline script for the shear-estimation-only pipeline.
+    Pipeline script for the shear-estimation-only pipeline, starting after the segmentation map reprojection step.
 """
 
 __updated__ = "2019-05-13"
@@ -20,24 +20,11 @@ __updated__ = "2019-05-13"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_remap_mosaic_exposure,
-                                                 she_remap_mosaic_stack,
-                                                 she_fit_psf, she_model_psf,
+from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_fit_psf, she_model_psf,
                                                  she_object_id_split, she_shear_estimates_merge,
-                                                 she_estimate_shear, she_cross_validate_shear)
+                                                 she_estimate_shear, she_cross_validate_shear,
+                                                 she_match_to_tu)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
-
-
-@parallel(iterable="vis_prod_filenames")
-def she_remap_mosaics(mer_tile_listfile,
-                      vis_prod_filenames,
-                      pipeline_config):
-
-    segmentation_image = she_remap_mosaic_exposure(mer_tile_listfile=mer_tile_listfile,
-                                                   vis_prod_filename=vis_prod_filenames,
-                                                   pipeline_config=pipeline_config,)
-
-    return segmentation_image
 
 
 @parallel(iterable="object_ids")
@@ -86,11 +73,12 @@ def she_model_psf_and_estimate_shear(object_ids,
     return shear_estimates_product
 
 
-@pipeline(outputs=('validated_shear_estimates_table'))
+@pipeline(outputs=('validated_shear_estimates_table', 'matched_catalog'))
 def shear_analysis_pipeline(mdb,
                             vis_image,
                             vis_stacked_image,
-                            mer_segmentation_map,
+                            stacked_segmentation_image,
+                            segmentation_images,
                             mer_catalog,
                             # aocs_time_series_products, # Disabled for now
                             # psf_calibration_products, # Disabled for now
@@ -104,15 +92,9 @@ def shear_analysis_pipeline(mdb,
                             bfd_training_data,
                             momentsml_training_data,
                             pipeline_config,
+                            tu_galaxy_catalog,
+                            tu_star_catalog
                             ):
-
-    stacked_segmentation_image = she_remap_mosaic_stack(mer_tile_listfile=mer_segmentation_map,
-                                                        vis_prod_filename=vis_stacked_image,
-                                                        pipeline_config=pipeline_config,)
-
-    segmentation_images = she_remap_mosaics(mer_tile_listfile=mer_segmentation_map,
-                                            vis_prod_filenames=vis_image,
-                                            pipeline_config=pipeline_config,)
 
     psf_field_params = she_fit_psf(data_images=vis_image,
                                    segmentation_images=segmentation_images,
@@ -146,7 +128,11 @@ def shear_analysis_pipeline(mdb,
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 
-    return cross_validated_shear_estimates_product
+    matched_catalog = she_match_to_tu(shear_estimates_product=shear_estimates_product,
+                                      tu_galaxy_catalog=tu_galaxy_catalog,
+                                      tu_star_catalog=tu_star_catalog)
+
+    return cross_validated_shear_estimates_product, matched_catalog
 
 
 if __name__ == '__main__':
