@@ -1,8 +1,9 @@
-""" @file analysis.py
+""" @file analysis_with_tu_match.py
 
-    Created 29 Aug 2017
+    Created 13 May 2019
 
-    Pipeline script for the shear-estimation-only pipeline.
+    Pipeline script for the shear-estimation-only pipeline, with an extra match to True Universe catalogues at the
+    end.
 """
 
 __updated__ = "2019-05-13"
@@ -24,7 +25,8 @@ from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_remap_mosaic_exposure,
                                                  she_remap_mosaic_stack,
                                                  she_fit_psf, she_model_psf,
                                                  she_object_id_split, she_shear_estimates_merge,
-                                                 she_estimate_shear, she_cross_validate_shear)
+                                                 she_estimate_shear, she_cross_validate_shear,
+                                                 she_match_to_tu)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
@@ -86,7 +88,7 @@ def she_model_psf_and_estimate_shear(object_ids,
     return shear_estimates_product
 
 
-@pipeline(outputs=('validated_shear_estimates_table'))
+@pipeline(outputs=('validated_shear_estimates_table', 'matched_catalog'))
 def shear_analysis_pipeline(mdb,
                             vis_image,
                             vis_stacked_image,
@@ -104,6 +106,8 @@ def shear_analysis_pipeline(mdb,
                             bfd_training_data,
                             momentsml_training_data,
                             pipeline_config,
+                            tu_galaxy_catalog,
+                            tu_star_catalog
                             ):
 
     stacked_segmentation_image = she_remap_mosaic_stack(mer_tile_listfile=mer_segmentation_map,
@@ -146,7 +150,11 @@ def shear_analysis_pipeline(mdb,
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 
-    return cross_validated_shear_estimates_product
+    matched_catalog = she_match_to_tu(shear_estimates_product=shear_estimates_product,
+                                      tu_galaxy_catalog=tu_galaxy_catalog,
+                                      tu_star_catalog=tu_star_catalog)
+
+    return cross_validated_shear_estimates_product, matched_catalog
 
 
 if __name__ == '__main__':
