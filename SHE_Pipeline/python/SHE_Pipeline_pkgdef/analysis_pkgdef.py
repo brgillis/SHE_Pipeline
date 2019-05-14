@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-05-13"
+__updated__ = "2019-05-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,13 +20,14 @@ __updated__ = "2019-05-13"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import SHE_CTE
-import SHE_MER_RemapMosaic
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
+SHE_CTE_version = "0.7"
+SHE_MER_version = "0.3"
 
-ERun_CTE = "E-Run SHE_CTE " + SHE_CTE.__version__ + " "
-ERun_MER = "E-Run SHE_MER " + SHE_MER_RemapMosaic.__version__ + " "
+
+ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
+ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
 
 she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                     inputs=[Input("mer_tile_listfile", content_type="listfile"),
