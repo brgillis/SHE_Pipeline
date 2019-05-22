@@ -1,9 +1,11 @@
-""" @file sample_test.py
+""" @file magic_values.py
 
-    Created 16 August 2018
-    
-    Sample unit test
+    Created 14 may 2019
+
+    Magic values for the package definitions
 """
+
+__updated__ = "2019-05-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -16,18 +18,14 @@
 # details.
 #
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301 USA
+# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import logging
+SHE_CTE_version = "0.7"
+SHE_GST_version = "1.7"
+SHE_MER_version = "0.3"
+SHE_Pipeline_version = "0.7"
 
-import pytest
-
-
-class TestSample():
-
-    def test_sample(self):
-        """Sample test
-        """
-
-        assert True
+ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
+ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
+ERun_GST = "E-Run SHE_GST " + SHE_GST_version + " "
+ERun_Pipeline = "E-Run SHE_Pipeline " + SHE_Pipeline_version + " "

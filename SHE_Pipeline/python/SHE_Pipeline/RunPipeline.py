@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2019-04-24"
+__updated__ = "2019-04-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,8 +22,9 @@ __updated__ = "2019-04-24"
 
 import argparse
 
-from ElementsKernel.Logging import getLogger
 from SHE_PPT.utility import get_arguments_string
+
+from ElementsKernel.Logging import getLogger
 import SHE_Pipeline
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
@@ -58,7 +59,7 @@ def defineSpecificProgramOptions():
                         help='Additional arguments to write to the pipeline_config (must be in pairs of key value)')
     parser.add_argument('--serverurl', type=str, default=None)
     parser.add_argument('--server_config', type=str,
-                        default="/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties",
+                        default=None,
                         help="The name of the server configuration file to use.")
     parser.add_argument('--use_debug_server_config', action="store_true",
                         help="If set, will use a server configuration file which outputs all logs to stdout, " +
@@ -94,8 +95,8 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline "+SHE_Pipeline.__version__+" SHE_Pipeline_Run",
-                                    store_true=["profile", "debug", "cluster", "wait", "no_local_wait"])
+    exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline " + SHE_Pipeline.__version__ + " SHE_Pipeline_Run",
+                                    store_true=["profile", "debug", "cluster", "use_debug_server_config"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 

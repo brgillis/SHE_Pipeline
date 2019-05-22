@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-04-25"
+__updated__ = "2019-05-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,16 +20,22 @@ __updated__ = "2019-04-25"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_MER
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
-ERun_CTE = "E-Run SHE_CTE 0.8 "
-ERun_MER = "E-Run SHE_MER 0.4.1 "
+she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
+                                    inputs=[Input("mer_tile_listfile", content_type="listfile"),
+                                            Input("vis_prod_filename"),
+                                            Input("pipeline_config")],
+                                    outputs=[Output("output_filename", mime_type='xml')],
+                                    resources=ComputingResources(cores=4, ram=7.9, walltime=6.0))
 
-she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
-                              inputs=[Input("mer_tile_listfile", content_type="listfile"),
-                                      Input("vis_prod_filename"),
-                                      Input("pipeline_config")],
-                              outputs=[Output("output_filename", mime_type='xml')])
+she_remap_mosaic_exposure = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
+                                       inputs=[Input("mer_tile_listfile", content_type="listfile"),
+                                               Input("vis_prod_filename"),
+                                               Input("pipeline_config")],
+                                       outputs=[Output("output_filename", mime_type='xml')],
+                                       resources=ComputingResources(cores=8, ram=15.9, walltime=6.0))
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
@@ -39,12 +45,14 @@ she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                                  # Input("aocs_time_series_products", content_type="listfile"), # Disabled for now
                                  # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                  ],
-                         outputs=[Output("psf_field_params", mime_type="json", content_type="listfile")])
+                         outputs=[Output("psf_field_params", mime_type="json", content_type="listfile")],
+                         resources=ComputingResources(cores=8, ram=15.9, walltime=0.5))
 
 she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  inputs=[Input("detections_tables", content_type="listfile"),
-                                         Input("pipeline_config", content_type="listfile"), ],
-                                 outputs=[Output("object_ids", mime_type='json')])
+                                         Input("pipeline_config"), ],
+                                 outputs=[Output("object_ids", mime_type='json')],
+                                 resources=ComputingResources(cores=1, ram=1.0, walltime=1.0))
 
 she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
@@ -56,7 +64,8 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    # Input("aocs_time_series_products", content_type="listfile"), # Disabled for now
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                    ],
-                           outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")])
+                           outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")],
+                           resources=ComputingResources(cores=1, ram=1.9, walltime=0.5))
 
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
@@ -76,12 +85,22 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
-                                outputs=[Output("shear_estimates_product", mime_type="xml"), ])
+                                outputs=[Output("shear_estimates_product", mime_type="xml"), ],
+                                resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
 
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
-                                       outputs=[Output("output_shear_estimates", mime_type='xml')])
+                                       outputs=[Output("output_shear_estimates", mime_type='xml')],
+                                       resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
-                                      outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")])
+                                      outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
+                                      resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
+
+she_match_to_tu = Executable(command=ERun_CTE + "SHE_CTE_MatchToTU",
+                             inputs=[Input("shear_estimates_product"),
+                                     Input("tu_galaxy_catalog"),
+                                     Input("tu_star_catalog")],
+                             outputs=[Output("matched_catalog", mime_type="xml")],
+                             resources=ComputingResources(cores=1, ram=15.9, walltime=5.0))

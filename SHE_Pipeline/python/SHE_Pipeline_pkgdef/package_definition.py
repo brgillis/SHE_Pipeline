@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2019-04-25"
+__updated__ = "2019-05-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,12 +20,8 @@ __updated__ = "2019-04-25"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_MER, ERun_GST, ERun_Pipeline
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
-
-ERun_CTE = "E-Run SHE_CTE 0.8 "
-ERun_GST = "E-Run SHE_GST 1.8 "
-ERun_MER = "E-Run SHE_MER 0.4.1 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.8 "
 
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"),
@@ -118,8 +114,8 @@ she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
                                    inputs=[Input("pickled_args")],
                                    outputs=[Output("pipeline_output", mime_type="xml")],
-                                   resources=ComputingResources(cores=0,ram=0.1,walltime=1.0))
+                                   resources=ComputingResources(cores=0, ram=0.1, walltime=1.0))
 
 she_run_controlled_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasParallel",
-                                   inputs=[Input("pickled_args")],
-                                   outputs=[Output("shear_bias_measurements", mime_type="xml")])
+                                              inputs=[Input("pickled_args")],
+                                              outputs=[Output("shear_bias_measurements", mime_type="xml")])

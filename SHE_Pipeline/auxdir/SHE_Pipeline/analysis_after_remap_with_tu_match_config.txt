@@ -1,0 +1,1 @@
+SHE_CTE_EstimateShear_methods = BFD KSB LensMC MomentsML REGAUSS
