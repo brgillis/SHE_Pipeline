@@ -21,7 +21,7 @@ __updated__ = "2019-05-22"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 SHE_CTE_version = "0.8.1"
-SHE_GST_version = "1.8.2"
+SHE_GST_version = "1.8.1"
 SHE_MER_version = "0.4.2"
 SHE_Pipeline_version = "0.8.1"
 
