@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-05-21"
+__updated__ = "2019-05-24"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,7 +20,7 @@ __updated__ = "2019-05-21"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_MER
+from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_MER, ERun_PSF
 from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingResources
 
 she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
@@ -54,7 +54,7 @@ she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                  outputs=[Output("object_ids", mime_type='json')],
                                  resources=ComputingResources(cores=1, ram=1.0, walltime=1.0))
 
-she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
+she_model_psf = Executable(command=ERun_PSF + "SHE_CTE_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
                                    Input("detections_tables", content_type="listfile"),
                                    Input("psf_field_params"),
