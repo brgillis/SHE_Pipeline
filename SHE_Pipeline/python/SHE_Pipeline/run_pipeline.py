@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-04-30"
+__updated__ = "2019-05-27"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -380,7 +380,7 @@ def create_isf(args,
         # Symlink the filename from the "data" directory within the workdir
         new_filename = os.path.join("data", os.path.split(filename)[1])
         try:
-            if not qualified_filename == os.path.join(args.workdir, new_filename):
+            if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
                 os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
         except FileExistsError as e:
             try:
@@ -391,7 +391,7 @@ def create_isf(args,
                     pass
             except Exception as _:
                 pass
-            if not qualified_filename == os.path.join(args.workdir, new_filename):
+            if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
                 os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
         # Update the filename in the args_to_set to the new location
@@ -435,7 +435,7 @@ def create_isf(args,
                 raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
-            if not qualified_data_filename == os.path.join(args.workdir, data_filename):
+            if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
                 if os.path.exists(os.path.join(args.workdir, data_filename)):
                     os.remove(os.path.join(args.workdir, data_filename))
                     try:
