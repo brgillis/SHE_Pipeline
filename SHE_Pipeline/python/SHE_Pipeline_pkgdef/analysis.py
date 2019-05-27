@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline.
 """
 
-__updated__ = "2019-05-13"
+__updated__ = "2019-05-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -61,7 +61,6 @@ def she_model_psf_and_estimate_shear(object_ids,
 
     psf_images_and_tables = she_model_psf(object_ids=object_ids,
                                           data_images=vis_image,
-                                          segmentation_images=segmentation_images,
                                           detections_tables=mer_catalog,
                                           mdb=mdb,
                                           psf_field_params=psf_field_params,
