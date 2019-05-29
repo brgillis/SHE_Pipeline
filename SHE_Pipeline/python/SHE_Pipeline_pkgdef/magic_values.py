@@ -22,7 +22,7 @@ __updated__ = "2019-05-29"
 
 SHE_CTE_version = "0.8.4"
 SHE_GST_version = "1.8.3"
-SHE_MER_version = "0.4.3"
+SHE_MER_version = "0.4.4"
 SHE_Pipeline_version = "0.8.4"
 SHE_PSF_version = "2.2.1"
 
