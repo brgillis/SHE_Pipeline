@@ -24,7 +24,7 @@ SHE_CTE_version = "0.8.5"
 SHE_GST_version = "1.8.3"
 SHE_MER_version = "0.4.4"
 SHE_Pipeline_version = "0.8.6"
-SHE_PSF_version = "2.2.2"
+SHE_PSF_version = "2.2.3"
 
 ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
 ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
