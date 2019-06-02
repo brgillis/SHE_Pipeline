@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline, starting after the segmentation map reprojection step.
 """
 
-__updated__ = "2019-05-21"
+__updated__ = "2019-05-28"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -71,7 +71,7 @@ def she_model_psf_and_estimate_shear(object_ids,
     return shear_estimates_product
 
 
-@pipeline(outputs=('validated_shear_estimates_table'))
+@pipeline(outputs=('cross_validated_shear_estimates', 'shear_estimates'))
 def shear_analysis_pipeline(mdb,
                             vis_image,
                             vis_stacked_image,
@@ -124,7 +124,7 @@ def shear_analysis_pipeline(mdb,
 
     cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
 
-    return cross_validated_shear_estimates_product
+    return cross_validated_shear_estimates_product, shear_estimates_product
 
 
 if __name__ == '__main__':
