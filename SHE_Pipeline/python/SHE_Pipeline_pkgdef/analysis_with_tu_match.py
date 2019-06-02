@@ -6,7 +6,7 @@
     end.
 """
 
-__updated__ = "2019-05-21"
+__updated__ = "2019-05-28"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -87,7 +87,7 @@ def she_model_psf_and_estimate_shear(object_ids,
     return shear_estimates_product
 
 
-@pipeline(outputs=('validated_shear_estimates_table', 'matched_catalog'))
+@pipeline(outputs=('cross_validated_shear_estimates', 'shear_estimates', 'matched_catalog'))
 def shear_analysis_pipeline(mdb,
                             vis_image,
                             vis_stacked_image,
@@ -153,7 +153,7 @@ def shear_analysis_pipeline(mdb,
                                       tu_galaxy_catalog=tu_galaxy_catalog,
                                       tu_star_catalog=tu_star_catalog)
 
-    return cross_validated_shear_estimates_product, matched_catalog
+    return cross_validated_shear_estimates_product, shear_estimates_product, matched_catalog
 
 
 if __name__ == '__main__':
