@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-06-02"
+__updated__ = "2019-06-04"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -95,11 +95,11 @@ she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimate
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
                                       outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
-                                      resources=ComputingResources(cores=1, ram=7.9, walltime=8.0))
+                                      resources=ComputingResources(cores=1, ram=7.9, walltime=1.0))
 
 she_match_to_tu = Executable(command=ERun_CTE + "SHE_CTE_MatchToTU",
                              inputs=[Input("shear_estimates_product"),
                                      Input("tu_galaxy_catalog"),
                                      Input("tu_star_catalog")],
                              outputs=[Output("matched_catalog", mime_type="xml")],
-                             resources=ComputingResources(cores=1, ram=15.9, walltime=10.0))
+                             resources=ComputingResources(cores=1, ram=15.9, walltime=1.0))
