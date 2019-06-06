@@ -34,8 +34,8 @@ ln -s $SOURCEDIR/* .
 
 echo "Please ignore the 'ln: failed to create symbolic link './data': File exists' error - it's expected"
 
-chmod a+x data
-chmod a+rw * */*
+chmod a+x . data
+chmod a+rw . * */*
 
 cd $STARTDIR
 
