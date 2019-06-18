@@ -9,15 +9,16 @@ else
     if [ "$#" -eq 2 ]; then
         SOURCEDIR=$1
         TARGETDIR=$2
+    else
+        echo "ERROR: Acceptable manners to call clone_workdir.sh are: "
+        echo "    clone_workdir.sh TARGETDIR"
+        echo "    clone_workdir.sh SOURCEDIR TARGETDIR"
+        exit 1
     fi
-    echo "ERROR: Acceptable manners to call clone_workdir.sh are: "
-    echo "    clone_workdir.sh TARGETDIR"
-    echo "    clone_workdir.sh SOURCEDIR TARGETDIR"
-    exit 1
 fi
 
 # Check that the target directory doesn't already exist
-if [ -d "$1" ]; then
+if [ -d "$TARGETDIR" ]; then
   echo "The target directory already exists! Please remove it and try again."
   exit 1
 fi
