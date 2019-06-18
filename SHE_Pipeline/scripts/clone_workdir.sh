@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SOURCEDIR=/mnt/cephfs/share/sc4-big-workdir
+SOURCEDIR=/mnt/cephfs/share/sc4-R1-workdir
 
 # Check we're given one argument
 if [ "$#" -eq 1 ]; then
