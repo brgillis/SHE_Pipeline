@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-04-22"
+__updated__ = "2019-07-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,12 +27,6 @@ import os
 import time
 import xml.sax._exceptions
 
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 from astropy.io import fits
 from astropy.table import Table
 import numpy
@@ -50,10 +44,17 @@ from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 import SHE_Pipeline
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
+from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_GST,  ERun_MER, ERun_Pipeline
 import _pickle
 
 
@@ -62,23 +63,6 @@ default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
-
-known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
-
-                     "SHE_CTE_EstimateShear_methods",
-
-                     "SHE_CTE_MeasureBias_archive_dir",
-                     "SHE_CTE_MeasureBias_webdav_archive",
-                     "SHE_CTE_MeasureBias_webdav_dir",
-
-                     "SHE_CTE_MeasureStatistics_archive_dir",
-                     "SHE_CTE_MeasureStatistics_webdav_archive",
-                     "SHE_CTE_MeasureStatistics_webdav_dir",)
-
-ERun_CTE = "E-Run SHE_CTE 0.7 "
-ERun_GST = "E-Run SHE_GST 1.7 "
-ERun_MER = "E-Run SHE_MER 0.3 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.5 "
 
 
 def she_prepare_configs(simulation_plan, config_template,
@@ -146,7 +130,7 @@ def she_estimate_shear(data_images, stacked_image,
                        stacked_segmentation_image, detections_tables,
                        bfd_training_data, ksb_training_data,
                        lensmc_training_data, momentsml_training_data,
-                       regauss_training_data, pipeline_config,
+                       regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
@@ -185,7 +169,7 @@ def she_estimate_shear(data_images, stacked_image,
     argv = ("--data_images %s "
             "--stacked_image %s --psf_images_and_tables %s "
             "--segmentation_images %s --stacked_segmentation_image %s "
-            "--detections_tables %s%s --pipeline_config %s "
+            "--detections_tables %s%s --pipeline_config %s --mdb %s "
             "--shear_estimates_product %s --workdir %s --logdir %s "
             "--log-file %s/%s/she_estimate_shear.out" %
             (get_relpath(data_images, workdir),
@@ -196,6 +180,7 @@ def she_estimate_shear(data_images, stacked_image,
              get_relpath(detections_tables, workdir),
              shear_method_arg_string,
              get_relpath(pipeline_config, workdir),
+             get_relpath(mdb, workdir),
              get_relpath(shear_estimates_product, workdir),
              workdir, logdir, workdir, logdir)).split()
     #
@@ -568,7 +553,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     inputs_tuple = namedtuple("SIMInputs", "simulation_config bfd_training_data "
                               "ksb_training_data lensmc_training_data momentsml_training_data "
-                              "regauss_training_data pipeline_config")
+                              "regauss_training_data pipeline_config mdb")
 
     logger = getLogger(__name__)
 
@@ -622,7 +607,8 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         args_to_set['lensmc_training_data'],
         args_to_set['momentsml_training_data'],
         args_to_set['regauss_training_data'],
-        args_to_set['pipeline_config']])
+        args_to_set['pipeline_config'],
+        args_to_set['mdb']])
 
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
@@ -740,7 +726,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 def she_simulate_and_measure_bias_statistics(simulation_config,
                                              bfd_training_data, ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
-                                             regauss_training_data, pipeline_config, workdirTuple,
+                                             regauss_training_data, pipeline_config, mdb, workdirTuple,
                                              simulation_no, logdir, est_shear_only):
     """ Parallel processing parts of bias_measurement pipeline
 
@@ -779,6 +765,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        momentsml_training_data=momentsml_training_data,
                        regauss_training_data=regauss_training_data,
                        pipeline_config=pipeline_config,
+                       mdb=mdb,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
@@ -920,6 +907,7 @@ def run_pipeline_from_args(args):
                                                               simulate_measure_inputs.momentsml_training_data,
                                                               simulate_measure_inputs.regauss_training_data,
                                                               simulate_measure_inputs.pipeline_config,
+                                                              simulate_measure_inputs.mdb,
                                                               workdir, simulation_no, args.logdir, args.est_shear_only)))
 
         if prod_threads:
