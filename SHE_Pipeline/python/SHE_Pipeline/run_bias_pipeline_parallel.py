@@ -653,6 +653,10 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         args_to_set[input_port_name] = new_filename
 
         # Now, go through each data file of the product and symlink those from the workdir too
+        
+        # If it's the MDB, skip from here
+        if input_port_name=='mdb':
+            continue
 
         # Skip (but warn) if it's not an XML data product
         if qualified_filename[-4:] != ".xml":
