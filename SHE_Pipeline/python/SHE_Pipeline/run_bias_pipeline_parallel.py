@@ -599,17 +599,6 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     # Search path is root workdir
     search_path = args.workdir
 
-    # Inputs for thread
-    simulate_inputs = inputs_tuple(*[
-        args_to_set['simulation_config'],
-        args_to_set['bfd_training_data'],
-        args_to_set['ksb_training_data'],
-        args_to_set['lensmc_training_data'],
-        args_to_set['momentsml_training_data'],
-        args_to_set['regauss_training_data'],
-        args_to_set['pipeline_config'],
-        args_to_set['mdb']])
-
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
         if input_port_name in non_filename_args or 'simulation_plan' in input_port_name:
@@ -724,6 +713,18 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         if not os.path.exists(new_conf_file_name):
             os.symlink(os.path.join(args.workdir, bin_conf_file),
                        new_conf_file_name)
+
+    # Inputs for thread
+    simulate_inputs = inputs_tuple(*[
+        args_to_set['simulation_config'],
+        args_to_set['bfd_training_data'],
+        args_to_set['ksb_training_data'],
+        args_to_set['lensmc_training_data'],
+        args_to_set['momentsml_training_data'],
+        args_to_set['regauss_training_data'],
+        args_to_set['pipeline_config'],
+        args_to_set['mdb']])
+    
     return simulate_inputs
 
 
