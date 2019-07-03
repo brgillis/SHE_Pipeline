@@ -612,7 +612,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
-        if input_port_name in non_filename_args or input_port_name == "mdb" or 'simulation_plan' in input_port_name:
+        if input_port_name in non_filename_args or 'simulation_plan' in input_port_name:
             continue
 
         filename = args_to_set[input_port_name]
