@@ -5,7 +5,7 @@
     Pipeline script for the shear bias measurement pipeline.
 """
 
-__updated__ = "2018-08-23"
+__updated__ = "2019-07-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -34,7 +34,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                              lensmc_training_data,
                                              momentsml_training_data,
                                              regauss_training_data,
-                                             pipeline_config):
+                                             pipeline_config,
+                                             mdb):
 
     (data_images,
      stacked_data_image,
@@ -56,7 +57,8 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                          lensmc_training_data=lensmc_training_data,
                                          momentsml_training_data=momentsml_training_data,
                                          regauss_training_data=regauss_training_data,
-                                         pipeline_config=pipeline_config)
+                                         pipeline_config=pipeline_config,
+                                         mdb=mdb)
 
     shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
                                                        shear_estimates=shear_estimates,
@@ -86,7 +88,8 @@ def shear_bias_measurement(simulation_plan,
                            lensmc_training_data,
                            momentsml_training_data,
                            regauss_training_data,
-                           pipeline_config):
+                           pipeline_config,
+                           mdb):
 
     simulation_configs = she_prepare_configs(simulation_plan=simulation_plan,
                                              config_template=config_template,
@@ -99,7 +102,8 @@ def shear_bias_measurement(simulation_plan,
         lensmc_training_data=lensmc_training_data,
         momentsml_training_data=momentsml_training_data,
         regauss_training_data=regauss_training_data,
-        pipeline_config=pipeline_config)
+        pipeline_config=pipeline_config,
+        mdb=mdb)
 
     shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics,
                                                pipeline_config=pipeline_config)
