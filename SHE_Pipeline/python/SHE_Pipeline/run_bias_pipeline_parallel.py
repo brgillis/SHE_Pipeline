@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-07-03"
+__updated__ = "2019-07-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,6 +27,12 @@ import os
 import time
 import xml.sax._exceptions
 
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 from astropy.io import fits
 from astropy.table import Table
 import numpy
@@ -44,12 +50,6 @@ from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 import SHE_Pipeline
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
@@ -642,9 +642,9 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         args_to_set[input_port_name] = new_filename
 
         # Now, go through each data file of the product and symlink those from the workdir too
-        
+
         # If it's the MDB, skip from here
-        if input_port_name=='mdb':
+        if input_port_name == 'mdb':
             continue
 
         # Skip (but warn) if it's not an XML data product
@@ -724,7 +724,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         args_to_set['regauss_training_data'],
         args_to_set['pipeline_config'],
         args_to_set['mdb']])
-    
+
     return simulate_inputs
 
 
@@ -951,7 +951,7 @@ def run_pipeline_from_args(args):
 
 
 def merge_outputs(workdir_list, batch,
-                  shear_bias_measurement_listfile):
+                  shear_bias_measurement_listfile, parent_workdir):
     """ Merge outputs from different threads at the end of each 
     batch. Updates .json file
 
@@ -964,11 +964,29 @@ def merge_outputs(workdir_list, batch,
         if thread_no < batch.nThreads:
             sim_no = get_sim_no(thread_no, batch)
             # @TODO: root of this in one place
-            shear_bias_measfile = os.path.join(workdir.workdir, 'data',
-                                               'shear_bias_measurements_sim%s.xml' % sim_no)
-            if os.path.exists(shear_bias_measfile):
+            shear_bias_measfile = os.path.join('data', 'shear_bias_measurements_sim%s.xml' % sim_no)
+            qualified_shear_bias_measfile = os.path.join(workdir.workdir, shear_bias_measfile)
+            if os.path.exists(qualified_shear_bias_measfile):
+                newList.append(qualified_shear_bias_measfile)
 
-                newList.append(shear_bias_measfile)
+                # Get all data files this product points to and symlink them to the main data dir
+                p = read_xml_product(shear_bias_measfile, workdir=workdir.workdir)
+
+                data_files = p.get_all_filenames()
+
+                for data_file in data_files:
+
+                    if data_file is None or data_file == "None":
+                        continue
+
+                    old_qualified_data_file_filename = os.path.join(workdir.workdir, data_file)
+                    new_qualified_data_file_filename = os.path.join(parent_workdir, data_file)
+
+                    if not os.path.exists(old_qualified_data_file_filename):
+                        logger.warn("Expected file " + old_qualified_data_file_filename + " does not exist")
+
+                    os.makedirs(os.path.split(new_qualified_data_file_filename)[0])
+                    os.symlink(old_qualified_data_file_filename, new_qualified_data_file_filename)
 
     sbml_list = []
     if os.path.exists(shear_bias_measurement_listfile):
