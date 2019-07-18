@@ -985,7 +985,9 @@ def merge_outputs(workdir_list, batch,
                     if not os.path.exists(old_qualified_data_file_filename):
                         logger.warn("Expected file " + old_qualified_data_file_filename + " does not exist")
 
-                    os.makedirs(os.path.split(new_qualified_data_file_filename)[0])
+                    new_subpath = os.path.split(new_qualified_data_file_filename)[0]
+                    if not os.path.exists(new_subpath):
+                        os.makedirs(new_subpath)
                     os.symlink(old_qualified_data_file_filename, new_qualified_data_file_filename)
 
     sbml_list = []
