@@ -923,7 +923,7 @@ def run_pipeline_from_args(args):
             logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
 
         else:
-            merge_outputs(workdir_list, batch, shear_bias_measurement_listfile)
+            merge_outputs(workdir_list, batch, shear_bias_measurement_listfile, parent_workdir=args.workdir)
             # Clean up
             logger.info("Cleaning up batch files..")
             pu.cleanup(batch, workdir_list)
