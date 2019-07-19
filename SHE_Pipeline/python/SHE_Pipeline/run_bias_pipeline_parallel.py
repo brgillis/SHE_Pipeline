@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-07-18"
+__updated__ = "2019-07-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -933,7 +933,7 @@ def run_pipeline_from_args(args):
         return
 
     # Run final process
-    shear_bias_measurement_final = os.path.join(args.workdir, 'data', 'shear_bias_measurements_final.xml')
+    shear_bias_measurement_final = os.path.join(args.workdir, 'shear_bias_measurements_final.xml')
 
     logger.info("Running final she_measure_bias to calculate "
                 "final shear: output in %s" % shear_bias_measurement_final)
