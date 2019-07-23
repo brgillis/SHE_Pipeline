@@ -5,7 +5,7 @@
     Utility functions for the parallel pipeline
 """
 
-__updated__ = "2018-11-27"
+__updated__ = "2019-07-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -30,40 +30,40 @@ from SHE_PPT.logging import getLogger
 from SHE_PPT.utility import get_arguments_string
 
 
-def get_relpath(file_path,workdir):
+def get_relpath(file_path, workdir):
     """Removes workdir from path if necessary 
     @todo: should be in file_io?
-    
-    
+
+
     """
     # If workdir doesn't exist, this will not work
     if not os.path.exists(workdir):
-        raise Exception("Work directory %s does not exist" 
+        raise Exception("Work directory %s does not exist"
                         % workdir)
-    
+
     # Don't check to see if the file_path exists: it might
     # be an output.
-    
+
     if not file_path.startswith(workdir):
         return file_path
     else:
-        return os.path.relpath(file_path,workdir)
-        
+        return os.path.relpath(file_path, workdir)
 
-def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batches):
+
+def create_thread_dir_struct(args, workdir_root_list, number_threads, number_batches):
     """ Used in check_args to create thread directories based on number
     threads
-    
+
     Takes basic workdir base(s) and creates directory structure based 
     on threads from there, with data, cache and logdirs.
-    
+
     @return: List of directories
     @rtype:  list(namedtuple)
     """
     logger = getLogger(__name__)
 
     # Creates directory structure
-    dir_struct_tuple = namedtuple("Directories","workdir logdir app_workdir app_logdir")
+    dir_struct_tuple = namedtuple("Directories", "workdir logdir app_workdir app_logdir")
     # @FIXME: Do the create multiple threads here
     for workdir_base in workdir_root_list:
 
@@ -99,7 +99,7 @@ def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batche
                 logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
                 raise e
         if args.cluster:
-            os.chmod(data_dir, 0o777)    
+            os.chmod(data_dir, 0o777)
 
         # Does the log directory exist within the workdir?
         log_dir = os.path.join(workdir_base, args.logdir)
@@ -111,25 +111,25 @@ def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batche
                 logger.error("Log directory (" + log_dir + ") does not exist and cannot be created.")
                 raise e
         if args.cluster:
-            os.chmod(log_dir, 0o777)    
-    
+            os.chmod(log_dir, 0o777)
+
     # Now make multiple threads below...
-        
-    direct_str_list=[]        
+
+    direct_str_list = []
     for batch_no in range(number_batches):
         for thread_no in range(number_threads):
-            thread_dir_list=[]
+            thread_dir_list = []
             for workdir_base in workdir_root_list:
-                workdir=os.path.join(workdir_base,'thread%s_batch%s' % (thread_no,batch_no)) 
+                workdir = os.path.join(workdir_base, 'thread%s_batch%s' % (thread_no, batch_no))
                 if not os.path.exists(workdir):
                     try:
-                       os.mkdir(workdir)
+                        os.mkdir(workdir)
                     except Exception as e:
                         logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
                         raise e
                 if args.cluster:
                     os.chmod(workdir, 0o777)
-        
+
                 # Does the cache directory exist within the workdir?
                 cache_dir = os.path.join(workdir, "cache")
                 if not os.path.exists(cache_dir):
@@ -141,7 +141,7 @@ def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batche
                         raise e
                 if args.cluster:
                     os.chmod(cache_dir, 0o777)
-        
+
                 # Does the data directory exist within the workdir?
                 data_dir = os.path.join(workdir, "data")
                 if not os.path.exists(data_dir):
@@ -153,7 +153,7 @@ def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batche
                         raise e
                 if args.cluster:
                     os.chmod(data_dir, 0o777)
-        
+
                 # Does the logdir exist?
                 qualified_logdir = os.path.join(workdir, args.logdir)
                 if not os.path.exists(qualified_logdir):
@@ -165,27 +165,23 @@ def create_thread_dir_struct(args,workdir_root_list,number_threads,number_batche
                         raise e
                 if args.cluster:
                     os.chmod(qualified_logdir, 0o777)
-                thread_dir_list.extend((workdir,qualified_logdir))
-            if len(workdir_root_list)==1:
-                thread_dir_list.extend((None,None))
+                thread_dir_list.extend((workdir, qualified_logdir))
+            if len(workdir_root_list) == 1:
+                thread_dir_list.extend((None, None))
             direct_str_list.append(dir_struct_tuple(*thread_dir_list))
     return direct_str_list
 
-def cleanup(batch,workdir_list):
+
+def cleanup(batch, workdir_list):
     """
     Remove sim links and batch setup files ready for the next batch.
     Remove intermediate products...
-    
-    
+
+
     """
     # workdir:
     # Each thread - not sim* files... (or there components...)
-    
-    
-    
-    
-    
-    
+
     pass
 
 
@@ -193,27 +189,25 @@ def run_threads(threads):
     """ Executes given list of thread processes.
     Originally written by Ross Collins for VDFS
     Modified for circumstances...
-    
+
     """
-     
+
     logger = getLogger(__name__)
     try:
         for thread in threads:
             thread.start()
     finally:
         for thread in threads:
-            
+
             thread.join()
 
             if thread.exitcode:
                 logger.info("<ERROR> Thread failed. Terminating thread")
 
-                    
 
-       
 def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True, cwd=None,
-        env=None, close_fds=True, isVerbose=True, _isIterable=False,
-        ignoreMsgs=None):
+                         env=None, close_fds=True, isVerbose=True, _isIterable=False,
+                         ignoreMsgs=None):
     """
     Run the given external program. Unless overridden, an exception is thrown
     on error and the output is logged. Originally written by Ross Collins for VDFS
@@ -261,21 +255,18 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
     @obsolete? Not currently used.... 
     """
     # @FIXME: What is reported as stdErr is often stdOut.
-    # Why?? 
+    # Why??
     # Am I using the wrong PROC/PIPE?
     # IF WARN / INFO etc --> stdout
-    # IF ERROR / Exception --> srderr 
-    
-    
-    
-    
+    # IF ERROR / Exception --> srderr
+
     logger = getLogger(__name__)
     cmdStr = (command if isinstance(command, str) else ' '.join(command))
     if isVerbose:
         logger.info(cmdStr)
 
     parseStdOut = parseStdOut or _isIterable
-    parseStdErr = True #raiseOnError and not _isIterable
+    parseStdErr = True  # raiseOnError and not _isIterable
     isMemError = False
     while True:
         try:
@@ -313,14 +304,14 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
             # Calling readlines() instead of iterating through stdout ensures
             # that KeyboardInterrupts are handled correctly.
             stdOut = [line.strip() for line in proc.stdout.readlines()]
-            #if raiseOnError:
+            # if raiseOnError:
             #
             stdErrInit = [line.strip() for line in proc.stderr.readlines()]
             stdErr = [line for line in stdErrInit
-                if 'ERROR' in str(line.upper()) or 'EXCEPTION' in str(line.upper())]
+                      if 'ERROR' in str(line.upper()) or 'EXCEPTION' in str(line.upper())]
             stdOut += [line for line in stdErrInit
-                if not ('ERROR' in str(line.upper()) or 
-                        'EXCEPTION' in str(line.upper()))]
+                       if not ('ERROR' in str(line.upper()) or
+                               'EXCEPTION' in str(line.upper()))]
         if not parseStdOut and not raiseOnError:
             return proc.wait()
 #    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
@@ -365,41 +356,42 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
 
             raise Exception(cmd + " failed", stdErr)
 
-    return stdOut,stdErr 
+    return stdOut, stdErr
 
-def create_logs(log_directory,fileName,std_out,std_err):
+
+def create_logs(log_directory, fileName, std_out, std_err):
     """ @fixme: logging not properly working
     remove this when I get it working
-    
+
     @obsolete? no longer used.
     """
-    stdout_filename=os.path.join(log_directory,fileName+".log")
-    stderr_filename=os.path.join(log_directory,fileName+".err")
-    
-    stdout_lines=[str(line) for line in std_out]
-    open(stdout_filename,'w').writelines(stdout_lines)
-    
-    stdout_lines=[str(line) for line in std_err]
-    open(stderr_filename,'w').writelines(stdout_lines)
-    
+    stdout_filename = os.path.join(log_directory, fileName + ".log")
+    stderr_filename = os.path.join(log_directory, fileName + ".err")
+
+    stdout_lines = [str(line) for line in std_out]
+    open(stdout_filename, 'w').writelines(stdout_lines)
+
+    stdout_lines = [str(line) for line in std_err]
+    open(stderr_filename, 'w').writelines(stdout_lines)
+
     return
 
-def setup_function_args(argv, command_line_int_ref,execName):
+
+def setup_function_args(argv, command_line_int_ref, execName):
     """
     """
-    logger=getLogger(__name__)
-    
-    estshr_args_parser= command_line_int_ref.defineSpecificProgramOptions()
-    
+    logger = getLogger(__name__)
+
+    estshr_args_parser = command_line_int_ref.defineSpecificProgramOptions()
+
     # add arg --log-file
-    estshr_args_parser.add_argument('--log-file',type=str,
-        help='XML data product to contain file links to the shear estimates tables.')
-    
-        
-    estshr_args= estshr_args_parser.parse_args(argv)
+    estshr_args_parser.add_argument('--log-file', type=str,
+                                    help='XML data product to contain file links to the shear estimates tables.')
+
+    estshr_args = estshr_args_parser.parse_args(argv)
     exec_cmd = get_arguments_string(estshr_args, cmd=execName,
-                                    store_true=["profile", "debug", "dry_run"])
+                                    store_true=["profile", "debug", "dry_run", "webdav_archive"])
     logger.info('Execution command for this step:')
-    logger.info(exec_cmd)  
-    
+    logger.info(exec_cmd)
+
     return estshr_args

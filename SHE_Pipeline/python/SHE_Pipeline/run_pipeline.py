@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-05-27"
+__updated__ = "2019-06-27"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -28,14 +28,14 @@ from shutil import copyfile
 from time import sleep
 import xml.sax._exceptions
 
+from astropy.table import Table
+
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product)
 from SHE_PPT.logging import getLogger
 from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
-from astropy.table import Table
 import SHE_Pipeline
-
 import _pickle
 import subprocess as sbp
 
@@ -442,7 +442,7 @@ def create_isf(args,
                         os.unlink(os.path.join(args.workdir, data_filename))
                     except Exception as _:
                         pass
-                    os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+                os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 

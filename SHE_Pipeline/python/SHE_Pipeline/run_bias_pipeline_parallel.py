@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-04-22"
+__updated__ = "2019-07-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -54,6 +54,7 @@ import SHE_Pipeline
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
+from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_GST,  ERun_MER, ERun_Pipeline
 import _pickle
 
 
@@ -62,23 +63,6 @@ default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
-
-known_config_args = ("SHE_CTE_CleanupBiasMeasurement_cleanup",
-
-                     "SHE_CTE_EstimateShear_methods",
-
-                     "SHE_CTE_MeasureBias_archive_dir",
-                     "SHE_CTE_MeasureBias_webdav_archive",
-                     "SHE_CTE_MeasureBias_webdav_dir",
-
-                     "SHE_CTE_MeasureStatistics_archive_dir",
-                     "SHE_CTE_MeasureStatistics_webdav_archive",
-                     "SHE_CTE_MeasureStatistics_webdav_dir",)
-
-ERun_CTE = "E-Run SHE_CTE 0.7 "
-ERun_GST = "E-Run SHE_GST 1.7 "
-ERun_MER = "E-Run SHE_MER 0.3 "
-ERun_Pipeline = "E-Run SHE_Pipeline 0.5 "
 
 
 def she_prepare_configs(simulation_plan, config_template,
@@ -146,7 +130,7 @@ def she_estimate_shear(data_images, stacked_image,
                        stacked_segmentation_image, detections_tables,
                        bfd_training_data, ksb_training_data,
                        lensmc_training_data, momentsml_training_data,
-                       regauss_training_data, pipeline_config,
+                       regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
@@ -185,7 +169,7 @@ def she_estimate_shear(data_images, stacked_image,
     argv = ("--data_images %s "
             "--stacked_image %s --psf_images_and_tables %s "
             "--segmentation_images %s --stacked_segmentation_image %s "
-            "--detections_tables %s%s --pipeline_config %s "
+            "--detections_tables %s%s --pipeline_config %s --mdb %s "
             "--shear_estimates_product %s --workdir %s --logdir %s "
             "--log-file %s/%s/she_estimate_shear.out" %
             (get_relpath(data_images, workdir),
@@ -196,6 +180,7 @@ def she_estimate_shear(data_images, stacked_image,
              get_relpath(detections_tables, workdir),
              shear_method_arg_string,
              get_relpath(pipeline_config, workdir),
+             get_relpath(mdb, workdir),
              get_relpath(shear_estimates_product, workdir),
              workdir, logdir, workdir, logdir)).split()
     #
@@ -568,7 +553,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     inputs_tuple = namedtuple("SIMInputs", "simulation_config bfd_training_data "
                               "ksb_training_data lensmc_training_data momentsml_training_data "
-                              "regauss_training_data pipeline_config")
+                              "regauss_training_data pipeline_config mdb")
 
     logger = getLogger(__name__)
 
@@ -614,19 +599,9 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     # Search path is root workdir
     search_path = args.workdir
 
-    # Inputs for thread
-    simulate_inputs = inputs_tuple(*[
-        args_to_set['simulation_config'],
-        args_to_set['bfd_training_data'],
-        args_to_set['ksb_training_data'],
-        args_to_set['lensmc_training_data'],
-        args_to_set['momentsml_training_data'],
-        args_to_set['regauss_training_data'],
-        args_to_set['pipeline_config']])
-
     for input_port_name in args_to_set:
         # Skip ISF arguments that don't correspond to input ports
-        if input_port_name in non_filename_args or input_port_name == "mdb" or 'simulation_plan' in input_port_name:
+        if input_port_name in non_filename_args or 'simulation_plan' in input_port_name:
             continue
 
         filename = args_to_set[input_port_name]
@@ -667,6 +642,10 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         args_to_set[input_port_name] = new_filename
 
         # Now, go through each data file of the product and symlink those from the workdir too
+
+        # If it's the MDB, skip from here
+        if input_port_name == 'mdb':
+            continue
 
         # Skip (but warn) if it's not an XML data product
         if qualified_filename[-4:] != ".xml":
@@ -734,13 +713,25 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         if not os.path.exists(new_conf_file_name):
             os.symlink(os.path.join(args.workdir, bin_conf_file),
                        new_conf_file_name)
+
+    # Inputs for thread
+    simulate_inputs = inputs_tuple(*[
+        args_to_set['simulation_config'],
+        args_to_set['bfd_training_data'],
+        args_to_set['ksb_training_data'],
+        args_to_set['lensmc_training_data'],
+        args_to_set['momentsml_training_data'],
+        args_to_set['regauss_training_data'],
+        args_to_set['pipeline_config'],
+        args_to_set['mdb']])
+
     return simulate_inputs
 
 
 def she_simulate_and_measure_bias_statistics(simulation_config,
                                              bfd_training_data, ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
-                                             regauss_training_data, pipeline_config, workdirTuple,
+                                             regauss_training_data, pipeline_config, mdb, workdirTuple,
                                              simulation_no, logdir, est_shear_only):
     """ Parallel processing parts of bias_measurement pipeline
 
@@ -779,6 +770,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        momentsml_training_data=momentsml_training_data,
                        regauss_training_data=regauss_training_data,
                        pipeline_config=pipeline_config,
+                       mdb=mdb,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
@@ -920,6 +912,7 @@ def run_pipeline_from_args(args):
                                                               simulate_measure_inputs.momentsml_training_data,
                                                               simulate_measure_inputs.regauss_training_data,
                                                               simulate_measure_inputs.pipeline_config,
+                                                              simulate_measure_inputs.mdb,
                                                               workdir, simulation_no, args.logdir, args.est_shear_only)))
 
         if prod_threads:
@@ -930,7 +923,7 @@ def run_pipeline_from_args(args):
             logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
 
         else:
-            merge_outputs(workdir_list, batch, shear_bias_measurement_listfile)
+            merge_outputs(workdir_list, batch, shear_bias_measurement_listfile, parent_workdir=args.workdir)
             # Clean up
             logger.info("Cleaning up batch files..")
             pu.cleanup(batch, workdir_list)
@@ -940,7 +933,7 @@ def run_pipeline_from_args(args):
         return
 
     # Run final process
-    shear_bias_measurement_final = os.path.join(args.workdir, 'data', 'shear_bias_measurements_final.xml')
+    shear_bias_measurement_final = os.path.join(args.workdir, 'shear_bias_measurements_final.xml')
 
     logger.info("Running final she_measure_bias to calculate "
                 "final shear: output in %s" % shear_bias_measurement_final)
@@ -958,7 +951,7 @@ def run_pipeline_from_args(args):
 
 
 def merge_outputs(workdir_list, batch,
-                  shear_bias_measurement_listfile):
+                  shear_bias_measurement_listfile, parent_workdir):
     """ Merge outputs from different threads at the end of each 
     batch. Updates .json file
 
@@ -971,11 +964,31 @@ def merge_outputs(workdir_list, batch,
         if thread_no < batch.nThreads:
             sim_no = get_sim_no(thread_no, batch)
             # @TODO: root of this in one place
-            shear_bias_measfile = os.path.join(workdir.workdir, 'data',
-                                               'shear_bias_measurements_sim%s.xml' % sim_no)
-            if os.path.exists(shear_bias_measfile):
+            shear_bias_measfile = os.path.join('data', 'shear_bias_measurements_sim%s.xml' % sim_no)
+            qualified_shear_bias_measfile = os.path.join(workdir.workdir, shear_bias_measfile)
+            if os.path.exists(qualified_shear_bias_measfile):
+                newList.append(qualified_shear_bias_measfile)
 
-                newList.append(shear_bias_measfile)
+                # Get all data files this product points to and symlink them to the main data dir
+                p = read_xml_product(shear_bias_measfile, workdir=workdir.workdir)
+
+                data_files = p.get_all_filenames()
+
+                for data_file in data_files:
+
+                    if data_file is None or data_file == "None":
+                        continue
+
+                    old_qualified_data_file_filename = os.path.join(workdir.workdir, data_file)
+                    new_qualified_data_file_filename = os.path.join(parent_workdir, data_file)
+
+                    if not os.path.exists(old_qualified_data_file_filename):
+                        logger.warn("Expected file " + old_qualified_data_file_filename + " does not exist")
+
+                    new_subpath = os.path.split(new_qualified_data_file_filename)[0]
+                    if not os.path.exists(new_subpath):
+                        os.makedirs(new_subpath)
+                    os.symlink(old_qualified_data_file_filename, new_qualified_data_file_filename)
 
     sbml_list = []
     if os.path.exists(shear_bias_measurement_listfile):

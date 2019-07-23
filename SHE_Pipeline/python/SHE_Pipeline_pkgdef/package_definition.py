@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2019-05-22"
+__updated__ = "2019-07-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -78,6 +78,7 @@ she_model_psf = Executable(command=ERun_CTE + "SHE_CTE_ModelPSFs",
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")])
 
+
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
                                         Input("stacked_image"),
@@ -90,11 +91,13 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("lensmc_training_data"),
                                         Input("momentsml_training_data"),
                                         Input("regauss_training_data"),
-                                        Input("pipeline_config")
+                                        Input("pipeline_config"),
+                                        Input("mdb"),
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
-                                outputs=[Output("shear_estimates_product", mime_type="xml"), ])
+                                outputs=[Output("shear_estimates_product", mime_type="xml"), ],
+                                resources=ComputingResources(cores=1, ram=3.9, walltime=4.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
