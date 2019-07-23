@@ -28,14 +28,14 @@ she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                             Input("vis_prod_filename"),
                                             Input("pipeline_config")],
                                     outputs=[Output("output_filename", mime_type='xml')],
-                                    resources=ComputingResources(cores=4, ram=7.9, walltime=6.0))
+                                    resources=ComputingResources(cores=4, ram=7.9, walltime=2.0))
 
 she_remap_mosaic_exposure = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                        inputs=[Input("mer_tile_listfile", content_type="listfile"),
                                                Input("vis_prod_filename"),
                                                Input("pipeline_config")],
                                        outputs=[Output("output_filename", mime_type='xml')],
-                                       resources=ComputingResources(cores=8, ram=15.9, walltime=6.0))
+                                       resources=ComputingResources(cores=8, ram=15.9, walltime=4.0))
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
@@ -90,16 +90,16 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
                                        outputs=[Output("output_shear_estimates", mime_type='xml')],
-                                       resources=ComputingResources(cores=8, ram=7.9, walltime=8.0))
+                                       resources=ComputingResources(cores=8, ram=7.9, walltime=2.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
                                       outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
-                                      resources=ComputingResources(cores=1, ram=7.9, walltime=8.0))
+                                      resources=ComputingResources(cores=1, ram=7.9, walltime=2.0))
 
 she_match_to_tu = Executable(command=ERun_CTE + "SHE_CTE_MatchToTU",
                              inputs=[Input("shear_estimates_product"),
                                      Input("tu_galaxy_catalog"),
                                      Input("tu_star_catalog")],
                              outputs=[Output("matched_catalog", mime_type="xml")],
-                             resources=ComputingResources(cores=1, ram=15.9, walltime=10.0))
+                             resources=ComputingResources(cores=1, ram=15.9, walltime=2.0))
