@@ -28,6 +28,9 @@ STARTDIR=`pwd`
 
 mkdir -p $TARGETDIR
 cd $TARGETDIR
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 mkdir data
 ln -s $SOURCEDIR/data/* data/
