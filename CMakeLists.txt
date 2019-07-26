@@ -6,8 +6,8 @@ find_package(ElementsProject)
 #---------------------------------------------------------------
 
 # Declare project name and version
-elements_project(SHE_Pipeline 0.8.10 USE Elements 5.2.2
-                                         SHE_CTE 0.8.8
+elements_project(SHE_Pipeline 0.8.11 USE Elements 5.2.2
+                                         SHE_CTE 0.8.9
                                          SHE_GST 1.8.5
                                          SHE_MER 0.4.6
                                          SHE_PPT 1.2.2
@@ -15,5 +15,5 @@ elements_project(SHE_Pipeline 0.8.10 USE Elements 5.2.2
 # Indirect dependencies
 # ---------------------
 # SHE_MomentsML 1.8.5
-# SHE_BFD 0.6.1
+# SHE_BFD 0.6.2
 # SHE_LensMC 2.8.8
