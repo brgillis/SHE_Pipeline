@@ -5,7 +5,7 @@
     Main program for configuring the pipeline server.
 """
 
-__updated__ = "2019-07-15"
+__updated__ = "2019-07-29"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -26,12 +26,7 @@ import os
 
 def recursive_remove(dir_or_file):
 
-    if os.path.isfile(dir_or_file):
-        try:
-            os.remove(dir_or_file)
-        except Exception as _:
-            raise ValueError("File " + dir_or_file + " cannot be removed.")
-    else:
+    if os.path.isdir(dir_or_file):
         # It's a directory, so remove everything inside it first, then remove it
 
         rootdir = dir_or_file
@@ -50,6 +45,12 @@ def recursive_remove(dir_or_file):
             raise ValueError("Could not remove everything in directory " + str(rootdir))
         else:
             os.rmdir(rootdir)
+
+    else:
+        try:
+            os.remove(dir_or_file)
+        except Exception as _:
+            raise ValueError("File " + dir_or_file + " cannot be removed.")
 
     return
 
