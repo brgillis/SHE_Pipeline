@@ -5,7 +5,7 @@
     Magic values for the package definitions
 """
 
-__updated__ = "2019-08-13"
+__updated__ = "2019-08-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,11 +20,11 @@ __updated__ = "2019-08-13"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-SHE_CTE_version = "0.8.10"
-SHE_GST_version = "1.8.5"
-SHE_MER_version = "0.4.6"
-SHE_Pipeline_version = "0.8.12"
-SHE_PSF_version = "2.4"
+SHE_CTE_version = "0.8.11"
+SHE_GST_version = "1.8.6"
+SHE_MER_version = "0.4.7"
+SHE_Pipeline_version = "0.8.13"
+SHE_PSF_version = "2.4.1"
 
 ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
 ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
