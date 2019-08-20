@@ -651,18 +651,18 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         if qualified_filename[-4:] == ".xml":
             try:
                 p = read_xml_product(qualified_filename)
-                data_files = p.get_all_filenames()
+                data_filenames = p.get_all_filenames()
             except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
         elif qualified_filename[-5:]== ".json":
             subfilenames = read_listfile(qualified_filename)
-            data_files = []
+            data_filenames = []
             for subfilename in subfilenames:
                 qualified_subfilename = find_file(subfilename, path=search_path)
                 try:
                     p = read_xml_product(qualified_subfilename)
-                    data_files += p.get_all_filenames()
+                    data_filenames += p.get_all_filenames()
                 except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
