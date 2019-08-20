@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2019-06-27"
+__updated__ = "2019-08-20"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -32,7 +32,7 @@ from astropy.table import Table
 
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
-                             read_pickled_product, write_pickled_product)
+                             read_pickled_product, write_pickled_product, write_listfile)
 from SHE_PPT.logging import getLogger
 from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
 import SHE_Pipeline
@@ -53,6 +53,14 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 known_output_filenames = {"bias_measurement": "she_measure_bias/shear_bias_measurements.xml"}
 
 pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.0/opt/euclid/ST_PipelineRunner/bin/pipeline_runner.py"
+
+optional_ports = {"analysis":("phz_output_cat",
+                              "spe_output_cat",
+                              "bfd_training_data",
+                              "momentsml_training_data",
+                              "pipeline_config"),
+                  "bias_measurement":()}
+
 
 
 def is_dev_version():
@@ -425,14 +433,18 @@ def create_isf(args,
         # Search for and symlink each data file
         for data_filename in data_filenames:
 
-            if data_filename is None or data_filename is "None":
+            if data_filename is None or data_filename=="None" or data_filename=="data/None":
                 continue
 
             # Find the qualified location of the data file
             try:
                 qualified_data_filename = find_file(data_filename, path=data_search_path)
             except RuntimeError as e:
-                raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+                # Try searching for the file without the "data/" prefix
+                try:
+                    qualified_data_filename = find_file(data_filename.replace("data/","",1), path=data_search_path)
+                except RuntimeError as e:
+                    raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
             if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
@@ -447,6 +459,35 @@ def create_isf(args,
         # End loop "for data_filename in data_filenames:"
 
     # End loop "for input_port_name in args_to_set:"
+    
+    # Make sure all optional products are provided by a listfile
+    
+    for port_name in optional_ports[args.pipeline]:
+        
+        if port_name in args_to_set and not (args_to_set[port_name] is None or 
+                                             args_to_set[port_name]=="None" or
+                                             args_to_set[port_name]=="data/None" or
+                                             args_to_set[port_name]==""):
+            
+            # If the port is present, ensure it's provided as a listfile
+            if args_to_set[port_name][-5:]==".json":
+                # Already a listfile, so skip
+                continue
+            else:
+                file_list = [args_to_set[port_name]]
+        else:
+            
+            # If the port isn't present or is a null value, pass an empty listfile
+            file_list = []
+               
+        # If we get to this branch, we need to create a new listfile and set it as the input to the port 
+        listfile_name = get_allowed_filename(port_name.upper(), str(os.getpid()),
+                                             extension=".json", version=SHE_Pipeline.__version__)
+        
+        write_listfile(os.path.join(args.workdir,listfile_name), file_list)
+        
+        args_to_set[port_name] = listfile_name
+        
 
     # Write out the new ISF
     with open(qualified_isf_filename, 'w') as fo:
