@@ -426,7 +426,7 @@ def create_isf(args,
                 qualified_subfilename = find_file(subfilename, path=search_path)
                 try:
                     p = read_xml_product(qualified_subfilename)
-                    data_filenames.append(p.get_all_filenames())
+                    data_filenames += p.get_all_filenames()
                 except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
