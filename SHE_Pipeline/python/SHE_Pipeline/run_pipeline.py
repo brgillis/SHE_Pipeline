@@ -61,6 +61,10 @@ optional_ports = {"analysis":("phz_output_cat",
                               "pipeline_config"),
                   "bias_measurement":()}
 
+optional_ports["analysis_after_remap"] = optional_ports["analysis"]
+optional_ports["analysis_with_tu_match"] = optional_ports["analysis"]
+optional_ports["analysis_after_remap_with_tu_match"] = optional_ports["analysis"]
+
 
 
 def is_dev_version():
