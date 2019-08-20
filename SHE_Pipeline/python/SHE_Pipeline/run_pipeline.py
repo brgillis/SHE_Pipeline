@@ -485,7 +485,7 @@ def create_isf(args,
             file_list = []
                
         # If we get to this branch, we need to create a new listfile and set it as the input to the port 
-        listfile_name = get_allowed_filename(port_name.upper(), str(os.getpid()),
+        listfile_name = get_allowed_filename(port_name.upper().replace("_","-"), str(os.getpid()),
                                              extension=".json", version=SHE_Pipeline.__version__)
         
         write_listfile(os.path.join(args.workdir,listfile_name), file_list)
