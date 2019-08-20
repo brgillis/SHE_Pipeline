@@ -423,7 +423,7 @@ def create_isf(args,
             subfilenames = read_listfile(qualified_filename)
             data_filenames = []
             for subfilename in subfilenames:
-                qualified_subfilename = find_file(filename, path=search_path)
+                qualified_subfilename = find_file(subfilename, path=search_path)
                 try:
                     p = read_xml_product(qualified_subfilename)
                     data_filenames.append(p.get_all_filenames())
