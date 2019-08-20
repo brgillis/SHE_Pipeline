@@ -32,7 +32,7 @@ from astropy.table import Table
 
 from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
-                             read_pickled_product, write_pickled_product, write_listfile)
+                             read_pickled_product, write_pickled_product, read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
 from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
 import SHE_Pipeline
@@ -412,20 +412,28 @@ def create_isf(args,
         # Now, go through each data file of the product and symlink those from the workdir too
 
         # Skip (but warn) if it's not an XML data product
-        if qualified_filename[-4:] != ".xml":
+        if qualified_filename[-4:] == ".xml":
+            try:
+                p = read_xml_product(qualified_filename)
+                data_filenames = p.get_all_filenames()
+            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                logger.error("Cannot read file " + qualified_filename + ".")
+                raise
+        elif qualified_filename[-5:]== ".json":
+            subfilenames = read_listfile(qualified_filename)
+            data_filenames = []
+            for subfilename in subfilenames:
+                qualified_subfilename = find_file(filename, path=search_path)
+                try:
+                    p = read_xml_product(qualified_subfilename)
+                    data_filenames.append(p.get_all_filenames())
+                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                    logger.error("Cannot read file " + qualified_filename + ".")
+                    raise
+        else:
             logger.warn("Input file " + filename + " is not an XML data product.")
             continue
-
-        try:
-            p = read_xml_product(qualified_filename)
-        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
-            logger.error("Cannot read file " + qualified_filename + ".")
-            raise
-
-        if not hasattr(p, "get_all_filenames"):
-            raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
-                                      "initialized first.")
-        data_filenames = p.get_all_filenames()
+        
         if len(data_filenames) == 0:
             continue
 
