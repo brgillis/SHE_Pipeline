@@ -600,6 +600,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     search_path = args.workdir
 
     for input_port_name in args_to_set:
+
         # Skip ISF arguments that don't correspond to input ports
         if input_port_name in non_filename_args or 'simulation_plan' in input_port_name:
             continue
@@ -695,14 +696,14 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                     raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
-            if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
-                if os.path.exists(os.path.join(args.workdir, data_filename)):
-                    os.remove(os.path.join(args.workdir, data_filename))
+            if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(workdir.workdir, data_filename)):
+                if os.path.exists(os.path.join(workdir.workdir, data_filename)):
+                    os.remove(os.path.join(workdir.workdir, data_filename))
                     try:
-                        os.unlink(os.path.join(args.workdir, data_filename))
+                        os.unlink(os.path.join(workdir.workdir, data_filename))
                     except Exception as _:
                         pass
-                os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+                os.symlink(qualified_data_filename, os.path.join(workdir.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 
