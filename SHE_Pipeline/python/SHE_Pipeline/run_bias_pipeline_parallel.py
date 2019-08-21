@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-07-19"
+__updated__ = "2019-08-20"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -27,12 +27,6 @@ import os
 import time
 import xml.sax._exceptions
 
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 from astropy.io import fits
 from astropy.table import Table
 import numpy
@@ -50,6 +44,12 @@ from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 import SHE_Pipeline
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
@@ -600,6 +600,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     search_path = args.workdir
 
     for input_port_name in args_to_set:
+
         # Skip ISF arguments that don't correspond to input ports
         if input_port_name in non_filename_args or 'simulation_plan' in input_port_name:
             continue
@@ -647,22 +648,29 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         if input_port_name == 'mdb':
             continue
 
-        # Skip (but warn) if it's not an XML data product
-        if qualified_filename[-4:] != ".xml":
+        # Get all data files this product points to and symlink them to the main data dir
+        if qualified_filename[-4:] == ".xml":
+            try:
+                p = read_xml_product(qualified_filename)
+                data_filenames = p.get_all_filenames()
+            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                logger.error("Cannot read file " + qualified_filename + ".")
+                raise
+        elif qualified_filename[-5:]== ".json":
+            subfilenames = read_listfile(qualified_filename)
+            data_filenames = []
+            for subfilename in subfilenames:
+                qualified_subfilename = find_file(subfilename, path=search_path)
+                try:
+                    p = read_xml_product(qualified_subfilename)
+                    data_filenames += p.get_all_filenames()
+                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                    logger.error("Cannot read file " + qualified_filename + ".")
+                    raise
+        else:
             logger.warn("Input file " + filename + " is not an XML data product.")
             continue
-
-        try:
-            p = read_xml_product(qualified_filename)
-        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
-            logger.error("Cannot read file " + qualified_filename + ".")
-            raise
-
-        p = read_xml_product(qualified_filename)
-        if not hasattr(p, "get_all_filenames"):
-            raise NotImplementedError("Product " + str(p) + " has no \"get_all_filenames\" method - it must be " +
-                                      "initialized first.")
-        data_filenames = p.get_all_filenames()
+        
         if len(data_filenames) == 0:
             continue
 
@@ -674,26 +682,28 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         # Search for and symlink each data file
         for data_filename in data_filenames:
 
-            if data_filename is None or data_filename is "None":
+            if data_filename is None or data_filename=="None" or data_filename=="data/None":
                 continue
 
             # Find the qualified location of the data file
             try:
                 qualified_data_filename = find_file(data_filename, path=data_search_path)
             except RuntimeError as e:
-                raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+                # Try searching for the file without the "data/" prefix
+                try:
+                    qualified_data_filename = find_file(data_filename.replace("data/","",1), path=data_search_path)
+                except RuntimeError as e:
+                    raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
-            if os.path.exists(os.path.join(workdir.workdir, data_filename)):
-                os.remove(os.path.join(workdir.workdir, data_filename))
-                try:
-                    os.unlink(os.path.join(workdir.workdir, data_filename))
-                except Exception as _:
-                    pass
-            if not qualified_data_filename == os.path.join(workdir.workdir,
-                                                           data_filename):
-                os.symlink(qualified_data_filename, os.path.join(workdir.workdir,
-                                                                 data_filename))
+            if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(workdir.workdir, data_filename)):
+                if os.path.exists(os.path.join(workdir.workdir, data_filename)):
+                    os.remove(os.path.join(workdir.workdir, data_filename))
+                    try:
+                        os.unlink(os.path.join(workdir.workdir, data_filename))
+                    except Exception as _:
+                        pass
+                os.symlink(qualified_data_filename, os.path.join(workdir.workdir, data_filename))
 
         # End loop "for data_filename in data_filenames:"
 
