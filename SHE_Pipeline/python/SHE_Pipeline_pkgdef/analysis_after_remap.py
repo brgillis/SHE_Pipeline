@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline, starting after the segmentation map reprojection step.
 """
 
-__updated__ = "2019-05-28"
+__updated__ = "2019-09-05"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -100,6 +100,7 @@ def shear_analysis_pipeline(mdb,
 
     # Create list of object ID lists for each batch to process
     object_ids = she_object_id_split(detections_tables=mer_catalog,
+                                     data_images=vis_image,
                                      pipeline_config=pipeline_config,)
 
     # Estimate shear in parallel for each batch
