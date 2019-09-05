@@ -20,10 +20,10 @@ __updated__ = "2019-09-05"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-SHE_CTE_version = "0.8.14"
+SHE_CTE_version = "0.8.15"
 SHE_GST_version = "1.8.8"
 SHE_MER_version = "0.4.9"
-SHE_Pipeline_version = "0.8.20"
+SHE_Pipeline_version = "0.8.21"
 SHE_PSF_version = "2.4.2"
 
 ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
