@@ -9,14 +9,14 @@ SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 SLEEP_TIME=1m
 RETRY_SLEEP=5m
-U
 JOB_LIMIT=200
 
 SEED_START=1
-SEEDS_PER_BATCH=24
+SEEDS_PER_BATCH=96
 NUM_GALAXIES_PER_SEED=16
 
-NUM_BATCHES=2
+BATCH_START=2501
+BATCH_END=5500
 NUM_THREADS=24
 
 TEMPLATE_PREFIX="''"
@@ -33,7 +33,7 @@ do
 
 	ALL_DONE=1
 
-	for ((I=1; I<=$NUM_BATCHES; I++))
+	for ((I=$BATCH_START; I<=$BATCH_END; I++))
 	do
 
 		for TAG in Ep0Pp0Sp0 Ep1Pp0Sp0 Ep2Pp0Sp0 Em1Pp0Sp0 Em2Pp0Sp0 Ep0Pp0Sp1 Ep0Pp0Sp2 Ep0Pp0Sm1 Ep0Pp0Sm2 CO WB COWB
@@ -43,7 +43,7 @@ do
 			    exit 0
 			fi
 
-			if [ -f $ARCHIVE_DIR/$TAG/sens_fixed_$I/sens_$I\_$TAG/data/shear_bias_measurements_final.xml ]; then
+			if [ -f $ARCHIVE_DIR/$TAG/sens_$I/sens_$I\_$TAG/shear_bias_measurements_final.xml ]; then
 			    continue
 			fi
 			ALL_DONE=0

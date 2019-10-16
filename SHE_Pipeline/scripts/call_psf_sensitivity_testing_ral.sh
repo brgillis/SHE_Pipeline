@@ -9,14 +9,14 @@ SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 SLEEP_TIME=1m
 RETRY_SLEEP=5m
-
 JOB_LIMIT=200
 
 SEED_START=1
-SEEDS_PER_BATCH=104
+SEEDS_PER_BATCH=96
 NUM_GALAXIES_PER_SEED=16
 
-NUM_BATCHES=50
+BATCH_START=1
+BATCH_END=500
 NUM_THREADS=8
 
 KILLFILE="DELETE_ME_TO_STOP_RAL_PSF_SCRIPT"
@@ -30,7 +30,7 @@ do
 
 	ALL_DONE=1
 
-	for ((I=1; I<=$NUM_BATCHES; I++))
+	for ((I=$BATCH_START; I<=$BATCH_END; I++))
 	do
 
 		for TAG in Pm2 Pm1 Pp0 Pp1 Pp2 Lm2 Lm1 Lp1 Lp2 Sm2 Sm1 Sp1 Sp2 Um2 Um1 Up1 Up2 Rm2 Rm1 Rp1 Rp2 Xm2 Xm1 Xp1 Xp2
@@ -47,7 +47,7 @@ do
 
 			mkdir -p $ARCHIVE_DIR/$TAG
 
-			CMD="sbatch -p $QUEUE -N 1 -n $NUM_THREADS -o $LOGDIR/sens_testing_"$TAG"_"$I".out -e $LOGDIR/sens_testing_"$TAG"_"$I".err $SCRIPTDIR/run_bias_measurement_pipeline.sh $SEED_START $SEEDS_PER_BATCH $NUM_GALAXIES_PER_SEED $TAG $I $NUM_THREADS $ARCHIVE_DIR $WORKSPACE_ROOT $SCRIPTDIR"
+			CMD="sbatch -p $QUEUE -N 1 -n $NUM_THREADS -o $LOGDIR/sens_testing_"$TAG"_"$I".out -e $LOGDIR/sens_testing_"$TAG"_"$I".err $SCRIPTDIR/run_bias_measurement_pipeline.sh $SEED_START $SEEDS_PER_BATCH $NUM_GALAXIES_PER_SEED $TAG $I $NUM_THREADS $ARCHIVE_DIR $WORKSPACE_ROOT $SCRIPTDIR $TEMPLATE_PREFIX $TEMPLATE_POSTFIX"
 
 			RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
 			while [ $RUNNING_JOBS -ge $JOB_LIMIT ]
