@@ -1,9 +1,9 @@
 #/bin/bash
 
 QUEUE="ral"
-DATA_DIR="/data"
-ARCHIVE_DIR=$DATA_DIR"/sens_archive"
-LOGDIR=$DATA_DIR"/sens_logs"
+DATA_DIR="/data/backup/archive/17-10-19"
+ARCHIVE_DIR=$DATA_DIR
+LOGDIR=$DATA_DIR
 SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 NUM_THREADS=8
