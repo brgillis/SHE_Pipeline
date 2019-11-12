@@ -3,21 +3,24 @@
 QUEUE="ral"
 
 ARCHIVE_DIR="/ceph/ral/sens_psf_archive"
-WORKSPACE_ROOT="/tmp/sens_"
+WORKSPACE_ROOT="/ceph/ral/sens_workdirs/sens_"
 LOGDIR="/ceph/ral/sens_psf_logs"
 SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 SLEEP_TIME=1m
-RETRY_SLEEP=5m
+RETRY_SLEEP=8h
 JOB_LIMIT=200
 
 SEED_START=1
 SEEDS_PER_BATCH=96
 NUM_GALAXIES_PER_SEED=16
 
-BATCH_START=1
-BATCH_END=500
+BATCH_START=100001
+BATCH_END=101000
 NUM_THREADS=8
+
+TEMPLATE_PREFIX="_PSF_"
+TEMPLATE_POSTFIX=".conf"
 
 KILLFILE="DELETE_ME_TO_STOP_RAL_PSF_SCRIPT"
 
@@ -40,7 +43,7 @@ do
 			    exit 0
 			fi
 
-			if [ -f $ARCHIVE_DIR/$TAG/sens_psf_$I/sens_$I\_$TAG/data/shear_bias_measurements_final.xml ]; then
+			if [ -f $ARCHIVE_DIR/$TAG/sens_$I/sens_$I\_$TAG/shear_bias_measurements_final.xml ]; then
 			    continue
 			fi
 			ALL_DONE=0

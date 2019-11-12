@@ -7,16 +7,16 @@ WORKSPACE_ROOT="/ceph/cam/sens_workdirs/sens_"
 LOGDIR="/ceph/cam/sens_psf_logs"
 SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
-SLEEP_TIME=1m
-RETRY_SLEEP=5m
+SLEEP_TIME=2m
+RETRY_SLEEP=2h
 JOB_LIMIT=200
 
 SEED_START=1
 SEEDS_PER_BATCH=96
 NUM_GALAXIES_PER_SEED=16
 
-BATCH_START=2501
-BATCH_END=5501
+BATCH_START=1
+BATCH_END=1000
 NUM_THREADS=24
 
 TEMPLATE_PREFIX="_PSF_"
@@ -43,7 +43,7 @@ do
 			    exit 0
 			fi
 
-			if [ -f $ARCHIVE_DIR/$TAG/sens_psf_$I/sens_$I\_$TAG/data/shear_bias_measurements_final.xml ]; then
+			if [ -f $ARCHIVE_DIR/$TAG/sens_$I/sens_$I\_$TAG/shear_bias_measurements_final.xml ]; then
 			    continue
 			fi
 			ALL_DONE=0
