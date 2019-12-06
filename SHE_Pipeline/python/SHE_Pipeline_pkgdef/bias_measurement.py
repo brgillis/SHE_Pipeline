@@ -59,13 +59,13 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                          regauss_training_data=regauss_training_data,
                                          pipeline_config=pipeline_config,
                                          mdb=mdb)
-    shear_estimates_with_bfd_probs = she_bfd_integrate(shear_estimates=shear_estimates,
+    shear_estimates_with_bfd_probs = she_bfd_integrate(shear_estimates_product=shear_estimates,
                                                        bfd_training_data=bfd_training_data,
-                                                       pipline_config=pipeline_config,
+                                                       pipeline_config=pipeline_config,
                                                        mdb=mdb)
 
     shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
-                                                       shear_estimates=shear_estimates,
+                                                       shear_estimates=shear_estimates_with_bfd_probs,
                                                        pipeline_config=pipeline_config)
 
     shear_bias_statistics = she_cleanup_bias_measurement(simulation_config=simulation_config,
