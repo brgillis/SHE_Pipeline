@@ -22,7 +22,7 @@ __updated__ = "2019-07-03"
 
 from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
                                                     she_measure_statistics, she_measure_bias,
-                                                    she_cleanup_bias_measurement, she_bfd_integrate)
+                                                    she_cleanup_bias_measurement)#, she_bfd_integrate)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
