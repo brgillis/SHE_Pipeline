@@ -22,7 +22,7 @@ __updated__ = "2019-07-03"
 
 from SHE_Pipeline_pkgdef.package_definition import (she_prepare_configs, she_simulate_images, she_estimate_shear,
                                                     she_measure_statistics, she_measure_bias,
-                                                    she_cleanup_bias_measurement)#, she_bfd_integrate)
+                                                    she_cleanup_bias_measurement, she_bfd_integrate)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
@@ -59,10 +59,10 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                          regauss_training_data=regauss_training_data,
                                          pipeline_config=pipeline_config,
                                          mdb=mdb)
-    #shear_estimates_with_bfd_probs = she_bfd_integrate(shear_estimates=shear_estimates,
-    #                                                   bfd_training_data=bfd_training_data,
-    #                                                   pipline_config=pipeline_config,
-    #                                                   mdb=mdb)
+    shear_estimates_with_bfd_probs = she_bfd_integrate(shear_estimates=shear_estimates,
+                                                       bfd_training_data=bfd_training_data,
+                                                       pipline_config=pipeline_config,
+                                                       mdb=mdb)
 
     shear_bias_statistics_tmp = she_measure_statistics(details_table=details_table,
                                                        shear_estimates=shear_estimates,

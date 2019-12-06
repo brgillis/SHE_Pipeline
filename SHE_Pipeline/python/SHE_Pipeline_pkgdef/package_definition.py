@@ -105,7 +105,6 @@ she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
                                         Input("pipeline_config"),
                                         Input("mdb"),
                                         ],
-                                outputs=[Output("shear_estimates_product", mime_type="xml"), ],
                                 resources=ComputingResources(cores=1, ram=3.9, walltime=4.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
