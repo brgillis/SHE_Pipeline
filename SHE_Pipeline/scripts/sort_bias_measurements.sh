@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TAR_STRING="tar cvzf shear_bias_measurements.tar.gz "
+TAR_STRING="tar cvzf shear_bias_measurements.tar.gz data "
 
 for TAG in Ep0Pp0Sp0 Em2Pp0Sp0 Em1Pp0Sp0 Ep1Pp0Sp0 Ep2Pp0Sp0 Ep0Pp0Sm2 Ep0Pp0Sm1 Ep0Pp0Sp1 Ep0Pp0Sp2
 do
@@ -28,7 +28,7 @@ done
 for TAG in CO WB COWB
 do
   NEW_TAG=$TAG
-  cp $TAG/shear_bias_measurements.xml shear_bias_measurements_${!NEW_TAG}.xml
+  cp $TAG/shear_bias_measurements.xml shear_bias_measurements_${NEW_TAG}.xml
   cp -r $TAG/data .
   TAR_STRING=$TAR_STRING"shear_bias_measurements_"$NEW_TAG".xml "
 done
