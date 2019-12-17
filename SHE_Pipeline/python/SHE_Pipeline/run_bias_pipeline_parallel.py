@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-08-20"
+__updated__ = "2019-12-11"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -33,7 +33,6 @@ import numpy
 
 import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
 import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
-import SHE_CTE_BiasMeasurement.PrintBias as print_bias
 from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
 from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
 import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
@@ -293,28 +292,6 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
     measbias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
     try:
         measure_bias_from_args(measbias_args)
-    except Exception as e:
-        logger.error("Execution failed with error: " + str(e))
-        raise
-    logger.info("Finished command execution successfully")
-    return
-
-
-def she_print_bias(workdir, shear_bias_measurement_final, logdir):
-    """ Runs the SHE_CTE_PrintBias on the final shear bias measurements
-    file
-    """
-    logger = getLogger(__name__)
-
-    argv = ("--workdir %s "
-            "--shear_bias_measurements %s --logdir %s "
-            "--log-file %s/%s/she_print_bias.out" % (workdir,
-                                                     get_relpath(shear_bias_measurement_final, workdir),
-                                                     logdir, workdir, logdir)).split()
-
-    print_bias_args = pu.setup_function_args(argv, print_bias, ERun_CTE + " SHE_CTE_PrintBias")
-    try:
-        print_bias.mainMethod(print_bias_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -950,12 +927,6 @@ def run_pipeline_from_args(args):
     she_measure_bias(shear_bias_measurement_listfile, config_filename,
                      shear_bias_measurement_final, args.workdir, args.logdir)
     logger.info("Pipeline completed!")
-
-    # @TODO: option for print_bias
-    logger.info("Running SHE_CTE PrintBias to calculate bias values")
-    she_print_bias(args.workdir, shear_bias_measurement_final, args.logdir)
-
-    logger.info("Tests completed!")
 
     return
 

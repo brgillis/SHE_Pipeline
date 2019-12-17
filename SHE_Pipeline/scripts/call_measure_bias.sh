@@ -1,11 +1,22 @@
 #/bin/bash
 
-ARCHIVE_DIR="/euclid/euclid-ial/sens_archive"
+DATA_DIR="/data/backup/archive/17-10-19"
+ARCHIVE_DIR=$DATA_DIR
+LOGDIR=$DATA_DIR
+SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
-for TAG in Ep0Pp0Sp0 Ep1Pp0Sp0 Ep2Pp0Sp0 Em1Pp0Sp0 Em2Pp0Sp0 Ep0Pp1Sp0 Ep0Pp2Sp0 Ep0Pm1Sp0 Ep0Pm2Sp0 Ep0Pp0Sp1 Ep0Pp0Sp2 Ep0Pp0Sm1 Ep0Pp0Sm2
+NUM_THREADS=8
+
+mkdir -p $LOGDIR
+
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+for TAG in Ep0Pp0Sp0 Ep1Pp0Sp0 Ep2Pp0Sp0 Em1Pp0Sp0 Em2Pp0Sp0 Ep0Pp0Sp1 Ep0Pp0Sp2 Ep0Pp0Sm1 Ep0Pp0Sm2 CO WB COWB
 do
 
-    CMD="E-Run SHE_CTE 0.6.7 SHE_CTE_MeasureBias --workdir $ARCHIVE_DIR/$TAG --archive_dir $ARCHIVE_DIR/$TAG --bootstrap_seed 1 --shear_bias_measurements shear_bias_measurements.xml"
+    CMD="$SCRIPTDIR/run_measure_bias.sh $ARCHIVE_DIR $TAG"
 
     echo "Executing command: $CMD"
     eval $CMD
