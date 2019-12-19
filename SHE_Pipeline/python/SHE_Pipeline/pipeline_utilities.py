@@ -5,7 +5,7 @@
     Utility functions for the parallel pipeline
 """
 
-__updated__ = "2019-12-11"
+__updated__ = "2019-12-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -390,7 +390,7 @@ def setup_function_args(argv, command_line_int_ref, execName):
 
     estshr_args = estshr_args_parser.parse_args(argv)
     exec_cmd = get_arguments_string(estshr_args, cmd=execName,
-                                    store_true=["profile", "debug", "dry_run", "webdav_archive", "store_measurements_only"])
+                                    store_true=["profile", "debug", "dry_run", "webdav_archive", "store_measurements_only", "use_bias_only"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
