@@ -88,6 +88,16 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ],
                                 resources=ComputingResources(cores=1, ram=5.9, walltime=4.0))
 
+
+she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
+                               inputs=[Input("shear_estimates_product"),
+                                       Input("bfd_training_data"),
+                                       Input("pipeline_config"),
+                                       Input("mdb"),
+                                       ],
+                               outputs=[Output("shear_estimates_product_update",mime_type="xml")],
+                               resources=ComputingResources(cores=1, ram=10, walltime=4.0))
+
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
                                        outputs=[Output("output_shear_estimates", mime_type='xml')],

@@ -24,7 +24,7 @@ from SHE_Pipeline_pkgdef.analysis_pkgdef import (she_remap_mosaic_exposure,
                                                  she_remap_mosaic_stack,
                                                  she_fit_psf, she_model_psf,
                                                  she_object_id_split, she_shear_estimates_merge,
-                                                 she_estimate_shear, she_cross_validate_shear)
+                                                 she_estimate_shear, she_cross_validate_shear, she_bfd_integrate)
 from euclidwf.framework.workflow_dsl import pipeline, parallel
 
 
@@ -82,7 +82,13 @@ def she_model_psf_and_estimate_shear(object_ids,
                                                  mdb=mdb,
                                                  )
 
-    return shear_estimates_product
+    shear_estimates_product_with_bfd_probs = she_bfd_integrate(shear_estimates_product=shear_estimates_product,
+                                                               bfd_training_data=bfd_training_data,
+                                                               pipeline_config=pipeline_config,
+                                                               mdb=mdb)
+
+
+    return shear_estimates_product_with_bfd_probs
 
 
 @pipeline(outputs=('cross_validated_shear_estimates', 'shear_estimates'))
