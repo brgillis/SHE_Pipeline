@@ -131,6 +131,7 @@ def she_estimate_shear(data_images, stacked_image,
                        lensmc_training_data, momentsml_training_data,
                        regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
+    # KDE-TODO: Rename shear_estimates_product variable
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
 
@@ -196,6 +197,7 @@ def she_estimate_shear(data_images, stacked_image,
     logger.info("Finished command execution successfully")
     return
 
+# KDE-TODO: Add function here for performing BFD integration, modeled on others
 
 def she_measure_statistics(details_table, shear_estimates,
                            pipeline_config, shear_bias_statistics, workdir, logdir, sim_no):
@@ -760,6 +762,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        mdb=mdb,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
+    # KDE-TODO: Add a call to bfd integration here 
 
     # Complete after shear only if option set.
     if est_shear_only:
@@ -783,6 +786,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     # while not hasRun and ii<maxNTries:
     #    if os.path.exists(shear_bias_statistics):
 
+    # KDE-TODO: Cleanup pre-integration shear estimates product here? (Might need to edit function and task as well)
     she_cleanup_bias_measurement(simulation_config=simulation_config,
                                  data_images=data_image_list, stacked_data_image=stacked_data_image,
                                  psf_images_and_tables=psf_images_and_tables,
