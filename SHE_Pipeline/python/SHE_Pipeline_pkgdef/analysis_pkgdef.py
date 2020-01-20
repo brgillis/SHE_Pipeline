@@ -96,7 +96,7 @@ she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
                                        Input("mdb"),
                                        ],
                                outputs=[Output("shear_estimates_product_update", mime_type="xml")],
-                               resources=ComputingResources(cores=1, ram=15.9, walltime=8.0))
+                               resources=ComputingResources(cores=8, ram=15.9, walltime=8.0))
 
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
