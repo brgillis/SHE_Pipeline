@@ -5,7 +5,7 @@
     Pipeline script for the shear-estimation-only pipeline, starting after the segmentation map reprojection step.
 """
 
-__updated__ = "2019-09-05"
+__updated__ = "2020-01-20"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -67,11 +67,8 @@ def she_model_psf_and_estimate_shear(object_ids,
                                                  pipeline_config=pipeline_config,
                                                  mdb=mdb,
                                                  )
-    shear_estimates_product_with_bfd_probs = she_bfd_integrate(shear_estimates_product=shear_estimates_product,
-                                                               bfd_training_data=bfd_training_data,
-                                                               pipeline_config=pipeline_config,
-                                                               mdb=mdb)
-    return shear_estimates_product_with_bfd_probs
+
+    return shear_estimates_product
 
 
 @pipeline(outputs=('cross_validated_shear_estimates', 'shear_estimates'))
@@ -124,9 +121,13 @@ def shear_analysis_pipeline(mdb,
                                                                 )
 
     # Merge shear estimates together
-    shear_estimates_product = she_shear_estimates_merge(input_shear_estimates_listfile=shear_estimates_products)
+    shear_estimates_product_with_bfd_probs = she_bfd_integrate(shear_estimates_product=shear_estimates_product,
+                                                               bfd_training_data=bfd_training_data,
+                                                               pipeline_config=pipeline_config,
+                                                               mdb=mdb)
 
-    cross_validated_shear_estimates_product = she_cross_validate_shear(shear_estimates_product=shear_estimates_product)
+    cross_validated_shear_estimates_product = she_cross_validate_shear(
+        shear_estimates_product=shear_estimates_product_with_bfd_probs)
 
     return cross_validated_shear_estimates_product, shear_estimates_product
 
