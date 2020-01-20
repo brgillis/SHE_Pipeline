@@ -121,6 +121,8 @@ def shear_analysis_pipeline(mdb,
                                                                 )
 
     # Merge shear estimates together
+    shear_estimates_product = she_shear_estimates_merge(input_shear_estimates_listfile=shear_estimates_products)
+
     shear_estimates_product_with_bfd_probs = she_bfd_integrate(shear_estimates_product=shear_estimates_product,
                                                                bfd_training_data=bfd_training_data,
                                                                pipeline_config=pipeline_config,
