@@ -96,8 +96,17 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
-                                outputs=[Output("shear_estimates_product", mime_type="xml"), ],
+                                outputs=[Output("shear_estimates_product", mime_type="xml")],
                                 resources=ComputingResources(cores=1, ram=3.9, walltime=4.0))
+
+she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
+                               inputs=[Input("shear_estimates_product"),
+                                       Input("bfd_training_data"),
+                                       Input("pipeline_config"),
+                                       Input("mdb"),
+                                       ],
+                               outputs=[Output("shear_estimates_product_update",mime_type="xml")],
+                               resources=ComputingResources(cores=1, ram=10, walltime=4.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],

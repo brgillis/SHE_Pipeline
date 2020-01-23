@@ -38,6 +38,8 @@ from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_a
 import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
 import SHE_CTE_ShearEstimation.EstimateShear as est_she
 from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
+import SHE_CTE_ShearEstimation.BFDIntegrate as bfd_int
+from SHE_CTE_ShearEstimation.bfd_integrate import perform_bfd_integration
 import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
@@ -131,6 +133,7 @@ def she_estimate_shear(data_images, stacked_image,
                        lensmc_training_data, momentsml_training_data,
                        regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
+
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
 
@@ -196,6 +199,53 @@ def she_estimate_shear(data_images, stacked_image,
     logger.info("Finished command execution successfully")
     return
 
+def she_bfd_integrate(shear_estimates_product,
+                      bfd_training_data,
+                      pipeline_config, mdb,
+                      shear_estimates_product_update,
+                      workdir, logdir,sim_no):
+    """ Runs the SHE_CTE_BFDIntegrate method that performs                                                                         
+    the integration to obtain probabilities for BFD
+                                                                                                                                      
+    @todo: use defined options for which Methods to use...                                                                            
+    # It is in the pipeline config file...                                                                                            
+    # Do checks for consistency (earlier)                                                                                             
+    """
+
+    logger = getLogger(__name__)
+
+    #@TODO: Replace with function call, see issue 11                                                                                  
+    # Check to see if training data exists.                                                                                           
+    # @TODO: Simplify, avoid repetitions                                                                                              
+    shear_method_arg_string = ""
+    if bfd_training_data and bfd_training_data != 'None':
+        shear_method_arg_string += " --bfd_training_data %s" % get_relpath(
+            bfd_training_data, workdir)
+
+    # @FIXME: --logdir is a pipeline runner option, not a shear_estimate option                                                       
+    # shear_estimate etc. use magic values for the logger..                                                                           
+
+    argv = ("--shear_estimates_product %s%s "
+            "--pipeline_config %s --mdb %s "
+            "--shear_estimates_product_update %s "
+            "--workdir %s --logdir %s "
+            "--log-file %s/%s/she_bfd_integrate.out" %
+            (get_relpath(shear_estimates_product,workdir),
+             shear_method_arg_string,
+             get_relpath(pipeline_config, workdir),
+             get_relpath(mdb, workdir),
+             get_relpath(shear_estimates_product, workdir),
+             workdir, logdir, workdir, logdir)).split()
+
+    bfdint_args = pu.setup_function_args(argv, bfd_int, ERun_CTE + " SHE_CTE_BFDIntegrate")
+
+    try:
+        perform_bfd_integration(bfdint_args)
+    except Exception as e:
+        logger.error("Execution failed with error: " + str(e))
+        raise
+    logger.info("Finished command execution successfully")
+    return
 
 def she_measure_statistics(details_table, shear_estimates,
                            pipeline_config, shear_bias_statistics, workdir, logdir, sim_no):
@@ -761,6 +811,13 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
+    she_bfd_integrate(shear_estimates_product=shear_estimates_product,            
+                      bfd_training_data=bfd_training_data,
+                       pipeline_config=pipeline_config,
+                       mdb=mdb,
+                       shear_estimates_product_update=shear_estimates_product,
+                       workdir=workdir, logdir=logdir, sim_no=simulation_no)
+
     # Complete after shear only if option set.
     if est_shear_only:
         logger.info("Configuration set up to complete after shear measurement")
@@ -782,6 +839,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     #hasRun = False
     # while not hasRun and ii<maxNTries:
     #    if os.path.exists(shear_bias_statistics):
+
 
     she_cleanup_bias_measurement(simulation_config=simulation_config,
                                  data_images=data_image_list, stacked_data_image=stacked_data_image,
