@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2020-01-20"
+__updated__ = "2020-01-28"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -86,7 +86,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ],
-                                resources=ComputingResources(cores=1, ram=5.9, walltime=4.0))
+                                resources=ComputingResources(cores=1, ram=6.9, walltime=4.0))
 
 
 she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
