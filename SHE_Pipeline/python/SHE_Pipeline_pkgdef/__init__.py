@@ -5,7 +5,7 @@
     Generic __init__.py
 """
 
-__updated__ = "2019-04-22"
+__updated__ = "2020-01-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,4 +20,4 @@ __updated__ = "2019-04-22"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-__version__ = "0.5"
+__version__ = "0.9"
