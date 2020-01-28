@@ -65,7 +65,7 @@ she_model_psf = Executable(command=ERun_PSF + "SHE_PSFToolkit_ModelPSFs",
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")],
-                           resources=ComputingResources(cores=2, ram=5.9, walltime=4.0))
+                           resources=ComputingResources(cores=2, ram=6.9, walltime=4.0))
 
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
@@ -86,7 +86,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ],
-                                resources=ComputingResources(cores=1, ram=6.9, walltime=4.0))
+                                resources=ComputingResources(cores=1, ram=5.9, walltime=4.0))
 
 
 she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
