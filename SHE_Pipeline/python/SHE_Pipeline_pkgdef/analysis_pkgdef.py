@@ -35,7 +35,7 @@ she_remap_mosaic_exposure = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                                Input("vis_prod_filename"),
                                                Input("pipeline_config")],
                                        outputs=[Output("output_filename", mime_type='xml')],
-                                       resources=ComputingResources(cores=16, ram=3.9, walltime=4.0))
+                                       resources=ComputingResources(cores=8, ram=3.9, walltime=4.0))
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
