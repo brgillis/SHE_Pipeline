@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2019-09-05"
+__updated__ = "2020-01-29"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -35,7 +35,7 @@ she_remap_mosaic_exposure = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                                Input("vis_prod_filename"),
                                                Input("pipeline_config")],
                                        outputs=[Output("output_filename", mime_type='xml')],
-                                       resources=ComputingResources(cores=8, ram=15.9, walltime=4.0))
+                                       resources=ComputingResources(cores=8, ram=3.9, walltime=4.0))
 
 she_fit_psf = Executable(command=ERun_CTE + "SHE_CTE_FitPSFs",
                          inputs=[Input("data_images", content_type="listfile"),
@@ -65,7 +65,7 @@ she_model_psf = Executable(command=ERun_PSF + "SHE_PSFToolkit_ModelPSFs",
                                    # Input("psf_calibration_products", content_type="listfile"), # Disabled for now
                                    ],
                            outputs=[Output("psf_images_and_tables", mime_type="json", content_type="listfile")],
-                           resources=ComputingResources(cores=2, ram=5.9, walltime=4.0))
+                           resources=ComputingResources(cores=2, ram=6.9, walltime=4.0))
 
 she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                 inputs=[Input("data_images", content_type="listfile"),
@@ -86,7 +86,17 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         # Input("calibration_parameters_product"), # Disabled for now
                                         ],
                                 outputs=[Output("shear_estimates_product", mime_type="xml"), ],
-                                resources=ComputingResources(cores=1, ram=5.9, walltime=4.0))
+                                resources=ComputingResources(cores=1, ram=1.9, walltime=4.0))
+
+
+she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
+                               inputs=[Input("shear_estimates_product"),
+                                       Input("bfd_training_data"),
+                                       Input("pipeline_config"),
+                                       Input("mdb"),
+                                       ],
+                               outputs=[Output("shear_estimates_product_update", mime_type="xml")],
+                               resources=ComputingResources(cores=8, ram=15.9, walltime=8.0))
 
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
