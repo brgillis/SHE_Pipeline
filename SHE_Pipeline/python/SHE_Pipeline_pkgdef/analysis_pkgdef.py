@@ -5,7 +5,7 @@
     Package definition for the OU-SHE analysis pipeline.
 """
 
-__updated__ = "2020-01-29"
+__updated__ = "2020-02-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -75,12 +75,12 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("stacked_segmentation_image"),
                                         Input("detections_tables", content_type="listfile"),
                                         Input("object_ids"),
-                                        Input("bfd_training_data"),
+                                        Input("bfd_training_data", content_type="listfile"),
                                         Input("ksb_training_data"),
                                         Input("lensmc_training_data"),
-                                        Input("momentsml_training_data"),
+                                        Input("momentsml_training_data", content_type="listfile"),
                                         Input("regauss_training_data"),
-                                        Input("pipeline_config"),
+                                        Input("pipeline_config", content_type="listfile"),
                                         Input("mdb"),
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
@@ -101,16 +101,16 @@ she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
 she_shear_estimates_merge = Executable(command=ERun_CTE + "SHE_CTE_ShearEstimatesMerge",
                                        inputs=[Input("input_shear_estimates_listfile", content_type="listfile"), ],
                                        outputs=[Output("output_shear_estimates", mime_type='xml')],
-                                       resources=ComputingResources(cores=8, ram=7.9, walltime=2.0))
+                                       resources=ComputingResources(cores=8, ram=23.9, walltime=2.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
                                       inputs=[Input("shear_estimates_product")],
                                       outputs=[Output("cross_validated_shear_estimates_product", mime_type="xml")],
-                                      resources=ComputingResources(cores=1, ram=7.9, walltime=2.0))
+                                      resources=ComputingResources(cores=1, ram=23.9, walltime=2.0))
 
 she_match_to_tu = Executable(command=ERun_CTE + "SHE_CTE_MatchToTU",
                              inputs=[Input("shear_estimates_product"),
                                      Input("tu_galaxy_catalog"),
                                      Input("tu_star_catalog")],
                              outputs=[Output("matched_catalog", mime_type="xml")],
-                             resources=ComputingResources(cores=1, ram=15.9, walltime=2.0))
+                             resources=ComputingResources(cores=1, ram=23.9, walltime=2.0))

@@ -5,7 +5,7 @@
     Magic values for the package definitions
 """
 
-__updated__ = "2020-02-03"
+__updated__ = "2020-02-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -24,7 +24,7 @@ SHE_CTE_version = "0.10.0"
 SHE_GST_version = "1.10.0"
 SHE_MER_version = "0.6.0"
 SHE_Pipeline_version = "0.10.0"
-SHE_PSF_version = "2.6.0"
+SHE_PSF_version = "2.6.1"
 
 ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
 ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
