@@ -11,7 +11,7 @@ elements_project(SHE_Pipeline 0.10.1 USE Elements 5.8
                                          SHE_GST 1.10.0
                                          SHE_MER 0.6.0
                                          SHE_PPT 1.4.0
-                                         SHE_PSFToolkit 2.6.1)
+                                         SHE_PSFToolkit 2.6.2)
 # Indirect dependencies
 # ---------------------
 # SHE_MomentsML 1.10.0
