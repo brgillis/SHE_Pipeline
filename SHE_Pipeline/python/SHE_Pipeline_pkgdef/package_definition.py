@@ -31,7 +31,7 @@ she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
 
 she_simulate_images = Executable(command=ERun_GST + "SHE_GST_GenGalaxyImages",
                                  inputs=[Input("config_files"),
-                                         Input("pipeline_config", content_type="listfile"),
+                                         Input("pipeline_config", content_type="listfile")],
                                  outputs=[Output("data_images", mime_type="json", content_type="listfile"),
                                           Output("stacked_data_image", mime_type="xml"),
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
@@ -115,7 +115,7 @@ she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateS
 she_measure_statistics = Executable(command=ERun_CTE + "SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
                                             Input("shear_estimates"),
-                                            Input("pipeline_config", content_type="listfile"),
+                                            Input("pipeline_config", content_type="listfile")],
                                     outputs=[Output("shear_bias_statistics", mime_type="xml")])
 
 she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
