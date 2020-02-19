@@ -26,7 +26,7 @@ from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingReso
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"),
                                          Input("config_template"),
-                                         Input("pipeline_config", content_type="listfile"),]
+                                         Input("pipeline_config", content_type="listfile")],
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
 she_simulate_images = Executable(command=ERun_GST + "SHE_GST_GenGalaxyImages",

@@ -26,7 +26,7 @@ from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingReso
 she_remap_mosaic_stack = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
                                     inputs=[Input("mer_tile_listfile", content_type="listfile"),
                                             Input("vis_prod_filename"),
-                                            Input("pipeline_config", content_type="listfile"),]
+                                            Input("pipeline_config", content_type="listfile")],
                                     outputs=[Output("output_filename", mime_type='xml')],
                                     resources=ComputingResources(cores=4, ram=15.9, walltime=2.0))
 
