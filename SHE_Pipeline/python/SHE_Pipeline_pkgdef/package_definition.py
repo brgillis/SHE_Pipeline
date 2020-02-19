@@ -51,7 +51,7 @@ she_cleanup_bias_measurement = Executable(command=ERun_CTE + "SHE_CTE_CleanupBia
                                                   Input("details_table"),
                                                   Input("shear_estimates"),
                                                   Input("shear_bias_statistics_in"),
-                                                  Input("pipeline_config"), ],  # Needed to ensure it waits until ready
+                                                  Input("pipeline_config", content_type="listfile"), ],  # Needed to ensure it waits until ready
                                           outputs=[Output("shear_bias_statistics_out", mime_type="xml")])
 
 she_remap_mosaic = Executable(command=ERun_MER + "SHE_MER_RemapMosaic",
@@ -91,7 +91,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
                                         Input("lensmc_training_data"),
                                         Input("momentsml_training_data", content_type="listfile"),
                                         Input("regauss_training_data"),
-                                        Input("pipeline_config"),
+                                        Input("pipeline_config", content_type="listfile"),
                                         Input("mdb"),
                                         # Input("galaxy_population_priors_table"), # Disabled for now
                                         # Input("calibration_parameters_product"), # Disabled for now
@@ -102,10 +102,10 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
 she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
                                inputs=[Input("shear_estimates_product"),
                                        Input("bfd_training_data", content_type="listfile"),
-                                       Input("pipeline_config"),
+                                       Input("pipeline_config", content_type="listfile"),
                                        Input("mdb"),
                                        ],
-                               outputs=[Output("shear_estimates_product_update",mime_type="xml")],
+                               outputs=[Output("shear_estimates_product_update", mime_type="xml")],
                                resources=ComputingResources(cores=1, ram=10, walltime=4.0))
 
 she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateShear",
@@ -120,7 +120,7 @@ she_measure_statistics = Executable(command=ERun_CTE + "SHE_CTE_MeasureStatistic
 
 she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
                               inputs=[Input("shear_bias_statistics", content_type="listfile"),
-                                      Input("pipeline_config", content_type="listfile"),
+                                      Input("pipeline_config", content_type="listfile")],
                               outputs=[Output("shear_bias_measurements", mime_type="xml")])
 
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
