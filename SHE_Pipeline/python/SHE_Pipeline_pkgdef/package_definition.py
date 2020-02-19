@@ -5,7 +5,7 @@
     Package definition for the OU-SHE pipeline.
 """
 
-__updated__ = "2019-07-23"
+__updated__ = "2020-02-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -26,12 +26,12 @@ from euclidwf.framework.taskdefs import Executable, Input, Output, ComputingReso
 she_prepare_configs = Executable(command=ERun_GST + "SHE_GST_PrepareConfigs",
                                  inputs=[Input("simulation_plan"),
                                          Input("config_template"),
-                                         Input("pipeline_config")],
+                                         Input("pipeline_config", content_type="listfile"),
                                  outputs=[Output("simulation_configs", mime_type="json", content_type="listfile")])
 
 she_simulate_images = Executable(command=ERun_GST + "SHE_GST_GenGalaxyImages",
                                  inputs=[Input("config_files"),
-                                         Input("pipeline_config")],
+                                         Input("pipeline_config", content_type="listfile"),
                                  outputs=[Output("data_images", mime_type="json", content_type="listfile"),
                                           Output("stacked_data_image", mime_type="xml"),
                                           Output("psf_images_and_tables", mime_type="json", content_type="listfile"),
@@ -115,12 +115,12 @@ she_cross_validate_shear = Executable(command=ERun_CTE + "SHE_CTE_CrossValidateS
 she_measure_statistics = Executable(command=ERun_CTE + "SHE_CTE_MeasureStatistics",
                                     inputs=[Input("details_table"),
                                             Input("shear_estimates"),
-                                            Input("pipeline_config")],
+                                            Input("pipeline_config", content_type="listfile"),
                                     outputs=[Output("shear_bias_statistics", mime_type="xml")])
 
 she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
                               inputs=[Input("shear_bias_statistics", content_type="listfile"),
-                                      Input("pipeline_config")],
+                                      Input("pipeline_config", content_type="listfile"),
                               outputs=[Output("shear_bias_measurements", mime_type="xml")])
 
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
