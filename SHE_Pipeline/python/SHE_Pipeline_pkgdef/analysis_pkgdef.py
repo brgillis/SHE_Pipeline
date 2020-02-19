@@ -91,7 +91,7 @@ she_estimate_shear = Executable(command=ERun_CTE + "SHE_CTE_EstimateShear",
 
 she_bfd_integrate = Executable(command=ERun_CTE + "SHE_CTE_BFDIntegrate",
                                inputs=[Input("shear_estimates_product"),
-                                       Input("bfd_training_data"),
+                                       Input("bfd_training_data", content_type="listfile"),
                                        Input("pipeline_config"),
                                        Input("mdb"),
                                        ],
