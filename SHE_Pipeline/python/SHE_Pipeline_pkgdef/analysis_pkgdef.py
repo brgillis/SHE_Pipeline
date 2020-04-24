@@ -53,7 +53,7 @@ she_object_id_split = Executable(command=ERun_CTE + "SHE_CTE_ObjectIdSplit",
                                          Input("data_images", content_type="listfile"),
                                          Input("pipeline_config", content_type="listfile"), ],
                                  outputs=[Output("object_ids", mime_type='json')],
-                                 resources=ComputingResources(cores=1, ram=1.0, walltime=1.0))
+                                 resources=ComputingResources(cores=1, ram=4.0, walltime=1.0))
 
 she_model_psf = Executable(command=ERun_PSF + "SHE_PSFToolkit_ModelPSFs",
                            inputs=[Input("data_images", content_type="listfile"),
