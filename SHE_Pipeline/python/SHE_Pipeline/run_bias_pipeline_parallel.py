@@ -858,6 +858,9 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
 
     return
 
+def simulate_and_measure_mapped(args):
+    return she_simulate_and_measure_bias_statistics(*args)
+
 
 def run_pipeline_from_args(args):
     """Main executable to run parallel pipeline.
@@ -924,10 +927,7 @@ def run_pipeline_from_args(args):
     logger.info("Running parallel part of pipeline in %s batches and %s threads"
                 % (len(batches), args.number_threads))
 
-    pool = Pool(processes=args.number_threads)
-
-    def simulate_and_measure_mapped(args):
-        return she_simulate_and_measure_bias_statistics(*args)
+    pool = multiprocessing.Pool(processes=args.number_threads)
 
     for batch_no in range(len(batches)):
         batch = batches[batch_no]
@@ -960,15 +960,15 @@ def run_pipeline_from_args(args):
                                                               workdir, simulation_no, args.logdir, args.est_shear_only))
 
     if simulate_and_measure_args_list:
-        pool.map(simulate_and_measure_mapped,simulate_and_measure_args_list, args.num_threads)
+        pool.map(simulate_and_measure_mapped,simulate_and_measure_args_list)
         
     if args.est_shear_only:
         logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
     else:
-        merge_outputs(workdir_list, batch, shear_bias_measurement_listfile, parent_workdir=args.workdir)
         # Clean up
         logger.info("Cleaning up batch files..")
         for batch_no in range(len(batches)):
+            merge_outputs(workdir_list, batches[batch_no], shear_bias_measurement_listfile, parent_workdir=args.workdir)
             pu.cleanup(batches[batch_no], workdir_list)
 
     if args.est_shear_only:
@@ -997,7 +997,7 @@ def merge_outputs(workdir_list, batch,
 
     newList = []
     for workdir in workdir_list:
-        thread_no = int(workdir.workdir.split('thread')[1].split('_')[0])
+        thread_no = int(workdir.workdir.split('thread')[-1].split('_')[0])
         if thread_no < batch.nThreads:
             sim_no = get_sim_no(thread_no, batch)
             # @TODO: root of this in one place

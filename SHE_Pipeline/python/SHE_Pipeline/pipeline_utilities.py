@@ -30,6 +30,9 @@ from SHE_PPT.logging import getLogger
 from SHE_PPT.utility import get_arguments_string
 
 
+# Creates directory structure
+dir_struct_tuple = namedtuple("dir_struct_tuple", "workdir logdir app_workdir app_logdir")
+
 def get_relpath(file_path, workdir):
     """Removes workdir from path if necessary 
     @todo: should be in file_io?
@@ -61,9 +64,6 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
     @rtype:  list(namedtuple)
     """
     logger = getLogger(__name__)
-
-    # Creates directory structure
-    dir_struct_tuple = namedtuple("Directories", "workdir logdir app_workdir app_logdir")
     # @FIXME: Do the create multiple threads here
     for workdir_base in workdir_root_list:
 
