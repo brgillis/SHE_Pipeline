@@ -924,6 +924,11 @@ def run_pipeline_from_args(args):
     logger.info("Running parallel part of pipeline in %s batches and %s threads"
                 % (len(batches), args.number_threads))
 
+    pool = Pool(processes=args.number_threads)
+
+    def simulate_and_measure_mapped(args):
+        return she_simulate_and_measure_bias_statistics(*args)
+
     for batch_no in range(len(batches)):
         batch = batches[batch_no]
         # Move data to threads
@@ -932,7 +937,7 @@ def run_pipeline_from_args(args):
 
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
-        prod_threads = []
+        simulate_and_measure_args_list = []
 
         for thread_no in range(batch.nThreads):
             workdir = workdir_list[thread_no + args.number_threads * batch_no]
@@ -944,13 +949,7 @@ def run_pipeline_from_args(args):
             simulate_measure_inputs = create_simulate_measure_inputs(args,
                                                                      config_filename, workdir, simulation_configs, simulation_no)
 
-            # simulation_config =
-            # bfd_training...
-
-            # @TODO: Is it better to run each process separately?
-
-            prod_threads.append(multiprocessing.Process(target=she_simulate_and_measure_bias_statistics,
-                                                        args=(simulate_measure_inputs.simulation_config,
+            simulate_and_measure_args_list.append((simulate_measure_inputs.simulation_config,
                                                               simulate_measure_inputs.bfd_training_data,
                                                               simulate_measure_inputs.ksb_training_data,
                                                               simulate_measure_inputs.lensmc_training_data,
@@ -958,14 +957,10 @@ def run_pipeline_from_args(args):
                                                               simulate_measure_inputs.regauss_training_data,
                                                               simulate_measure_inputs.pipeline_config,
                                                               simulate_measure_inputs.mdb,
-                                                              workdir, simulation_no, args.logdir, args.est_shear_only)))
+                                                              workdir, simulation_no, args.logdir, args.est_shear_only))
 
-        logger.info("Set up batch %s in parallel" % batch.batch_no)
-
-    # Set up for all batches, then run threads
-
-    if prod_threads:
-        pu.run_threads(prod_threads)
+    if simulate_and_measure_args_list:
+        pool.map(simulate_and_measure_mapped,simulate_and_measure_args_list, args.num_threads)
         
     if args.est_shear_only:
         logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
