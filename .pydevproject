@@ -6,6 +6,6 @@
     <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python 2.7</pydev_property>
     
     <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
-        <path>/home/brg/git/SHE_PPT/SHE_PPT/python</path>
-    </pydev_pathproperty>
+<path>/home/user/Work/Projects/SHE_PPT/SHE_PPT/python</path>
+</pydev_pathproperty>
 </pydev_project>
