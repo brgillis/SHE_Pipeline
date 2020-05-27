@@ -928,6 +928,8 @@ def run_pipeline_from_args(args):
                 % (len(batches), args.number_threads))
 
     pool = multiprocessing.Pool(processes=args.number_threads)
+    
+    simulate_and_measure_args_list = []
 
     for batch_no in range(len(batches)):
         batch = batches[batch_no]
@@ -937,7 +939,6 @@ def run_pipeline_from_args(args):
 
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
-        simulate_and_measure_args_list = []
 
         for thread_no in range(batch.nThreads):
             workdir = workdir_list[thread_no + args.number_threads * batch_no]
