@@ -960,18 +960,21 @@ def run_pipeline_from_args(args):
                                                               simulate_measure_inputs.mdb,
                                                               workdir, simulation_no, args.logdir, args.est_shear_only)))
 
-        if prod_threads:
-            pu.run_threads(prod_threads)
+        logger.info("Set up batch %s in parallel" % batch.batch_no)
 
-        logger.info("Run batch %s in parallel, now to merge outputs from threads" % batch.batch_no)
-        if args.est_shear_only:
-            logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
+    # Set up for all batches, then run threads
 
-        else:
-            merge_outputs(workdir_list, batch, shear_bias_measurement_listfile, parent_workdir=args.workdir)
-            # Clean up
-            logger.info("Cleaning up batch files..")
-            pu.cleanup(batch, workdir_list)
+    if prod_threads:
+        pu.run_threads(prod_threads)
+        
+    if args.est_shear_only:
+        logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
+    else:
+        merge_outputs(workdir_list, batch, shear_bias_measurement_listfile, parent_workdir=args.workdir)
+        # Clean up
+        logger.info("Cleaning up batch files..")
+        for batch_no in range(len(batches)):
+            pu.cleanup(batches[batch_no], workdir_list)
 
     if args.est_shear_only:
         logger.info("Pipeline completed!")
