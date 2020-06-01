@@ -1,32 +1,28 @@
 #/bin/bash
 
-# QUEUE="lowpriority"
-# QUEUESHORT="lowpriori"
+QUEUE="swg"
 
-QUEUE="eden1.2"
-QUEUESHORT="eden1.2"
-
-ARCHIVE_DIR="/mnt/cephfs/sens-test/archive"
+ARCHIVE_DIR="/ceph/ral/swg/sens_psf_archive"
 WORKSPACE_ROOT="/tmp/sens_"
-LOGDIR="/mnt/cephfs/sens-test/logs"
-SCRIPTDIR="/home/brg/sens_testing_scripts"
+LOGDIR="/ceph/ral/swg/sens_psf_logs"
+SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 SLEEP_TIME=1m
-RETRY_SLEEP=5m
-JOB_LIMIT=120
+RETRY_SLEEP=8h
+JOB_LIMIT=400
 
 SEED_START=1
 SEEDS_PER_BATCH=96
 NUM_GALAXIES_PER_SEED=16
 
 BATCH_START=200001
-BATCH_END=201000
-NUM_THREADS=12
+BATCH_END=202000
+NUM_THREADS=27
 
-TEMPLATE_PREFIX="''"
-TEMPLATE_POSTFIX="Template.conf"
+TEMPLATE_PREFIX="_PSF_"
+TEMPLATE_POSTFIX=".conf"
 
-KILLFILE="DELETE_ME_TO_STOP_SDC-UK_SCRIPT"
+KILLFILE="DELETE_ME_TO_STOP_SWG_PSF_SCRIPT"
 
 touch $KILLFILE
 
@@ -40,7 +36,7 @@ do
 	for ((I=$BATCH_START; I<=$BATCH_END; I++))
 	do
 
-		for TAG in Ep0Pp0Sp0 Ep1Pp0Sp0 Ep2Pp0Sp0 Em1Pp0Sp0 Em2Pp0Sp0 Ep0Pp0Sp1 Ep0Pp0Sp2 Ep0Pp0Sm1 Ep0Pp0Sm2 CO WB COWB Tm2 Tm1 Tp1 Tp2
+		for TAG in Pm2 Pm1 Pp0 Pp1 Pp2 Lm2 Lm1 Lp1 Lp2 Sm2 Sm1 Sp1 Sp2 Um2 Um1 Up1 Up2 Rm2 Rm1 Rp1 Rp2 Xm2 Xm1 Xp1 Xp2
 		do
 
 			if [ ! -f $KILLFILE ]; then
@@ -56,7 +52,7 @@ do
 
 			CMD="sbatch -p $QUEUE -N 1 -n $NUM_THREADS -o $LOGDIR/sens_testing_"$TAG"_"$I".out -e $LOGDIR/sens_testing_"$TAG"_"$I".err $SCRIPTDIR/run_bias_measurement_pipeline.sh $SEED_START $SEEDS_PER_BATCH $NUM_GALAXIES_PER_SEED $TAG $I $NUM_THREADS $ARCHIVE_DIR $WORKSPACE_ROOT $SCRIPTDIR $TEMPLATE_PREFIX $TEMPLATE_POSTFIX"
 
-			RUNNING_JOBS=`squeue | grep $QUEUESHORT | wc -l`
+			RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
 			while [ $RUNNING_JOBS -ge $JOB_LIMIT ]
 			do
 			    sleep $SLEEP_TIME
@@ -71,6 +67,6 @@ do
 	done
 
 	sleep $RETRY_SLEEP
-done
 
-rm $KILLFILE
+done 
+
