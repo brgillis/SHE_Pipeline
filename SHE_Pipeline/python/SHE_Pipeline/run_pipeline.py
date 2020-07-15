@@ -50,7 +50,7 @@ default_eden_version_dev = "Eden-2.0-dev"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config", "edenVersion")
 
-known_output_filenames = {"bias_measurement": "she_measure_bias/shear_bias_measurements.xml"}
+known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
 pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.0/opt/euclid/ST_PipelineRunner/bin/pipeline_runner.py"
 

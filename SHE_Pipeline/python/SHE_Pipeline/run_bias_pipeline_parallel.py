@@ -248,7 +248,7 @@ def she_bfd_integrate(shear_estimates_product,
     return
 
 def she_measure_statistics(details_table, shear_estimates,
-                           pipeline_config, shear_bias_statistics, workdir, logdir, sim_no):
+                           pipeline_config, she_bias_statistics, workdir, logdir, sim_no):
     """ Runs the SHE_CTE_MeasureStatistics method on shear 
     estimates to get shear bias statistics.
     """
@@ -258,13 +258,13 @@ def she_measure_statistics(details_table, shear_estimates,
 
     argv = ("--details_table %s "
             "--shear_estimates %s --pipeline_config %s "
-            "--shear_bias_statistics %s "
+            "--she_bias_statistics %s "
             "--workdir %s "
             "--log-file %s/%s/she_measure_statistics.out"
             % (get_relpath(details_table, workdir),
                get_relpath(shear_estimates, workdir),
                get_relpath(pipeline_config, workdir),
-               get_relpath(shear_bias_statistics, workdir),
+               get_relpath(she_bias_statistics, workdir),
                workdir, workdir, logdir)).split()
 
     measstats_args = pu.setup_function_args(argv, meas_stats,
@@ -285,9 +285,9 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
                                  stacked_data_image, psf_images_and_tables, segmentation_images,
                                  stacked_segmentation_image, detections_tables, details_table,
                                  shear_estimates, shear_bias_statistics_in, pipeline_config,
-                                 shear_bias_measurements, workdir, logdir, sim_no):
-    """ Runs the SHE_CTE_CleanupBiasMeasurement code on shear_bias_statistics.
-    Returns shear_bias_measurements
+                                 she_bias_measurements, workdir, logdir, sim_no):
+    """ Runs the SHE_CTE_CleanupBiasMeasurement code on she_bias_statistics.
+    Returns she_bias_measurements
     """
     logger = getLogger(__name__)
     #@TODO: Replace with function call, see issue 11
@@ -310,7 +310,7 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
                 get_relpath(shear_estimates, workdir),
                 get_relpath(shear_bias_statistics_in, workdir),
                 get_relpath(pipeline_config, workdir),
-                get_relpath(shear_bias_measurements, workdir),
+                get_relpath(she_bias_measurements, workdir),
                 workdir, workdir, logdir)).split()
 
     cleanbias_args = pu.setup_function_args(argv, cleanup_bias, ERun_CTE + "SHE_CTE_CleanupBiasMeasurement")
@@ -325,14 +325,14 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
 
 def she_measure_bias(shear_bias_measurement_list, pipeline_config,
                      shear_bias_measurement_final, workdir, logdir):
-    """ Runs the SHE_CTE_MeasureBias on a list of shear_bias_measurements from
+    """ Runs the SHE_CTE_MeasureBias on a list of she_bias_measurements from
     all simulation runs.
     """
     #@TODO: Replace with function call, see issue 11
 
     logger = getLogger(__name__)
-    argv = ("--shear_bias_statistics %s "
-            "--pipeline_config %s --shear_bias_measurements %s --workdir %s "
+    argv = ("--she_bias_statistics %s "
+            "--pipeline_config %s --she_bias_measurements %s --workdir %s "
             "--log-file %s/%s/she_measure_bias.out"
             % (get_relpath(shear_bias_measurement_list, workdir),
                get_relpath(pipeline_config, workdir),
@@ -823,22 +823,22 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
         logger.info("Configuration set up to complete after shear measurement")
         return
 
-    shear_bias_statistics = os.path.join('data', 'shear_bias_statistics.xml')
+    she_bias_statistics = os.path.join('data', 'she_bias_statistics.xml')
 
     she_measure_statistics(details_table=details_table,
                            shear_estimates=shear_estimates_product,
                            pipeline_config=pipeline_config,
-                           shear_bias_statistics=shear_bias_statistics,
+                           she_bias_statistics=she_bias_statistics,
                            workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
-    shear_bias_measurements = os.path.join('data',
+    she_bias_measurements = os.path.join('data',
                                            'shear_bias_measurements_sim%s.xml' % simulation_no)
 
     # ii=0
     # maxNTries=5
     #hasRun = False
     # while not hasRun and ii<maxNTries:
-    #    if os.path.exists(shear_bias_statistics):
+    #    if os.path.exists(she_bias_statistics):
 
 
     she_cleanup_bias_measurement(simulation_config=simulation_config,
@@ -849,9 +849,9 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                  detections_tables=detections_tables,
                                  details_table=details_table,
                                  shear_estimates=shear_estimates_product,
-                                 shear_bias_statistics_in=shear_bias_statistics,
+                                 shear_bias_statistics_in=she_bias_statistics,
                                  pipeline_config=pipeline_config,
-                                 shear_bias_measurements=shear_bias_measurements,
+                                 she_bias_measurements=she_bias_measurements,
                                  workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")
@@ -1035,8 +1035,8 @@ def merge_outputs(workdir_list, batch,
     write_listfile(shear_bias_measurement_listfile, sbml_list)
 
     # What are the main outputs needed for 2nd part?
-    # rename? shear_bias_measurements,
+    # rename? she_bias_measurements,
 
-    # All the shear_bias_measurements -- collate into .json file
+    # All the she_bias_measurements -- collate into .json file
 
     return

@@ -83,7 +83,7 @@ def defineSpecificProgramOptions():
                         help="Work directory of the parent pipeline.")
 
     # Output arguments for the bias measurement pipeline
-    parser.add_argument('--shear_bias_measurements', type=str, default='shear_bias_measurements.xml',
+    parser.add_argument('--she_bias_measurements', type=str, default='she_bias_measurements.xml',
                         help='Desired filename of the final output bias measurements')
 
     logger.debug('# Exiting SHE_Pipeline_Run defineSpecificProgramOptions()')

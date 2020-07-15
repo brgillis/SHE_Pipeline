@@ -68,7 +68,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                                        shear_estimates=shear_estimates_with_bfd_probs,
                                                        pipeline_config=pipeline_config)
 
-    shear_bias_statistics = she_cleanup_bias_measurement(simulation_config=simulation_config,
+    she_bias_statistics = she_cleanup_bias_measurement(simulation_config=simulation_config,
                                                          data_images=data_images,
                                                          stacked_data_image=stacked_data_image,
                                                          psf_images_and_tables=psf_images_and_tables,
@@ -81,10 +81,10 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                                                          pipeline_config=pipeline_config
                                                          )
 
-    return shear_bias_statistics
+    return she_bias_statistics
 
 
-@pipeline(outputs=('shear_bias_measurements',))
+@pipeline(outputs=('she_bias_measurements',))
 def shear_bias_measurement(simulation_plan,
                            config_template,
                            bfd_training_data,
@@ -99,7 +99,7 @@ def shear_bias_measurement(simulation_plan,
                                              config_template=config_template,
                                              pipeline_config=pipeline_config)
 
-    shear_bias_statistics = she_simulate_and_measure_bias_statistics(
+    she_bias_statistics = she_simulate_and_measure_bias_statistics(
         simulation_config=simulation_configs,
         bfd_training_data=bfd_training_data,
         ksb_training_data=ksb_training_data,
@@ -109,10 +109,10 @@ def shear_bias_measurement(simulation_plan,
         pipeline_config=pipeline_config,
         mdb=mdb)
 
-    shear_bias_measurements = she_measure_bias(shear_bias_statistics=shear_bias_statistics,
+    she_bias_measurements = she_measure_bias(she_bias_statistics=she_bias_statistics,
                                                pipeline_config=pipeline_config)
 
-    return shear_bias_measurements
+    return she_bias_measurements
 
 
 if __name__ == '__main__':

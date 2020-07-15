@@ -116,12 +116,12 @@ she_measure_statistics = Executable(command=ERun_CTE + "SHE_CTE_MeasureStatistic
                                     inputs=[Input("details_table"),
                                             Input("shear_estimates"),
                                             Input("pipeline_config", content_type="listfile")],
-                                    outputs=[Output("shear_bias_statistics", mime_type="xml")])
+                                    outputs=[Output("she_bias_statistics", mime_type="xml")])
 
 she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
-                              inputs=[Input("shear_bias_statistics", content_type="listfile"),
+                              inputs=[Input("she_bias_statistics", content_type="listfile"),
                                       Input("pipeline_config", content_type="listfile")],
-                              outputs=[Output("shear_bias_measurements", mime_type="xml")])
+                              outputs=[Output("she_bias_measurements", mime_type="xml")])
 
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
                                    inputs=[Input("pickled_args")],
@@ -130,4 +130,4 @@ she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
 
 she_run_controlled_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasParallel",
                                               inputs=[Input("pickled_args")],
-                                              outputs=[Output("shear_bias_measurements", mime_type="xml")])
+                                              outputs=[Output("she_bias_measurements", mime_type="xml")])
