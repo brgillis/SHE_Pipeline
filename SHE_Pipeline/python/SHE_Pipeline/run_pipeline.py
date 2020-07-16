@@ -4,8 +4,26 @@
 
     Main executable for running pipelines.
 """
+import _pickle
+import ast
+from builtins import True
+from copy import deepcopy
+import os
+from shutil import copyfile
+from time import sleep
+import xml.sax._exceptions
 
-__updated__ = "2019-08-20"
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
+                             read_pickled_product, write_pickled_product, read_listfile, write_listfile)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
+from astropy.table import Table
+
+import SHE_Pipeline
+import subprocess as sbp
+
+__updated__ = "2020-07-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,33 +38,16 @@ __updated__ = "2019-08-20"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-
-import ast
-from copy import deepcopy
-import os
-from shutil import copyfile
-from time import sleep
-import xml.sax._exceptions
-
-from astropy.table import Table
-
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
-                             read_pickled_product, write_pickled_product, read_listfile, write_listfile)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
-import SHE_Pipeline
-import _pickle
-import subprocess as sbp
-
+eden_2_0_dev_source = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh"
+eden_2_0_master_source = "/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh"
 
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/latest/ppo/lodeen-ial.properties"
 
-default_eden_version_master = "Eden-2.0"
-default_eden_version_dev = "Eden-2.0-dev"
+default_eden_version_master = "Eden-2.1"
+default_eden_version_dev = "Eden-2.1-dev"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipeline_config", "edenVersion")
 
@@ -66,14 +67,18 @@ optional_ports["analysis_with_tu_match"] = optional_ports["analysis"]
 optional_ports["analysis_after_remap_with_tu_match"] = optional_ports["analysis"]
 
 
-
 def is_dev_version():
     """Determines if we're running a develop version of the code.
     """
 
-    minor_version = SHE_Pipeline.__version__.split('.')[1]
+    n_digits = len(SHE_Pipeline.__version__.split("."))
 
-    return int(minor_version) % 2 == 1
+    if n_digits == 2:
+        return True
+    elif n_digits == 3:
+        return False
+    else:
+        raise RuntimeError("Cannot determine if version (" + SHE_Pipeline.__version__ + ") is develop or master version.")
 
 
 def get_pipeline_dir():
@@ -419,7 +424,7 @@ def create_isf(args,
             except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
-        elif qualified_filename[-5:]== ".json":
+        elif qualified_filename[-5:] == ".json":
             subfilenames = read_listfile(qualified_filename)
             data_filenames = []
             for subfilename in subfilenames:
@@ -433,7 +438,7 @@ def create_isf(args,
         else:
             logger.warn("Input file " + filename + " is not an XML data product.")
             continue
-        
+
         if len(data_filenames) == 0:
             continue
 
@@ -445,7 +450,7 @@ def create_isf(args,
         # Search for and symlink each data file
         for data_filename in data_filenames:
 
-            if data_filename is None or data_filename=="None" or data_filename=="data/None":
+            if data_filename is None or data_filename == "None" or data_filename == "data/None":
                 continue
 
             # Find the qualified location of the data file
@@ -454,7 +459,7 @@ def create_isf(args,
             except RuntimeError as e:
                 # Try searching for the file without the "data/" prefix
                 try:
-                    qualified_data_filename = find_file(data_filename.replace("data/","",1), path=data_search_path)
+                    qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
                 except RuntimeError as e:
                     raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
@@ -471,35 +476,34 @@ def create_isf(args,
         # End loop "for data_filename in data_filenames:"
 
     # End loop "for input_port_name in args_to_set:"
-    
+
     # Make sure all optional products are provided by a listfile
-    
+
     for port_name in optional_ports[args.pipeline]:
-        
-        if port_name in args_to_set and not (args_to_set[port_name] is None or 
-                                             args_to_set[port_name]=="None" or
-                                             args_to_set[port_name]=="data/None" or
-                                             args_to_set[port_name]==""):
-            
+
+        if port_name in args_to_set and not (args_to_set[port_name] is None or
+                                             args_to_set[port_name] == "None" or
+                                             args_to_set[port_name] == "data/None" or
+                                             args_to_set[port_name] == ""):
+
             # If the port is present, ensure it's provided as a listfile
-            if args_to_set[port_name][-5:]==".json":
+            if args_to_set[port_name][-5:] == ".json":
                 # Already a listfile, so skip
                 continue
             else:
                 file_list = [args_to_set[port_name]]
         else:
-            
+
             # If the port isn't present or is a null value, pass an empty listfile
             file_list = []
-               
-        # If we get to this branch, we need to create a new listfile and set it as the input to the port 
-        listfile_name = get_allowed_filename(port_name.upper().replace("_","-"), str(os.getpid()),
+
+        # If we get to this branch, we need to create a new listfile and set it as the input to the port
+        listfile_name = get_allowed_filename(port_name.upper().replace("_", "-"), str(os.getpid()),
                                              extension=".json", version=SHE_Pipeline.__version__)
-        
-        write_listfile(os.path.join(args.workdir,listfile_name), file_list)
-        
+
+        write_listfile(os.path.join(args.workdir, listfile_name), file_list)
+
         args_to_set[port_name] = listfile_name
-        
 
     # Write out the new ISF
     with open(qualified_isf_filename, 'w') as fo:
@@ -516,7 +520,18 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
 
     logger = getLogger(__name__)
 
-    cmd = pipeline_runner_exec + ' --pipeline=' + pipeline + '.py --data=' + isf
+    # Need to source EDEN 2.0 environment, since the pipeline runner isn't updated yet
+    if is_dev_version() and os.path.isfile(eden_2_0_dev_source):
+        src_cmd = "source " + eden_2_0_dev_source + " && "
+    elif not is_dev_version() and os.path.isfile(eden_2_0_master_source):
+        src_cmd = "source " + eden_2_0_master_source + " && "
+    else:
+        if is_dev_version():
+            raise RuntimeError("Cannot find Eden-2.0-dev source file: " + eden_2_0_dev_source)
+        else:
+            raise RuntimeError("Cannot find Eden-2.0 source file: " + eden_2_0_master_source)
+
+    cmd = src_cmd + pipeline_runner_exec + ' --pipeline=' + pipeline + '.py --data=' + isf
     if server_config is not None:
         cmd += ' --config=' + server_config
     if serverurl is not None:
