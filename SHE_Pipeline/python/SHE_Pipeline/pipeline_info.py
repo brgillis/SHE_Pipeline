@@ -6,7 +6,7 @@
 """
 from builtins import None
 
-__updated__ = "2020-07-17"
+__updated__ = "2020-07-22"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -131,3 +131,8 @@ pipeline_info["bias_measurement"] = PipelineInfo(lowercase_name="bias_measuremen
                                                  uppercase_name="Bias_Measurement",
                                                  auxdir="Shear_Calibration",
                                                  package_def="Shear_Calibration")
+
+# Shear Reconciliation pipeline
+
+pipeline_info["reconciliation"] = PipelineInfo(lowercase_name="reconciliation",
+                                         uppercase_name="Shear_Reconciliation")
