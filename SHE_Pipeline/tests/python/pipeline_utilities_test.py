@@ -5,6 +5,8 @@
     Sample unit test
 """
 
+__updated__ = "2020-07-23"
+
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
 # This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -31,27 +33,27 @@ import SHE_Pipeline.pipeline_utilities as pu
 class TestPipelineUtilities():
     """ Unit tests for functions in run_bias_parallel
     """
-    
-    # Test main functions 
-    
+
+    # Test main functions
+
     def simpleFunction(self, threadNo, raiseException=False):
         """ 
         
         """
         if raiseException:
-            raise Exception("Test Exception") 
-        lines=['%s\n' % threadNo]
-        open('output2134_%s.dat' % (threadNo),'w').writelines(lines)
+            raise Exception("Test Exception")
+        lines = ['%s\n' % threadNo]
+        open('output2134_%s.dat' % (threadNo), 'w').writelines(lines)
         return
 
     def test_run_threads1(self):
         """ Test run_threads on simple set of multiple processes
         """
-        
-        filename_list=[]
-        prod_threads=[]
+
+        filename_list = []
+        prod_threads = []
         for ii in range(2):
-            filename='output2134_%s.dat' % ii
+            filename = 'output2134_%s.dat' % ii
             if os.path.exists(filename):
                 os.remove(filename)
             filename_list.append(filename)
@@ -65,29 +67,29 @@ class TestPipelineUtilities():
                 # But still seems to do it...
                 if '<ERROR>' in e:
                     assert False
-        for ii,filename in enumerate(filename_list):
+        for ii, filename in enumerate(filename_list):
             assert os.path.exists(filename)
-            lines=open(filename).readlines()
+            lines = open(filename).readlines()
             assert str(lines[0]).startswith(str(ii))
-        
+
         pass
-    
+
     def test_run_threads2(self):
         """ Test run_threads on simple set processes,
         where exceptions are raised.
         """
-        
-        filename_list=[]
-        prod_threads=[]
+
+        filename_list = []
+        prod_threads = []
         for ii in range(2):
-            filename='output2134_%s.dat' % ii
+            filename = 'output2134_%s.dat' % ii
             if os.path.exists(filename):
                 os.remove(filename)
-            raiseException = ii==1
+            raiseException = ii == 1
             filename_list.append(filename)
             prod_threads.append(multiprocessing.Process(
                 target=self.simpleFunction,
-                args=(ii,raiseException)))
+                args=(ii, raiseException)))
         if prod_threads:
             try:
                 pu.run_threads(prod_threads)
@@ -96,32 +98,30 @@ class TestPipelineUtilities():
                     assert True
                 else:
                     assert False
-        #for ii,fileName in enumerate(fileNameList):
+        # for ii,fileName in enumerate(fileNameList):
         #    assert os.path.exists(fileName)
         #    lines=open(fileName).readlines()
         #    assert str(lines[0]).startswith(str(ii))
-        
+
         pass
-
-
 
     def test_run_threads3(self):
         """ Test run with more threads than allowed.
         """
-        
-        num_threads = multiprocessing.cpu_count()+3
-        
-        filename_list=[]
-        prod_threads=[]
+
+        num_threads = multiprocessing.cpu_count() + 3
+
+        filename_list = []
+        prod_threads = []
         for ii in range(num_threads):
-            filename='output2134_%s.dat' % ii
+            filename = 'output2134_%s.dat' % ii
             if os.path.exists(filename):
                 os.remove(filename)
-            raiseException = ii==1
+            raiseException = ii == 1
             filename_list.append(filename)
             prod_threads.append(multiprocessing.Process(
                 target=self.simpleFunction,
-                args=(ii,raiseException)))
+                args=(ii, raiseException)))
         if prod_threads:
             try:
                 pu.run_threads(prod_threads)
@@ -129,7 +129,6 @@ class TestPipelineUtilities():
                 # But still seems to do it...
                 if '<ERROR>' in e:
                     assert True
-         
-        pass
 
+        pass
 
