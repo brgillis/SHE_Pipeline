@@ -115,7 +115,7 @@ pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name="analys
                                                      auxdir="Shear_Analysis",
                                                      package_def="Shear_Analysis")
 
-pipeline_info_dict["analysiswith_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
+pipeline_info_dict["analysis_with_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
                                                       uppercase_name="Shear_Analysis_With_TU_Match",
                                                       config_keys=AnalysisConfigKeys,
                                                       auxdir="Shear_Analysis",

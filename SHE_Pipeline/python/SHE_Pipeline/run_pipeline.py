@@ -61,7 +61,9 @@ optional_ports = {"analysis":("phz_output_cat",
                               "bfd_training_data",
                               "momentsml_training_data",
                               "pipeline_config"),
-                  "bias_measurement":()}
+                  "bias_measurement":(),
+                  "calibration":(),
+                  "reconciliation":()}
 
 optional_ports["analysis_after_remap"] = optional_ports["analysis"]
 optional_ports["analysis_with_tu_match"] = optional_ports["analysis"]
@@ -378,106 +380,109 @@ def create_isf(args,
     # directory
     search_path = args_to_set["workdir"] + ":" + os.path.abspath(os.path.curdir) + ":"
 
-    for input_port_name in args_to_set:
+    # If a dry run, skip updating arguments
+    if not args.dry_run:
 
-        # Skip ISF arguments that don't correspond to input ports
-        if input_port_name in non_filename_args or input_port_name == "mdb":
-            continue
+        for input_port_name in args_to_set:
 
-        filename = args_to_set[input_port_name]
+            # Skip ISF arguments that don't correspond to input ports
+            if input_port_name in non_filename_args or input_port_name == "mdb":
+                continue
 
-        # Skip if None
-        if filename is None or filename == "None":
-            continue
+            filename = args_to_set[input_port_name]
 
-        # Find the qualified location of the file
-        try:
-            qualified_filename = find_file(filename, path=search_path)
-        except RuntimeError as e:
-            raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
+            # Skip if None
+            if filename is None or filename == "None":
+                continue
 
-        # Symlink the filename from the "data" directory within the workdir
-        new_filename = os.path.join("data", os.path.split(filename)[1])
-        try:
-            if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
-                os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
-        except FileExistsError as e:
+            # Find the qualified location of the file
             try:
-                os.remove(os.path.join(args.workdir, new_filename))
+                qualified_filename = find_file(filename, path=search_path)
+            except RuntimeError as e:
+                raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
+
+            # Symlink the filename from the "data" directory within the workdir
+            new_filename = os.path.join("data", os.path.split(filename)[1])
+            try:
+                if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
+                    os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+            except FileExistsError as e:
                 try:
-                    os.unlink(os.path.join(args.workdir, new_filename))
+                    os.remove(os.path.join(args.workdir, new_filename))
+                    try:
+                        os.unlink(os.path.join(args.workdir, new_filename))
+                    except Exception as _:
+                        pass
                 except Exception as _:
                     pass
-            except Exception as _:
-                pass
-            if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
-                os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+                if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
+                    os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
-        # Update the filename in the args_to_set to the new location
-        args_to_set[input_port_name] = new_filename
+            # Update the filename in the args_to_set to the new location
+            args_to_set[input_port_name] = new_filename
 
-        # Now, go through each data file of the product and symlink those from the workdir too
+            # Now, go through each data file of the product and symlink those from the workdir too
 
-        # Skip (but warn) if it's not an XML data product
-        if qualified_filename[-4:] == ".xml":
-            try:
-                p = read_xml_product(qualified_filename)
-                data_filenames = p.get_all_filenames()
-            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
-                logger.error("Cannot read file " + qualified_filename + ".")
-                raise
-        elif qualified_filename[-5:] == ".json":
-            subfilenames = read_listfile(qualified_filename)
-            data_filenames = []
-            for subfilename in subfilenames:
-                qualified_subfilename = find_file(subfilename, path=search_path)
+            # Skip (but warn) if it's not an XML data product
+            if qualified_filename[-4:] == ".xml":
                 try:
-                    p = read_xml_product(qualified_subfilename)
-                    data_filenames += p.get_all_filenames()
+                    p = read_xml_product(qualified_filename)
+                    data_filenames = p.get_all_filenames()
                 except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
-        else:
-            logger.warn("Input file " + filename + " is not an XML data product.")
-            continue
-
-        if len(data_filenames) == 0:
-            continue
-
-        # Set up the search path for data files
-        data_search_path = (os.path.split(qualified_filename)[0] + ":" +
-                            os.path.split(qualified_filename)[0] + "/..:" +
-                            os.path.split(qualified_filename)[0] + "/../data:" + search_path)
-
-        # Search for and symlink each data file
-        for data_filename in data_filenames:
-
-            if data_filename is None or data_filename == "None" or data_filename == "data/None":
+            elif qualified_filename[-5:] == ".json":
+                subfilenames = read_listfile(qualified_filename)
+                data_filenames = []
+                for subfilename in subfilenames:
+                    qualified_subfilename = find_file(subfilename, path=search_path)
+                    try:
+                        p = read_xml_product(qualified_subfilename)
+                        data_filenames += p.get_all_filenames()
+                    except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                        logger.error("Cannot read file " + qualified_filename + ".")
+                        raise
+            else:
+                logger.warn("Input file " + filename + " is not an XML data product.")
                 continue
 
-            # Find the qualified location of the data file
-            try:
-                qualified_data_filename = find_file(data_filename, path=data_search_path)
-            except RuntimeError as e:
-                # Try searching for the file without the "data/" prefix
+            if len(data_filenames) == 0:
+                continue
+
+            # Set up the search path for data files
+            data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                                os.path.split(qualified_filename)[0] + "/..:" +
+                                os.path.split(qualified_filename)[0] + "/../data:" + search_path)
+
+            # Search for and symlink each data file
+            for data_filename in data_filenames:
+
+                if data_filename is None or data_filename == "None" or data_filename == "data/None":
+                    continue
+
+                # Find the qualified location of the data file
                 try:
-                    qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
+                    qualified_data_filename = find_file(data_filename, path=data_search_path)
                 except RuntimeError as e:
-                    raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
-
-            # Symlink the data file within the workdir
-            if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
-                if os.path.exists(os.path.join(args.workdir, data_filename)):
-                    os.remove(os.path.join(args.workdir, data_filename))
+                    # Try searching for the file without the "data/" prefix
                     try:
-                        os.unlink(os.path.join(args.workdir, data_filename))
-                    except Exception as _:
-                        pass
-                os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
+                        qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
+                    except RuntimeError as e:
+                        raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
-        # End loop "for data_filename in data_filenames:"
+                # Symlink the data file within the workdir
+                if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
+                    if os.path.exists(os.path.join(args.workdir, data_filename)):
+                        os.remove(os.path.join(args.workdir, data_filename))
+                        try:
+                            os.unlink(os.path.join(args.workdir, data_filename))
+                        except Exception as _:
+                            pass
+                    os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
-    # End loop "for input_port_name in args_to_set:"
+            # End loop "for data_filename in data_filenames:"
+
+        # End loop "for input_port_name in args_to_set:"
 
     # Make sure all optional products are provided by a listfile
 
