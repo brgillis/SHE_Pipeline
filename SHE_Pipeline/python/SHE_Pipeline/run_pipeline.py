@@ -110,29 +110,29 @@ def check_args(args):
             err_string += "\n  " + allowed_pipeline
         raise ValueError(err_string)
 
-    args.pipeline_info = pipeline_info_dict[args.pipeline]
+    chosen_pipeline_info = pipeline_info_dict[args.pipeline]
 
     # Does the pipeline we want to run exist?
-    if not os.path.exists(args.pipeline_info.qualified_pipeline_script):
+    if not os.path.exists(chosen_pipeline_info.qualified_pipeline_script):
         logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
-                     args.pipeline_info.qualified_pipeline_script)
+                     chosen_pipeline_info.qualified_pipeline_script)
 
     # If no ISF is specified, use the default for this pipeline
     if args.isf is None:
         try:
-            args.isf = args.pipeline_info.qualified_isf
+            args.isf = chosen_pipeline_info.qualified_isf
         except Exception:
             logger.error("No ISF file specified, and cannot find one in default location (" +
-                         args.pipeline_info.qualified_isf + "_isf.txt).")
+                         chosen_pipeline_info.qualified_isf + "_isf.txt).")
             raise
 
     # If no config is specified, use the default for this pipeline
     if args.config is None:
         try:
-            args.config = args.pipeline_info.qualified_config
+            args.config = chosen_pipeline_info.qualified_config
         except Exception:
             logger.warning("No config file specified, and cannot find one in default location (" +
-                           args.pipeline_info.qualified_config + "). Will run with no " +
+                           chosen_pipeline_info.qualified_config + "). Will run with no " +
                            "configuration parameters set.")
 
     # Check that we have an even number of ISF arguments
@@ -219,13 +219,12 @@ def check_args(args):
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
-    if len(args.plan_args) > 0:
-        if not args.pipeline == "bias_measurement":
-            raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
+    if len(args.plan_args) > 0 and not args.pipeline == "bias_measurement":
+        raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
 
-    return
+    return chosen_pipeline_info
 
 
 def create_plan(args, retTable=False):
@@ -514,7 +513,7 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
+def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, dry_run=False):
     """Sets up and calls a command to execute the pipeline.
     """
 
@@ -529,14 +528,17 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
         else:
             raise RuntimeError("Cannot find Eden-2.0 source file: " + eden_2_0_master_source)
 
-    cmd = src_cmd + pipeline_runner_exec + ' --pipeline=' + pipeline + '.py --data=' + isf
+    cmd = src_cmd + pipeline_runner_exec + ' --pipeline=' + pipeline_info.pipeline_script + '--data=' + isf
     if server_config is not None:
         cmd += ' --config=' + server_config
     if serverurl is not None:
         cmd += ' --serverurl="' + serverurl + '"'
 
-    logger.info("Calling pipeline with command: '" + cmd + "'")
-    sbp.call(cmd, shell=True)
+    if dry_run:
+        logger.info("If this were not a dry run, the following command would now be called: '" + cmd + "'")
+    else:
+        logger.info("Calling pipeline with command: '" + cmd + "'")
+        sbp.call(cmd, shell=True)
 
     return
 
@@ -546,7 +548,7 @@ def run_pipeline_from_args(args):
     """
 
     # Check the arguments
-    check_args(args)
+    chosen_pipeline_info = check_args(args)
 
     # If necessary, update the simulation plan
     if len(args.plan_args) > 0:
@@ -567,11 +569,12 @@ def run_pipeline_from_args(args):
 
     # Try to call the pipeline
     try:
-        execute_pipeline(pipeline=args.pipeline,
+        execute_pipeline(pipeline_info=chosen_pipeline_info,
                          isf=qualified_isf_filename,
                          serverurl=args.serverurl,
                          workdir=args.workdir,
-                         server_config=server_config)
+                         server_config=server_config,
+                         dry_run=args.dry_run)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:
