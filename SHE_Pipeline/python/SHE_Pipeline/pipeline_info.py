@@ -38,7 +38,7 @@ isf_tail = "_isf.txt"
 
 class PipelineInfo(object):
 
-    def __init__(self, lowercase_name, uppercase_name, config_keys, auxdir=None, package_def=None):
+    def __init__(self, lowercase_name, uppercase_name, config_keys, auxdir=None, package_def=None, optional_ports=None):
 
         self.lowercase_name = lowercase_name
         self.uppercase_name = uppercase_name
@@ -53,6 +53,11 @@ class PipelineInfo(object):
             self.package_def = package_def_head + package_def + ".py"
         else:
             self.package_def = package_def_head + uppercase_name + ".py"
+
+        if optional_ports is not None:
+            self.optional_ports = optional_ports
+        else:
+            self.optional_ports = ()
 
         self.pipeline_script = pipeline_script_head + uppercase_name + ".py"
         self.pipeline_def = pipeline_def_head + uppercase_name + ".py"
@@ -105,27 +110,37 @@ pipeline_info_dict = {}
 
 # Shear Analysis pipelines
 
+analysis_optional_ports = ("phz_output_cat",
+                           "spe_output_cat",
+                           "bfd_training_data",
+                           "momentsml_training_data",
+                           "pipeline_config")
+
 pipeline_info_dict["analysis"] = PipelineInfo(lowercase_name="analysis",
                                               uppercase_name="Shear_Analysis",
-                                              config_keys=AnalysisConfigKeys)
+                                              config_keys=AnalysisConfigKeys,
+                                              optional_ports=analysis_optional_ports)
 
 pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name="analysis_after_remap",
                                                      uppercase_name="Shear_Analysis_After_Remap",
                                                      config_keys=AnalysisConfigKeys,
                                                      auxdir="Shear_Analysis",
-                                                     package_def="Shear_Analysis")
+                                                     package_def="Shear_Analysis",
+                                                     optional_ports=analysis_optional_ports)
 
 pipeline_info_dict["analysis_with_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
                                                       uppercase_name="Shear_Analysis_With_TU_Match",
                                                       config_keys=AnalysisConfigKeys,
                                                       auxdir="Shear_Analysis",
-                                                      package_def="Shear_Analysis")
+                                                      package_def="Shear_Analysis",
+                                                      optional_ports=analysis_optional_ports)
 
 pipeline_info_dict["analysis_after_remap_with_tu_match"] = PipelineInfo(lowercase_name="analysis_after_remap_with_tu_match",
                                                                    uppercase_name="Shear_Analysis_After_Remap_With_TU_Match",
                                                                    config_keys=AnalysisConfigKeys,
                                                                    auxdir="Shear_Analysis",
-                                                                   package_def="Shear_Analysis")
+                                                                   package_def="Shear_Analysis",
+                                                                   optional_ports=analysis_optional_ports)
 
 # Shear Calibration pipelines
 

@@ -56,19 +56,6 @@ known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measure
 
 pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.0/opt/euclid/ST_PipelineRunner/bin/pipeline_runner.py"
 
-optional_ports = {"analysis":("phz_output_cat",
-                              "spe_output_cat",
-                              "bfd_training_data",
-                              "momentsml_training_data",
-                              "pipeline_config"),
-                  "bias_measurement":(),
-                  "calibration":(),
-                  "reconciliation":()}
-
-optional_ports["analysis_after_remap"] = optional_ports["analysis"]
-optional_ports["analysis_with_tu_match"] = optional_ports["analysis"]
-optional_ports["analysis_after_remap_with_tu_match"] = optional_ports["analysis"]
-
 logger = getLogger(__name__)
 
 
@@ -334,7 +321,8 @@ def create_config(args, config_keys):
 
 
 def create_isf(args,
-               config_filename):
+               config_filename,
+               chosen_pipeline_info):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
@@ -486,7 +474,7 @@ def create_isf(args,
 
     # Make sure all optional products are provided by a listfile
 
-    for port_name in optional_ports[args.pipeline]:
+    for port_name in chosen_pipeline_info.optional_ports:
 
         if port_name in args_to_set and not (args_to_set[port_name] is None or
                                              args_to_set[port_name] == "None" or
@@ -566,7 +554,7 @@ def run_pipeline_from_args(args):
     config_filename = create_config(args, config_keys=chosen_pipeline_info.config_keys)
 
     # Create the ISF for this run
-    qualified_isf_filename = create_isf(args, config_filename)
+    qualified_isf_filename = create_isf(args, config_filename, chosen_pipeline_info=chosen_pipeline_info)
 
     if args.use_debug_server_config:
         server_config = find_aux_file("SHE_Pipeline/debug_server_config.txt")
