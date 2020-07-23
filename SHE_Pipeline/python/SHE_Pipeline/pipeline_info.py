@@ -6,7 +6,7 @@
 """
 from builtins import None
 
-__updated__ = "2020-07-22"
+__updated__ = "2020-07-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -100,39 +100,39 @@ class PipelineInfo(object):
 
 
 # Set up a dict of pipeline info
-pipeline_info = {}
+pipeline_info_dict = {}
 
 # Shear Analysis pipelines
 
-pipeline_info["analysis"] = PipelineInfo(lowercase_name="analysis",
+pipeline_info_dict["analysis"] = PipelineInfo(lowercase_name="analysis",
                                          uppercase_name="Shear_Analysis")
 
-pipeline_info["analysis_after_remap"] = PipelineInfo(lowercase_name="analysis_after_remap",
+pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name="analysis_after_remap",
                                                      uppercase_name="Shear_Analysis_After_Remap",
                                                      auxdir="Shear_Analysis",
                                                      package_def="Shear_Analysis")
 
-pipeline_info["analysiswith_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
+pipeline_info_dict["analysiswith_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
                                                       uppercase_name="Shear_Analysis_With_TU_Match",
                                                       auxdir="Shear_Analysis",
                                                       package_def="Shear_Analysis")
 
-pipeline_info["analysis_after_remap_with_tu_match"] = PipelineInfo(lowercase_name="analysis_after_remap_with_tu_match",
+pipeline_info_dict["analysis_after_remap_with_tu_match"] = PipelineInfo(lowercase_name="analysis_after_remap_with_tu_match",
                                                                    uppercase_name="Shear_Analysis_After_Remap_With_TU_Match",
                                                                    auxdir="Shear_Analysis",
                                                                    package_def="Shear_Analysis")
 
 # Shear Calibration pipelines
 
-pipeline_info["calibration"] = PipelineInfo(lowercase_name="calibration",
+pipeline_info_dict["calibration"] = PipelineInfo(lowercase_name="calibration",
                                          uppercase_name="Shear_Calibration")
 
-pipeline_info["bias_measurement"] = PipelineInfo(lowercase_name="bias_measurement",
+pipeline_info_dict["bias_measurement"] = PipelineInfo(lowercase_name="bias_measurement",
                                                  uppercase_name="Bias_Measurement",
                                                  auxdir="Shear_Calibration",
                                                  package_def="Shear_Calibration")
 
 # Shear Reconciliation pipeline
 
-pipeline_info["reconciliation"] = PipelineInfo(lowercase_name="reconciliation",
+pipeline_info_dict["reconciliation"] = PipelineInfo(lowercase_name="reconciliation",
                                          uppercase_name="Shear_Reconciliation")

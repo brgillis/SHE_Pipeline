@@ -19,11 +19,13 @@ from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, rea
 from SHE_PPT.logging import getLogger
 from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
 from astropy.table import Table
+from sklearn import pipeline
 
 import SHE_Pipeline
+from SHE_Pipeline.pipeline_info import pipeline_info_dict
 import subprocess as sbp
 
-__updated__ = "2020-07-16"
+__updated__ = "2020-07-23"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -66,6 +68,8 @@ optional_ports["analysis_after_remap"] = optional_ports["analysis"]
 optional_ports["analysis_with_tu_match"] = optional_ports["analysis"]
 optional_ports["analysis_after_remap_with_tu_match"] = optional_ports["analysis"]
 
+logger = getLogger(__name__)
+
 
 def is_dev_version():
     """Determines if we're running a develop version of the code.
@@ -85,8 +89,6 @@ def get_pipeline_dir():
     """Gets the directory containing the pipeline packages, using the location of this module.
     """
 
-    logger = getLogger(__name__)
-
     this_file_name = __name__.replace(".", "/") + '.py'
     pipeline_dir = __file__.replace('/' + this_file_name, '')
 
@@ -97,37 +99,41 @@ def check_args(args):
     """Checks arguments for validity and fixes if possible.
     """
 
-    logger = getLogger(__name__)
-
     logger.debug('# Entering SHE_Pipeline_Run check_args()')
 
     # Is a pipeline specified at all?
     if args.pipeline is None:
         raise IOError("Pipeline must be specified at command-line, e.g with --pipeline bias_measurement")
+    elif not args.pipeline in pipeline_info_dict:
+        err_string = ("Unknown pipeline specified to be run: " + args.pipeline + ". Allowed pipelines are: ")
+        for allowed_pipeline in pipeline_info_dict:
+            err_string += "\n  " + allowed_pipeline
+        raise ValueError(err_string)
+
+    args.pipeline_info = pipeline_info_dict[args.pipeline]
 
     # Does the pipeline we want to run exist?
-    pipeline_filename = os.path.join(get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + args.pipeline + ".py")
-    if not os.path.exists(pipeline_filename):
+    if not os.path.exists(args.pipeline_info.qualified_pipeline_script):
         logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
-                     pipeline_filename)
+                     args.pipeline_info.qualified_pipeline_script)
 
-    # If no ISF is specified, check for one in the AUX directory
+    # If no ISF is specified, use the default for this pipeline
     if args.isf is None:
         try:
-            args.isf = find_aux_file("SHE_Pipeline/" + args.pipeline + "_isf.txt")
+            args.isf = args.pipeline_info.qualified_isf
         except Exception:
             logger.error("No ISF file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + args.pipeline + "_isf.txt).")
+                         args.pipeline_info.qualified_isf + "_isf.txt).")
             raise
 
-    # If no config is specified, check for one in the AUX directory
+    # If no config is specified, use the default for this pipeline
     if args.config is None:
         try:
-            args.config = find_aux_file("SHE_Pipeline/" + args.pipeline + "_config.txt")
+            args.config = args.pipeline_info.qualified_config
         except Exception:
-            logger.info("No config file specified, and cannot find one in default location (" +
-                        "AUX/SHE_Pipeline/" + args.pipeline + "_config.txt). Will run with no " +
-                        "configuration parameters set.")
+            logger.warning("No config file specified, and cannot find one in default location (" +
+                           args.pipeline_info.qualified_config + "). Will run with no " +
+                           "configuration parameters set.")
 
     # Check that we have an even number of ISF arguments
     if args.isf_args is None:
@@ -226,8 +232,6 @@ def create_plan(args, retTable=False):
     """Function to create a new simulation plan for this run.
     """
 
-    logger = getLogger(__name__)
-
     # Find the base plan we'll be creating a modified copy of
 
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()),
@@ -306,8 +310,6 @@ def create_config(args):
     """Function to create a new pipeline_config file for this run.
     """
 
-    logger = getLogger(__name__)
-
     # Find and read in the base config we'll be creating a modified copy of
     args_to_set = read_config(args.config, workdir=args.workdir)
 
@@ -332,8 +334,6 @@ def create_isf(args,
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
     """
-
-    logger = getLogger(__name__)
 
     # Find the base ISF we'll be creating a modified copy of
     base_isf = find_file(args.isf, path=args.workdir)
@@ -518,8 +518,6 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
     """Sets up and calls a command to execute the pipeline.
     """
 
-    logger = getLogger(__name__)
-
     # Need to source EDEN 2.0 environment, since the pipeline runner isn't updated yet
     if is_dev_version() and os.path.isfile(eden_2_0_dev_source):
         src_cmd = "source " + eden_2_0_dev_source + " && "
@@ -546,8 +544,6 @@ def execute_pipeline(pipeline, isf, serverurl, workdir, server_config):
 def run_pipeline_from_args(args):
     """Main executable to run pipelines.
     """
-
-    logger = getLogger(__name__)
 
     # Check the arguments
     check_args(args)
