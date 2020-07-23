@@ -4,26 +4,6 @@
 
     Main executable for running pipelines.
 """
-import _pickle
-import ast
-from builtins import True
-from copy import deepcopy
-import os
-from shutil import copyfile
-from time import sleep
-import xml.sax._exceptions
-
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
-                             read_pickled_product, write_pickled_product, read_listfile, write_listfile)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config, read_config
-from astropy.table import Table
-from sklearn import pipeline
-
-import SHE_Pipeline
-from SHE_Pipeline.pipeline_info import pipeline_info_dict
-import subprocess as sbp
 
 __updated__ = "2020-07-23"
 
@@ -39,6 +19,25 @@ __updated__ = "2020-07-23"
 #
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+import _pickle
+from copy import deepcopy
+import os
+from shutil import copyfile
+from time import sleep
+import xml.sax._exceptions
+
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
+                             read_pickled_product, write_pickled_product, read_listfile, write_listfile)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import write_config, read_config
+from astropy.table import Table
+from sklearn import pipeline
+
+import SHE_Pipeline
+from SHE_Pipeline.pipeline_info import pipeline_info_dict
+import subprocess as sbp
 
 eden_2_0_dev_source = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh"
 eden_2_0_master_source = "/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh"
@@ -147,12 +146,14 @@ def check_args(args):
     if not len(args.config_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'config_args': Must be a set of paired arguments.")
 
+    config_keys = chosen_pipeline_info.config_keys
+
     # Check that all config args are recognized
     for i in range(len(args.config_args) // 2):
         test_arg = args.config_args[2 * i]
-        if not ConfigKeys.is_allowed_value(test_arg):
+        if not config_keys.is_allowed_value(test_arg):
             err_string = ("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: ")
-            for allowed_key in ConfigKeys:
+            for allowed_key in config_keys:
                 err_string += "\n  " + allowed_key.value
             raise ValueError(err_string)
 
@@ -305,17 +306,16 @@ def create_plan(args, retTable=False):
         return
 
 
-def create_config(args):
+def create_config(args, config_keys):
     """Function to create a new pipeline_config file for this run.
     """
 
     # Find and read in the base config we'll be creating a modified copy of
-    args_to_set = read_config(args.config, workdir=args.workdir)
+    args_to_set = read_config(args.config, workdir=args.workdir, config_keys=config_keys)
 
     # Set up the filename for the new config file
     new_config_filename = get_allowed_filename(
         "PIPELINE-CFG", str(os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
-    qualified_config_filename = os.path.join(args.workdir, new_config_filename)
 
     arg_i = 0
     while arg_i < len(args.config_args):
@@ -323,7 +323,10 @@ def create_config(args):
         arg_i += 2
 
     # Write out the new config
-    write_config(config_dict=args_to_set, config_filename=new_config_filename, workdir=args.workdir)
+    write_config(config_dict=args_to_set,
+                 config_filename=new_config_filename,
+                 workdir=args.workdir,
+                 config_keys=config_keys)
 
     return new_config_filename
 
@@ -555,7 +558,7 @@ def run_pipeline_from_args(args):
         create_plan(args)
 
     # Create the pipeline_config for this run
-    config_filename = create_config(args)
+    config_filename = create_config(args, config_keys=chosen_pipeline_info.config_keys)
 
     # Create the ISF for this run
     qualified_isf_filename = create_isf(args, config_filename)

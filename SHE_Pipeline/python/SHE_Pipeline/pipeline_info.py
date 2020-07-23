@@ -4,7 +4,6 @@
 
     Info about each pipeline's source code locations.
 """
-from builtins import None
 
 __updated__ = "2020-07-23"
 
@@ -24,6 +23,7 @@ __updated__ = "2020-07-23"
 import os
 
 from SHE_PPT.file_io import find_aux_file
+from SHE_PPT.pipeline_utility import AnalysisConfigKeys, CalibrationConfigKeys, ReconciliationConfigKeys
 
 common_auxdir = "SHE_Pipeline"
 
@@ -38,15 +38,16 @@ isf_tail = "_isf.txt"
 
 class PipelineInfo(object):
 
-    def __init__(self, lowercase_name, uppercase_name, auxdir=None, package_def=None):
+    def __init__(self, lowercase_name, uppercase_name, config_keys, auxdir=None, package_def=None):
 
         self.lowercase_name = lowercase_name
         self.uppercase_name = uppercase_name
+        self.config_keys = config_keys
 
         if auxdir is not None:
             self.auxdir = auxdir_head + auxdir
         else:
-            self.package_def = auxdir_head + uppercase_name
+            self.auxdir = auxdir_head + uppercase_name
 
         if package_def is not None:
             self.package_def = package_def_head + package_def + ".py"
@@ -72,7 +73,7 @@ class PipelineInfo(object):
         if self._qualified_pipeline_script is None:
             self._qualified_pipeline_script = find_aux_file(os.path.join(self.auxdir, self.pipeline_script))
 
-        return _self.qualified_pipeline_script
+        return self._qualified_pipeline_script
 
     @property
     def qualified_package_def(self):
@@ -80,7 +81,7 @@ class PipelineInfo(object):
         if self._qualified_package_def is None:
             self._qualified_package_def = find_aux_file(os.path.join(self.auxdir, self.package_def))
 
-        return _self.qualified_package_def
+        return self._qualified_package_def
 
     @property
     def qualified_config(self):
@@ -88,7 +89,7 @@ class PipelineInfo(object):
         if self._qualified_config is None:
             self._qualified_config = find_aux_file(os.path.join(common_auxdir, self.config))
 
-        return _self.qualified_config
+        return self._qualified_config
 
     @property
     def qualified_isf(self):
@@ -96,7 +97,7 @@ class PipelineInfo(object):
         if self._qualified_isf is None:
             self._qualified_isf = find_aux_file(os.path.join(common_auxdir, self.isf))
 
-        return _self.qualified_isf
+        return self._qualified_isf
 
 
 # Set up a dict of pipeline info
@@ -105,34 +106,41 @@ pipeline_info_dict = {}
 # Shear Analysis pipelines
 
 pipeline_info_dict["analysis"] = PipelineInfo(lowercase_name="analysis",
-                                         uppercase_name="Shear_Analysis")
+                                              uppercase_name="Shear_Analysis",
+                                              config_keys=AnalysisConfigKeys)
 
 pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name="analysis_after_remap",
                                                      uppercase_name="Shear_Analysis_After_Remap",
+                                                     config_keys=AnalysisConfigKeys,
                                                      auxdir="Shear_Analysis",
                                                      package_def="Shear_Analysis")
 
 pipeline_info_dict["analysiswith_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
                                                       uppercase_name="Shear_Analysis_With_TU_Match",
+                                                      config_keys=AnalysisConfigKeys,
                                                       auxdir="Shear_Analysis",
                                                       package_def="Shear_Analysis")
 
 pipeline_info_dict["analysis_after_remap_with_tu_match"] = PipelineInfo(lowercase_name="analysis_after_remap_with_tu_match",
                                                                    uppercase_name="Shear_Analysis_After_Remap_With_TU_Match",
+                                                                   config_keys=AnalysisConfigKeys,
                                                                    auxdir="Shear_Analysis",
                                                                    package_def="Shear_Analysis")
 
 # Shear Calibration pipelines
 
 pipeline_info_dict["calibration"] = PipelineInfo(lowercase_name="calibration",
-                                         uppercase_name="Shear_Calibration")
+                                                 uppercase_name="Shear_Calibration",
+                                                 config_keys=CalibrationConfigKeys)
 
 pipeline_info_dict["bias_measurement"] = PipelineInfo(lowercase_name="bias_measurement",
-                                                 uppercase_name="Bias_Measurement",
-                                                 auxdir="Shear_Calibration",
-                                                 package_def="Shear_Calibration")
+                                                      uppercase_name="Bias_Measurement",
+                                                      config_keys=CalibrationConfigKeys,
+                                                      auxdir="Shear_Calibration",
+                                                      package_def="Shear_Calibration")
 
 # Shear Reconciliation pipeline
 
 pipeline_info_dict["reconciliation"] = PipelineInfo(lowercase_name="reconciliation",
-                                         uppercase_name="Shear_Reconciliation")
+                                                    uppercase_name="Shear_Reconciliation",
+                                                    config_keys=ReconciliationConfigKeys)
