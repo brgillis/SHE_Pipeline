@@ -357,10 +357,16 @@ def create_isf(args,
         # Check each line to see if values we'll overwrite are specified in it,
         # and only write out lines with other values
         for line in fi:
-            split_line = line.strip().split('=')
+            uncommented_line = line.split('#')[0]
+            split_line = uncommented_line.strip().split('=')
+            arg = split_line[0].strip()
+            value = split_line[1].strip()
             # Add any new args here to the list of args we want to set
-            if not (split_line[0] in args_to_set) and len(split_line) > 1:
-                args_to_set[split_line[0]] = split_line[1]
+            if not (arg in args_to_set):
+                if len(split_line) == 2:
+                    args_to_set[arg] = value
+                else:
+                    raise ValueError("Invalid line in ISF: " + line)
 
     # Check each filename arg to see if it's already in the workdir, or if we have to move it there
 
