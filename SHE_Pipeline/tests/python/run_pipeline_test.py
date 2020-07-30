@@ -21,6 +21,7 @@ __updated__ = "2020-07-30"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301 USA
 
+import os
 from os.path import join
 
 import pytest
@@ -91,10 +92,10 @@ class TestRunPipeline():
         sync.download()
         qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_0/test_workdir/vis_calibrated_frame_listfile.json")
 
-        assert os.path.isfile(self.qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
+        assert os.path.isfile(qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
 
         # Get the workdir based on where the data images listfile is
-        self.workdir = os.path.split(self.qualified_data_images_filename)[0]
+        self.workdir = os.path.split(qualified_data_images_filename)[0]
         self.logdir = os.path.join(self.workdir, "logs")
         
         return
