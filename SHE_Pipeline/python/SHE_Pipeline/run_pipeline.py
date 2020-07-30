@@ -359,14 +359,20 @@ def create_isf(args,
         for line in fi:
             uncommented_line = line.split('#')[0]
             split_line = uncommented_line.strip().split('=')
+
+            # Check if the line is empty or invalid
+            if len(split_line) == 0 or (len(split_line) == 1 and split_line[0] == ""):
+                # Empty line
+                continue
+            elif len(split_line) != 2:
+                raise ValueError("Invalid line in ISF: " + line)
+
             arg = split_line[0].strip()
             value = split_line[1].strip()
+
             # Add any new args here to the list of args we want to set
             if not (arg in args_to_set):
-                if len(split_line) == 2:
-                    args_to_set[arg] = value
-                else:
-                    raise ValueError("Invalid line in ISF: " + line)
+                args_to_set[arg] = value
 
     # Check each filename arg to see if it's already in the workdir, or if we have to move it there
 
