@@ -10,7 +10,7 @@ elements_add_python_program(SHE_Pipeline_RunBiasParallel SHE_Pipeline.RunBiasPip
 elements_add_python_program(SHE_Pipeline_Configure SHE_Pipeline.ConfigurePipeline)
 
 # Install the configuration files
-# elements_install_conf_files()
+elements_install_conf_files()
 
 # Install the auxiliary files
 elements_install_aux_files()

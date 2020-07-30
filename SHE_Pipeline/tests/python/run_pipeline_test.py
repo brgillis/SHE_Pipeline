@@ -25,8 +25,12 @@ from os.path import join
 
 import pytest
 
+from ElementsServices.DataSync import DataSync
 from SHE_Pipeline.pipeline_info import pipeline_info_dict
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
+
+
+test_data_location = "/tmp"
 
 
 class MockArgs(object):
@@ -79,21 +83,39 @@ class MockArgs(object):
 class TestRunPipeline():
 
     @pytest.fixture(autouse=True)
-    def setup(self, tmpdir):
-        self.workdir = tmpdir.strpath
-        self.logdir = join(tmpdir.strpath, "logs")
+    def setup(self):
+
+        # Download the mock workdir files from WebDAV
+
+        sync = DataSync("testdata/sync.conf", "testdata/test_workdir.txt")
+        sync.download()
+        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_0/test_workdir/vis_calibrated_frame_listfile.json")
+
+        assert os.path.isfile(self.qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
+
+        # Get the workdir based on where the data images listfile is
+        self.workdir = os.path.split(self.qualified_data_images_filename)[0]
+        self.logdir = os.path.join(self.workdir, "logs")
+        
+        return
+
 
     def test_dry_run_pipelines(self):
         """ Test that all versions are set up correctly
         """
 
         for pipeline in pipeline_info_dict:
+            
+            if pipeline=="analysis":
+                skip_file_setup = False
+            else:
+                skip_file_setup = True
 
             test_args = MockArgs(pipeline=pipeline,
                                  workdir=self.workdir,
                                  logdir=self.logdir,
                                  dry_run=True,
-                                 skip_file_setup=True)
+                                 skip_file_setup=skip_file_setup)
 
             run_pipeline_from_args(test_args)
 
