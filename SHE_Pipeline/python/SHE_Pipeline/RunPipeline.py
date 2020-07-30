@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2020-07-23"
+__updated__ = "2020-07-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -68,6 +68,9 @@ def defineSpecificProgramOptions():
                         help='Necessary if running on a cluster, causing the pipeline to be executed by another user.')
     parser.add_argument('--dry_run', action='store_true',
                         help="If set, will do everything except actually call the pipeline - useful for testing.")
+    parser.add_argument('--skip_file_setup', action='store_true',
+                        help="If set, will not try to sort out issues with file locations " +
+                            "or move AUX files to the work directory.")
 
     # Input arguments for the bias measurement pipeline
     parser.add_argument('--plan_args', type=str, nargs='*',
@@ -99,7 +102,7 @@ def mainMethod(args):
 
     exec_cmd = get_arguments_string(args, cmd="E-Run SHE_Pipeline " + SHE_Pipeline.__version__ + " SHE_Pipeline_Run",
                                     store_true=["profile", "debug", "cluster", "use_debug_server_config",
-                                                "dry_run"])
+                                                "dry_run", "skip_file_setup"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 

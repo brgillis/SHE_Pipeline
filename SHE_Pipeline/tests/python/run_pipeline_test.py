@@ -5,7 +5,7 @@
     Tests of running the pipelines.
 """
 
-__updated__ = "2020-07-23"
+__updated__ = "2020-07-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -44,6 +44,7 @@ class MockArgs(object):
                  use_debug_server_config=False,
                  cluster=False,
                  dry_run=False,
+                 skip_file_setup=False,
                  plan_args=None,
                  ):
 
@@ -57,6 +58,7 @@ class MockArgs(object):
         self.use_debug_server_config = use_debug_server_config
         self.cluster = cluster
         self.dry_run = dry_run
+        self.skip_file_setup = skip_file_setup
 
         if isf_args is None:
             self.isf_args = []
@@ -90,7 +92,8 @@ class TestRunPipeline():
             test_args = MockArgs(pipeline=pipeline,
                                  workdir=self.workdir,
                                  logdir=self.logdir,
-                                 dry_run=True)
+                                 dry_run=True,
+                                 skip_file_setup=True)
 
             run_pipeline_from_args(test_args)
 

@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-07-23"
+__updated__ = "2020-07-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -369,7 +369,7 @@ def create_isf(args,
     search_path = args_to_set["workdir"] + ":" + os.path.abspath(os.path.curdir) + ":"
 
     # If a dry run, skip updating arguments
-    if not args.dry_run:
+    if not args.skip_file_setup:
 
         for input_port_name in args_to_set:
 
