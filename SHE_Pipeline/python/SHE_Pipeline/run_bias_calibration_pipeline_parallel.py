@@ -1,18 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 30 17:18:06 2020
+""" @file run_bias_calibration_pipeline_parallel.py
 
-@author: David
-"""
+    Created Jul 2020
 
-""" @file run_bias_pipeline_parallel.py
-
-    Created Aug 2018
-
-    Main executable for running bias pipeline in parallel
+    Main executable for running bias calibration pipeline in parallel
 """
 
-__updated__ = "2019-12-11"
+__updated__ = "2020-07-31"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
