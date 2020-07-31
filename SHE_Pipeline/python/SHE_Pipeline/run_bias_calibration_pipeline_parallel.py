@@ -393,7 +393,7 @@ def check_args(args):
 
     logger = getLogger(__name__)
 
-    logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
+    logger.debug('# Entering SHE_Pipeline_RunBiasCalibrationPipelineParallel check_args()')
 
     pipeline = 'bias_measurement'
     # Does the pipeline we want to run exist?
