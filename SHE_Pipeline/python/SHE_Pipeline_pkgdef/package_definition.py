@@ -123,7 +123,17 @@ she_measure_bias = Executable(command=ERun_CTE + "SHE_CTE_MeasureBias",
                                       Input("pipeline_config", content_type="listfile")],
                               outputs=[Output("shear_bias_measurements", mime_type="xml")])
 
+she_measure_bias_calibration_residuals = Executable(command=ERun_CTE + "SHE_CTE_MeasureBiasCalibrationResiduals",
+                              inputs=[Input("shear_bias_statistics", content_type="listfile"),
+                                      Input("pipeline_config", content_type="listfile")],
+                              outputs=[Output("shear_bias_residuals_measurements", mime_type="xml")])
+
 she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
+                                   inputs=[Input("pickled_args")],
+                                   outputs=[Output("pipeline_output", mime_type="xml")],
+                                   resources=ComputingResources(cores=0, ram=0.1, walltime=1.0))
+
+she_run_bias_calibration_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasCalibration",
                                    inputs=[Input("pickled_args")],
                                    outputs=[Output("pipeline_output", mime_type="xml")],
                                    resources=ComputingResources(cores=0, ram=0.1, walltime=1.0))
@@ -131,3 +141,7 @@ she_run_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_Run",
 she_run_controlled_bias_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasParallel",
                                               inputs=[Input("pickled_args")],
                                               outputs=[Output("shear_bias_measurements", mime_type="xml")])
+
+she_run_controlled_bias_calibration_pipeline = Executable(command=ERun_Pipeline + "SHE_Pipeline_RunBiasCalibrationParallel",
+                                              inputs=[Input("pickled_args")],
+                                              outputs=[Output("shear_bias_residuals_measurements", mime_type="xml")])
