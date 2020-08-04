@@ -1,11 +1,11 @@
-""" @file controlled_bias_measurement.py
+""" @file magic_values.py
 
-    Created 23 August 2018
+    Created 14 may 2019
 
-    Pipeline script for the shear bias measurement pipeline.
+    Magic values for the package definitions
 """
 
-__updated__ = "2018-09-03"
+__updated__ = "2020-07-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,19 +20,12 @@ __updated__ = "2018-09-03"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-from SHE_Pipeline_pkgdef.package_definition import she_run_controlled_bias_pipeline
-from euclidwf.framework.workflow_dsl import pipeline
+SHE_CTE_version = "8.0"
+SHE_GST_version = "1.9"
+SHE_MER_version = "8.1"
+SHE_PSF_version = "2.5"
 
-@pipeline(outputs=('pipeline_output',))
-def controlled_shear_bias_measurement(pickled_args):
-
-    shear_bias_measurements = she_run_controlled_bias_pipeline(pickled_args=pickled_args)
-
-    return shear_bias_measurements
-
-
-if __name__ == '__main__':
-    from euclidwf.framework.graph_builder import build_graph
-    from euclidwf.utilities import visualizer
-    pydron_graph = build_graph(controlled_shear_bias_measurement)
-    visualizer.visualize_graph(pydron_graph)
+ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
+ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
+ERun_GST = "E-Run SHE_GST " + SHE_GST_version + " "
+ERun_PSF = "E-Run SHE_PSFToolkit " + SHE_PSF_version + " "

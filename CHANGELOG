@@ -1,5 +1,38 @@
 Changelog for SHE_Pipeline
 
+Changes from v0.10 to v8.0
+========================
+
+API Changes
+-----------
+
+Dependency Changes
+------------------
+- Now depends on EDEN 2.1 environment
+- Now depends on SHE_CTE 8.0, SHE_MER 8.1, and inherited dependencies (including SHE_PPT 8.2 and Elements 5.10)
+
+
+Deprecated Features
+-------------------
+
+
+Bug Fixes
+---------
+
+
+New Features
+------------
+
+
+New config features
+-------------------
+
+
+Miscellaneous
+-------------
+- Project structure updated to new structure (keeping pipeline defs, scripts, and package defs in auxdir)
+- Merged SHE_IAL_Pipelines and SHE_Pipeline to SHE_IAL_Pipelines, keeping git history of SHE_Pipeline
+
 Changes from v0.2 to v0.4
 ========================
 
