@@ -120,9 +120,9 @@ pipelinerunner.profiling.pilots=1
 pipelinerunner.profiling.payload_jobs=1
 #pipelinerunner.profiling.additional_cmd=
 
-pipelinerunner.pilot.generic_heavy.cores=4
-pipelinerunner.pilot.generic_heavy.ramInMB=8000
-pipelinerunner.pilot.generic_heavy.walltimeInMin=1440
+pipelinerunner.pilot.generic_heavy.cores=16
+pipelinerunner.pilot.generic_heavy.ramInMB=16384
+pipelinerunner.pilot.generic_heavy.walltimeInMin=7200
 pipelinerunner.pilot.generic_heavy.loglevel=INFO
 pipelinerunner.pilot.generic_heavy.maxInstances=1
 
@@ -132,4 +132,3 @@ pipelinerunner.engine.module_port=engine.sock
 pipelinerunner.pilotManager.module_port=pilot.sock
 pipelinerunner.pilots.url_to_pilot_manager=pilot.sock
 pipelinerunner.pilots.url_to_logger=logger.sock
-
