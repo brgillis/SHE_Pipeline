@@ -9,13 +9,13 @@
 
 # VIS Products
 
-data_images = vis_calibrated_frame_listfile.json
-stacked_image = DpdVisStackedFrame.xml
+vis_calibrated_frame_listfile = vis_calibrated_frame_listfile.json
+vis_stacked_frame = DpdVisStackedFrame.xml
 
 # MER Products
 
-mer_tile_listfile = mer_segmentation_map_listfile.json
-detections_tables = mer_final_catalog_listfile.json
+mer_segmentation_map_listfile = mer_segmentation_map_listfile.json
+mer_final_catalog_listfile = mer_final_catalog_listfile.json
 
 # PHZ Products
 
