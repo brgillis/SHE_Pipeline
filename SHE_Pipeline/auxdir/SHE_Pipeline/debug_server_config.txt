@@ -39,6 +39,7 @@ pipelinerunner.logging.module_port=50001                            # TCP Port u
 pipelinerunner.logging.directory=/home/$USER/euclid-ial/logs        # Logging directory
 pipelinerunner.logging.filename=pipeline_runner.log                 # Name of log file
 pipelinerunner.logging.level=INFO                                   # Logging level
+pipelinerunner.logging.useStdOut=1                                  # Log to stdout
 pipelinerunner.logging.numberRotatingFiles=10                       # Number of stored log files
 pipelinerunner.logging.debugSQL=0                                   # Log SQL statements
 pipelinerunner.logging.redirectStdErr=1                             # Redirect stdErr and stdOut to files
@@ -46,6 +47,8 @@ pipelinerunner.logging.redirectStdErr=1                             # Redirect s
 # pipelinerunner.engine settings
 pipelinerunner.engine.module_port=50002                             # TCP Port used for engine service
 pipelinerunner.engine.intervalInSec=5                               # Time interval between subsequent run submissions
+
+pipelinerunner.persistence.expireAfterHours=240                     # Clean temp files and DB for entries older than this (if no longer used)
 
 # pipelinerunner.traverser settings
 pipelinerunner.traverser.intervalInSec=5                            # Time interval between subsequent job status updates
@@ -64,6 +67,7 @@ pipelinerunner.webserver.plotDataflowGraph=1                        # Set to 0 t
 pipelinerunner.drm_access.DRMCallsTimeoutInSec=60                   # Timeout in seconds of a DRM call
 pipelinerunner.drm_access.submitUpdateIntervalInSec=2               # Time interval between subsequent pilot job submits 
 pipelinerunner.drm_access.checkUpdateIntervalInSec=40               # Time interval between subsequent pilot job checks
+pipelinerunner.drm_access.drmSourcingScript=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh                       # source command before any ialdrm call, e.g. "source xxx && ialdrm_yyy"
 
 # Only needed if SSH is used to access the submission host
 pipelinerunner.sshpool.maxconnections=10                            # Max session per endpoint
@@ -74,6 +78,10 @@ pipelinerunner.sshpool.connecttimeout=60                            # Timeout fo
 pipelinerunner.sshpool.connectionrequesttimeout=60                  # Timeout for getting connection from pool, value of <0 means unlimited
 
 # Environment settings
+environmentSourcingScripts.Eden-2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environmentSourcingScripts.2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environmentSourcingScripts.Eden-2.1=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environmentSourcingScripts.2.1=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
 environmentSourcingScripts.Eden-2.0=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
 environmentSourcingScripts.Eden-2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
 environmentSourcingScripts.Eden-1.2=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-1.2_env.sh
@@ -106,6 +114,17 @@ pipelinerunner.pilot.generic_heavy.maxInstances=1
 pipelinerunner.logging.filename=None
 pipelinerunner.logging.useStdOut=1
 pipelinerunner.logging.redirectStdErr=0
+
+# Profiling settings
+pipelinerunner.profiling.pilots=1
+pipelinerunner.profiling.payload_jobs=1
+#pipelinerunner.profiling.additional_cmd=
+
+pipelinerunner.pilot.generic_heavy.cores=4
+pipelinerunner.pilot.generic_heavy.ramInMB=8000
+pipelinerunner.pilot.generic_heavy.walltimeInMin=1440
+pipelinerunner.pilot.generic_heavy.loglevel=INFO
+pipelinerunner.pilot.generic_heavy.maxInstances=1
 
 pipelinerunner.socket_dir=/tmp
 pipelinerunner.logging.module_port=logger.sock
