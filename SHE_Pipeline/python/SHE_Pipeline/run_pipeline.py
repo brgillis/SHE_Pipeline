@@ -341,7 +341,7 @@ def create_isf(args,
 
     pipeline_dir = os.path.split(chosen_pipeline_info.qualified_pipeline_script)[0]
 
-    args_to_set["pkgRepository"] = os.path.split(pipeline_dir[0])
+    args_to_set["pkgRepository"] = os.path.split(pipeline_dir)[0]
     args_to_set["pipelineDir"] = pipeline_dir
     if is_dev_version():
         args_to_set["edenVersion"] = default_eden_version_dev
