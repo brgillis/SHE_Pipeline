@@ -29,4 +29,10 @@ phz_output_cat = None
 # galaxy_population_priors_table = mock_galaxy_population_priors_table.fits
 # calibration_parameters_product = mock_calibration_parameters_product.bin
 
+bfd_training_data = None
+ksb_training_data = None
+lensmc_training_data = None
+momentsml_training_data = None
+regauss_training_data = None
+
 spe_output_cat = None
