@@ -120,9 +120,9 @@ pipelinerunner.profiling.pilots=1
 pipelinerunner.profiling.payload_jobs=1
 #pipelinerunner.profiling.additional_cmd=
 
-pipelinerunner.pilot.generic_heavy.cores=16
+pipelinerunner.pilot.generic_heavy.cores=8
 pipelinerunner.pilot.generic_heavy.ramInMB=16384
-pipelinerunner.pilot.generic_heavy.walltimeInMin=7200
+pipelinerunner.pilot.generic_heavy.walltimeInMin=4320
 pipelinerunner.pilot.generic_heavy.loglevel=INFO
 pipelinerunner.pilot.generic_heavy.maxInstances=1
 
