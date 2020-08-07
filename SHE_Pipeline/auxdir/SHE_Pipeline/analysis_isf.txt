@@ -2,6 +2,8 @@
 
 # aocs_time_series_products = mock_aocs_time_series_products.json
 
+mdb = sample_mdb-SC8.xml
+
 # SIM Products
 
 # tu_galaxy_catalog = GalCat.xml
