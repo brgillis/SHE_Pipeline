@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-07-30"
+__updated__ = "2020-08-07"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -536,7 +536,7 @@ def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, dry_
         else:
             raise RuntimeError("Cannot find Eden-2.0 source file: " + eden_2_0_master_source)
 
-    cmd = src_cmd + pipeline_runner_exec + ' --pipeline=' + pipeline_info.pipeline_script + '--data=' + isf
+    cmd = src_cmd + pipeline_runner_exec + ' --pipeline=' + pipeline_info.pipeline_script + ' --data=' + isf
     if server_config is not None:
         cmd += ' --config=' + server_config
     if serverurl is not None:
