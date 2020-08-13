@@ -25,6 +25,9 @@ phz_output_cat = None
 
 # SHE_Products
 
+# she_stack_reprojected_segmentation_map = DpdSheStackReprojectedSegmentationMap.xml
+# she_exposure_reprojected_segmentation_map_listfile = she_exposure_reprojected_segmentation_maps.json
+
 # psf_calibration_products = mock_psf_calibration_products.json
 # galaxy_population_priors_table = mock_galaxy_population_priors_table.fits
 # calibration_parameters_product = mock_calibration_parameters_product.bin
