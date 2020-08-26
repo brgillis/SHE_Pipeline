@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-08-07"
+__updated__ = "2020-08-26"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -341,7 +341,7 @@ def create_isf(args,
 
     pipeline_dir = os.path.split(chosen_pipeline_info.qualified_pipeline_script)[0]
 
-    args_to_set["pkgRepository"] = os.path.split(pipeline_dir)[0]
+    args_to_set["pkgRepository"] = pipeline_dir
     args_to_set["pipelineDir"] = pipeline_dir
     if is_dev_version():
         args_to_set["edenVersion"] = default_eden_version_dev
