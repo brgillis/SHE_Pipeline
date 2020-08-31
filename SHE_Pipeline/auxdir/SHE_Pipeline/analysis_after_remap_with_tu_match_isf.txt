@@ -33,10 +33,10 @@ she_exposure_reprojected_segmentation_map_listfile = she_exposure_reprojected_se
 # calibration_parameters_product = mock_calibration_parameters_product.bin
 
 bfd_training_data = None
-ksb_training_data = None
-lensmc_training_data = None
+ksb_training_data = test_ksb_training.xml
+lensmc_training_data = test_lensmc_training.xml
 momentsml_training_data = None
-regauss_training_data = None
+regauss_training_data = test_regauss_training.xml
 
 spe_output_cat = None
 
