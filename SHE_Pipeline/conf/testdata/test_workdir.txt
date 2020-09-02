@@ -22,6 +22,9 @@ SHE_Pipeline_8_0/test_workdir/DpdVisStackedFrame.xml
 SHE_Pipeline_8_0/test_workdir/mer_final_catalog_listfile.json
 SHE_Pipeline_8_0/test_workdir/mer_segmentation_map_listfile.json
 SHE_Pipeline_8_0/test_workdir/vis_calibrated_frame_listfile.json
+SHE_Pipeline_8_0/test_workdir/test_ksb_training.xml
+SHE_Pipeline_8_0/test_workdir/test_lensmc_training.xml
+SHE_Pipeline_8_0/test_workdir/test_regauss_training.xml
 SHE_Pipeline_8_0/test_workdir/data/EUC_MER_FINAL-CAT_4C5D06_20200424T081035.169132Z_00.00.fits
 SHE_Pipeline_8_0/test_workdir/data/EUC_MER_FINAL-CAT_6F8E8F_20200424T072912.947517Z_00.00.fits
 SHE_Pipeline_8_0/test_workdir/data/EUC_MER_FINAL-CAT_8AFDE_20200424T070911.600496Z_00.00.fits
@@ -74,5 +77,6 @@ SHE_Pipeline_8_0/test_workdir/data/EUC_VIS_SWL-WGT-001-052929-0000000__20200721T
 SHE_Pipeline_8_0/test_workdir/data/EUC_VIS_SWL-WGT-002-052929-0000000__20200721T071549.218039Z.fits
 SHE_Pipeline_8_0/test_workdir/data/EUC_VIS_SWL-WGT-003-052929-0000000__20200721T071833.319777Z.fits
 SHE_Pipeline_8_0/test_workdir/data/EUC_VIS_SWL-WGT-004-052929-0000000__20200721T072109.269179Z.fits
-
-
+SHE_Pipeline_8_0/test_workdir/data/EUC_SHE_KSB-TRAINING_TEST_20200630T163439.400125Z_08.01.fits
+SHE_Pipeline_8_0/test_workdir/data/EUC_SHE_REGAUSS-TRAINING_TEST_20200630T163603.277639Z_08.01.fits
+SHE_Pipeline_8_0/test_workdir/data/EUC_SHE_LENSMC-TRAINING_TEST_20200717T152512.569224Z_2.11.fits
