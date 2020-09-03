@@ -1,2 +1,3 @@
 she_validated_measurements_listfile=SheValidatedMeasurementsListfile.json
+she_lensmc_chains_listfile=SheLensMcChainsListfile.json
 mer_final_catalog=DpdMerFinalCatalog.xml
