@@ -1,3 +1,2 @@
 she_validated_measurements_listfile=SheValidatedMeasurementsListfile.json
-she_reconciliation_config=SheReconciliationConfig.xml
 mer_final_catalog=DpdMerFinalCatalog.xml
