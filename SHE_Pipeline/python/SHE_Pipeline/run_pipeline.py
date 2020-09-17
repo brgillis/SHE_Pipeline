@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-08-26"
+__updated__ = "2020-09-17"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -70,7 +70,8 @@ def is_dev_version():
     elif n_digits == 3:
         return False
     else:
-        raise RuntimeError("Cannot determine if version (" + SHE_Pipeline.__version__ + ") is develop or master version.")
+        raise RuntimeError("Cannot determine if version (" +
+                           SHE_Pipeline.__version__ + ") is develop or master version.")
 
 
 def get_pipeline_dir():
@@ -469,9 +470,11 @@ def create_isf(args,
                 except RuntimeError as e:
                     # Try searching for the file without the "data/" prefix
                     try:
-                        qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
+                        qualified_data_filename = find_file(
+                            data_filename.replace("data/", "", 1), path=data_search_path)
                     except RuntimeError as e:
-                        raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
+                        raise RuntimeError("Data file " + data_filename +
+                                           " cannot be found in path " + data_search_path)
 
                 # Symlink the data file within the workdir
                 if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
@@ -546,7 +549,7 @@ def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, dry_
         cmd += ' --serverurl="' + serverurl + '"'
 
     if dry_run:
-        logger.info("If this were not a dry run, the following command would now be called: '" + cmd + "'")
+        logger.info("If this were not a dry run, the following command would now be called:\n" + cmd)
     else:
         logger.info("Calling pipeline with command: '" + cmd + "'")
         sbp.call(cmd, shell=True)
