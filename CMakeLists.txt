@@ -9,7 +9,7 @@ find_package(ElementsProject)
 elements_project(SHE_IAL_Pipelines 8.0 USE SHE_CTE 8.0
                                            # SHE_GST 1.9
                                       	   SHE_MER 8.1
-                                      	   SHE_PSFToolkit 8.4
+                                      	   SHE_PSFToolkit 8.3
                                       	   )
 
 # Indirect dependencies
