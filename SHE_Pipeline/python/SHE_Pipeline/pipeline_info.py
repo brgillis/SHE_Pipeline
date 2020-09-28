@@ -122,25 +122,25 @@ pipeline_info_dict["analysis"] = PipelineInfo(lowercase_name="analysis",
                                               optional_ports=analysis_optional_ports)
 
 pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name="analysis_after_remap",
-                                                     uppercase_name="Shear_Analysis_After_Remap",
-                                                     config_keys=AnalysisConfigKeys,
-                                                     auxdir="Shear_Analysis",
-                                                     package_def="Shear_Analysis",
-                                                     optional_ports=analysis_optional_ports)
+                                                          uppercase_name="Shear_Analysis_After_Remap",
+                                                          config_keys=AnalysisConfigKeys,
+                                                          auxdir="Shear_Analysis",
+                                                          package_def="Shear_Analysis",
+                                                          optional_ports=analysis_optional_ports)
 
 pipeline_info_dict["analysis_with_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
-                                                      uppercase_name="Shear_Analysis_With_TU_Match",
-                                                      config_keys=AnalysisConfigKeys,
-                                                      auxdir="Shear_Analysis",
-                                                      package_def="Shear_Analysis",
-                                                      optional_ports=analysis_optional_ports)
+                                                            uppercase_name="Shear_Analysis_With_TU_Match",
+                                                            config_keys=AnalysisConfigKeys,
+                                                            auxdir="Shear_Analysis",
+                                                            package_def="Shear_Analysis",
+                                                            optional_ports=analysis_optional_ports)
 
 pipeline_info_dict["analysis_after_remap_with_tu_match"] = PipelineInfo(lowercase_name="analysis_after_remap_with_tu_match",
-                                                                   uppercase_name="Shear_Analysis_After_Remap_With_TU_Match",
-                                                                   config_keys=AnalysisConfigKeys,
-                                                                   auxdir="Shear_Analysis",
-                                                                   package_def="Shear_Analysis",
-                                                                   optional_ports=analysis_optional_ports)
+                                                                        uppercase_name="Shear_Analysis_After_Remap_With_TU_Match",
+                                                                        config_keys=AnalysisConfigKeys,
+                                                                        auxdir="Shear_Analysis",
+                                                                        package_def="Shear_Analysis",
+                                                                        optional_ports=analysis_optional_ports)
 
 # Shear Calibration pipelines
 

@@ -70,7 +70,7 @@ def defineSpecificProgramOptions():
                         help="If set, will do everything except actually call the pipeline - useful for testing.")
     parser.add_argument('--skip_file_setup', action='store_true',
                         help="If set, will not try to sort out issues with file locations " +
-                            "or move AUX files to the work directory.")
+                        "or move AUX files to the work directory.")
 
     # Input arguments for the bias measurement pipeline
     parser.add_argument('--plan_args', type=str, nargs='*',

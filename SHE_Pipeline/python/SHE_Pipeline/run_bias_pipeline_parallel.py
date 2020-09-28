@@ -133,7 +133,6 @@ def she_estimate_shear(data_images, stacked_image,
                        lensmc_training_data, momentsml_training_data,
                        regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
-
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
 
@@ -199,14 +198,15 @@ def she_estimate_shear(data_images, stacked_image,
     logger.info("Finished command execution successfully")
     return
 
+
 def she_bfd_integrate(shear_estimates_product,
                       bfd_training_data,
                       pipeline_config, mdb,
                       shear_estimates_product_update,
-                      workdir, logdir,sim_no):
+                      workdir, logdir, sim_no):
     """ Runs the SHE_CTE_BFDIntegrate method that performs                                                                         
     the integration to obtain probabilities for BFD
-                                                                                                                                      
+
     @todo: use defined options for which Methods to use...                                                                            
     # It is in the pipeline config file...                                                                                            
     # Do checks for consistency (earlier)                                                                                             
@@ -214,23 +214,23 @@ def she_bfd_integrate(shear_estimates_product,
 
     logger = getLogger(__name__)
 
-    #@TODO: Replace with function call, see issue 11                                                                                  
-    # Check to see if training data exists.                                                                                           
-    # @TODO: Simplify, avoid repetitions                                                                                              
+    #@TODO: Replace with function call, see issue 11
+    # Check to see if training data exists.
+    # @TODO: Simplify, avoid repetitions
     shear_method_arg_string = ""
     if bfd_training_data and bfd_training_data != 'None':
         shear_method_arg_string += " --bfd_training_data %s" % get_relpath(
             bfd_training_data, workdir)
 
-    # @FIXME: --logdir is a pipeline runner option, not a shear_estimate option                                                       
-    # shear_estimate etc. use magic values for the logger..                                                                           
+    # @FIXME: --logdir is a pipeline runner option, not a shear_estimate option
+    # shear_estimate etc. use magic values for the logger..
 
     argv = ("--shear_estimates_product %s%s "
             "--pipeline_config %s --mdb %s "
             "--shear_estimates_product_update %s "
             "--workdir %s --logdir %s "
             "--log-file %s/%s/she_bfd_integrate.out" %
-            (get_relpath(shear_estimates_product,workdir),
+            (get_relpath(shear_estimates_product, workdir),
              shear_method_arg_string,
              get_relpath(pipeline_config, workdir),
              get_relpath(mdb, workdir),
@@ -246,6 +246,7 @@ def she_bfd_integrate(shear_estimates_product,
         raise
     logger.info("Finished command execution successfully")
     return
+
 
 def she_measure_statistics(details_table, shear_estimates,
                            pipeline_config, she_bias_statistics, workdir, logdir, sim_no):
@@ -683,7 +684,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
-        elif qualified_filename[-5:]== ".json":
+        elif qualified_filename[-5:] == ".json":
             subfilenames = read_listfile(qualified_filename)
             data_filenames = []
             for subfilename in subfilenames:
@@ -697,7 +698,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         else:
             logger.warn("Input file " + filename + " is not an XML data product.")
             continue
-        
+
         if len(data_filenames) == 0:
             continue
 
@@ -709,7 +710,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         # Search for and symlink each data file
         for data_filename in data_filenames:
 
-            if data_filename is None or data_filename=="None" or data_filename=="data/None":
+            if data_filename is None or data_filename == "None" or data_filename == "data/None":
                 continue
 
             # Find the qualified location of the data file
@@ -718,7 +719,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             except RuntimeError as e:
                 # Try searching for the file without the "data/" prefix
                 try:
-                    qualified_data_filename = find_file(data_filename.replace("data/","",1), path=data_search_path)
+                    qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
                 except RuntimeError as e:
                     raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
@@ -811,12 +812,12 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
-    she_bfd_integrate(shear_estimates_product=shear_estimates_product,            
+    she_bfd_integrate(shear_estimates_product=shear_estimates_product,
                       bfd_training_data=bfd_training_data,
-                       pipeline_config=pipeline_config,
-                       mdb=mdb,
-                       shear_estimates_product_update=shear_estimates_product,
-                       workdir=workdir, logdir=logdir, sim_no=simulation_no)
+                      pipeline_config=pipeline_config,
+                      mdb=mdb,
+                      shear_estimates_product_update=shear_estimates_product,
+                      workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     # Complete after shear only if option set.
     if est_shear_only:
@@ -832,14 +833,13 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                            workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     she_bias_measurements = os.path.join('data',
-                                           'shear_bias_measurements_sim%s.xml' % simulation_no)
+                                         'shear_bias_measurements_sim%s.xml' % simulation_no)
 
     # ii=0
     # maxNTries=5
     #hasRun = False
     # while not hasRun and ii<maxNTries:
     #    if os.path.exists(she_bias_statistics):
-
 
     she_cleanup_bias_measurement(simulation_config=simulation_config,
                                  data_images=data_image_list, stacked_data_image=stacked_data_image,
@@ -857,6 +857,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")
 
     return
+
 
 def simulate_and_measure_mapped(args):
     return she_simulate_and_measure_bias_statistics(*args)
@@ -928,7 +929,7 @@ def run_pipeline_from_args(args):
                 % (len(batches), args.number_threads))
 
     pool = multiprocessing.Pool(processes=args.number_threads)
-    
+
     simulate_and_measure_args_list = []
 
     for batch_no in range(len(batches)):
@@ -951,18 +952,18 @@ def run_pipeline_from_args(args):
                                                                      config_filename, workdir, simulation_configs, simulation_no)
 
             simulate_and_measure_args_list.append((simulate_measure_inputs.simulation_config,
-                                                              simulate_measure_inputs.bfd_training_data,
-                                                              simulate_measure_inputs.ksb_training_data,
-                                                              simulate_measure_inputs.lensmc_training_data,
-                                                              simulate_measure_inputs.momentsml_training_data,
-                                                              simulate_measure_inputs.regauss_training_data,
-                                                              simulate_measure_inputs.pipeline_config,
-                                                              simulate_measure_inputs.mdb,
-                                                              workdir, simulation_no, args.logdir, args.est_shear_only))
+                                                   simulate_measure_inputs.bfd_training_data,
+                                                   simulate_measure_inputs.ksb_training_data,
+                                                   simulate_measure_inputs.lensmc_training_data,
+                                                   simulate_measure_inputs.momentsml_training_data,
+                                                   simulate_measure_inputs.regauss_training_data,
+                                                   simulate_measure_inputs.pipeline_config,
+                                                   simulate_measure_inputs.mdb,
+                                                   workdir, simulation_no, args.logdir, args.est_shear_only))
 
     if simulate_and_measure_args_list:
-        pool.map(simulate_and_measure_mapped,simulate_and_measure_args_list)
-        
+        pool.map(simulate_and_measure_mapped, simulate_and_measure_args_list)
+
     if args.est_shear_only:
         logger.info("Configuration set up to complete after shear estimated: will not merge shear measurement files.")
     else:

@@ -33,6 +33,7 @@ from SHE_PPT.utility import get_arguments_string
 # Creates directory structure
 dir_struct_tuple = namedtuple("dir_struct_tuple", "workdir logdir app_workdir app_logdir")
 
+
 def get_relpath(file_path, workdir):
     """Removes workdir from path if necessary 
     @todo: should be in file_io?
