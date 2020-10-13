@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-09-17"
+__updated__ = "2020-10-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -39,9 +39,6 @@ import SHE_Pipeline
 from SHE_Pipeline.pipeline_info import pipeline_info_dict
 import subprocess as sbp
 
-eden_2_0_dev_source = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh"
-eden_2_0_master_source = "/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh"
-
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
@@ -54,7 +51,7 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.0/opt/euclid/ST_PipelineRunner/bin/pipeline_runner.py"
+pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.1.4/bin/pipeline_runner.py"
 
 logger = getLogger(__name__)
 
@@ -531,18 +528,7 @@ def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, dry_
     """Sets up and calls a command to execute the pipeline.
     """
 
-    # Need to source EDEN 2.0 environment, since the pipeline runner isn't updated yet
-    if is_dev_version() and os.path.isfile(eden_2_0_dev_source):
-        src_cmd = "source " + eden_2_0_dev_source + " && "
-    elif not is_dev_version() and os.path.isfile(eden_2_0_master_source):
-        src_cmd = "source " + eden_2_0_master_source + " && "
-    else:
-        if is_dev_version():
-            raise RuntimeError("Cannot find Eden-2.0-dev source file: " + eden_2_0_dev_source)
-        else:
-            raise RuntimeError("Cannot find Eden-2.0 source file: " + eden_2_0_master_source)
-
-    cmd = src_cmd + pipeline_runner_exec + ' --pipeline=' + pipeline_info.pipeline_script + ' --data=' + isf
+    cmd = pipeline_runner_exec + ' --pipeline=' + pipeline_info.pipeline_script + ' --data=' + isf
     if server_config is not None:
         cmd += ' --config=' + server_config
     if serverurl is not None:
