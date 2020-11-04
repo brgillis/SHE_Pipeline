@@ -33,7 +33,7 @@ from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
 from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
+from SHE_PPT.pipeline_utility import CalibrationConfigKeys
 from astropy.io import fits
 from astropy.table import Table
 import numpy
@@ -382,9 +382,9 @@ def check_args(args):
     # Check that all config args are recognized
     for i in range(len(args.config_args) // 2):
         test_arg = args.config_args[2 * i]
-        if not ConfigKeys.is_allowed_value(test_arg):
+        if not CalibrationConfigKeys.is_allowed_value(test_arg):
             err_string = ("Config argument \"" + test_arg + "\" not recognized. Allowed arguments are: ")
-            for allowed_key in ConfigKeys:
+            for allowed_key in CalibrationConfigKeys:
                 err_string += "\n--" + allowed_key.value
             raise ValueError(err_string)
 
