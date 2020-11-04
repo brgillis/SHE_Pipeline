@@ -53,7 +53,7 @@ from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 import SHE_Pipeline
-from SHE_Pipeline.magic_values import ERun_CTE, ERun_GST,  ERun_MER, ERun_Pipeline
+from SHE_Pipeline.magic_values import ERun_CTE, ERun_GST,  ERun_MER
 from SHE_Pipeline.pipeline_info import pipeline_info_dict
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
