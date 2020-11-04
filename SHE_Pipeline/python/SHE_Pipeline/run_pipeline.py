@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-10-13"
+__updated__ = "2020-11-04"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -100,7 +100,7 @@ def check_args(args):
 
     # Does the pipeline we want to run exist?
     if not os.path.exists(chosen_pipeline_info.qualified_pipeline_script):
-        logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
+        logger.error("Pipeline '" + args.pipeline + "' cannot be found. Expected location: " +
                      chosen_pipeline_info.qualified_pipeline_script)
 
     # If no ISF is specified, use the default for this pipeline

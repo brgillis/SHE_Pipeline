@@ -51,10 +51,11 @@ from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 import SHE_Pipeline
+from SHE_Pipeline.magic_values import ERun_CTE, ERun_GST,  ERun_MER, ERun_Pipeline
+from SHE_Pipeline.pipeline_info import pipeline_info_dict
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
-from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_GST,  ERun_MER, ERun_Pipeline
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -314,29 +315,35 @@ def check_args(args):
     logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
 
     pipeline = 'bias_measurement'
-    # Does the pipeline we want to run exist?
-    pipeline_filename = os.path.join(rp.get_pipeline_dir(), "SHE_Pipeline_pkgdef/" + pipeline + ".py")
-    if not os.path.exists(pipeline_filename):
-        logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
-                     pipeline_filename)
 
-    # If no ISF is specified, check for one in the AUX directory
+    if not pipeline in pipeline_info_dict:
+        err_string = ("Unknown pipeline specified to be run: " + pipeline + ". Allowed pipelines are: ")
+        for allowed_pipeline in pipeline_info_dict:
+            err_string += "\n  " + allowed_pipeline
+        raise ValueError(err_string)
+
+    # Does the pipeline we want to run exist?
+    if not os.path.exists(chosen_pipeline_info.qualified_pipeline_script):
+        logger.error("Pipeline '" + pipeline + "' cannot be found. Expected location: " +
+                     chosen_pipeline_info.qualified_pipeline_script)
+
+    # If no ISF is specified, use the default for this pipeline
     if args.isf is None:
         try:
-            args.isf = find_aux_file("SHE_Pipeline/" + pipeline + "_isf.txt")
+            args.isf = chosen_pipeline_info.qualified_isf
         except Exception:
             logger.error("No ISF file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + pipeline + "_isf.txt).")
+                         chosen_pipeline_info.qualified_isf + "_isf.txt).")
             raise
 
-    # If no config is specified, check for one in the AUX directory
+    # If no config is specified, use the default for this pipeline
     if args.config is None:
         try:
-            args.config = find_aux_file("SHE_Pipeline/" + pipeline + "_config.txt")
+            args.config = chosen_pipeline_info.qualified_config
         except Exception:
-            logger.error("No config file specified, and cannot find one in default location (" +
-                         "AUX/SHE_Pipeline/" + pipeline + "_config.txt).")
-            raise
+            logger.warning("No config file specified, and cannot find one in default location (" +
+                           chosen_pipeline_info.qualified_config + "). Will run with no " +
+                           "configuration parameters set.")
 
     # Check that we have an even number of ISF arguments
     if args.isf_args is None:
@@ -372,13 +379,6 @@ def check_args(args):
         args.logdir = default_logdir
         logger.info('No logdir supplied at command-line. Using default logdir: ' + args.logdir)
     qualified_logdir = os.path.join(args.workdir, args.logdir)
-
-    # Set up the workdir and app_workdir the same way
-
-    # if args.workdir == args.app_workdir:
-    workdirs = (args.workdir,)
-    # else:
-    #    workdirs = (args.workdir), args.app_workdir,)
 
     if args.number_threads == 0:
         # @TODO: change to multiprocessing.cpu_count()?
@@ -454,7 +454,7 @@ def check_args(args):
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
 
-    return
+    return chosen_pipeline_info
 
 
 def get_dir_struct(args, num_batches):
@@ -547,8 +547,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     args_to_set["workdir"] = workdir.workdir
     args_to_set["logdir"] = workdir.logdir
     args_to_set["pkgRepository"] = rp.get_pipeline_dir()
-    args_to_set["pipelineDir"] = os.path.join(rp.get_pipeline_dir(),
-                                              "SHE_Pipeline_pkgdef")
+    args_to_set["pipelineDir"] = rp.get_pipeline_dir()
     args_to_set["pipeline_config"] = config_filename
 
     arg_i = 0
@@ -807,12 +806,12 @@ def run_pipeline_from_args(args):
     logger = getLogger(__name__)
 
     # Check the arguments
-    check_args(args)  # add argument there..
+    chosen_pipeline_info = check_args(args)  # add argument there..
     # if len(args.plan_args) > 0:
     _sim_plan_table, sim_plan_tablename = rp.create_plan(args, retTable=True)
 
     # Create the pipeline_config for this run
-    config_filename = rp.create_config(args)
+    config_filename = rp.create_config(args, config_keys=chosen_pipeline_info.config_keys)
     # Create the ISF for this run
     #qualified_isf_filename = rp.create_isf(args, config_filename)
 
