@@ -43,9 +43,7 @@ import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
 from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
 from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
 import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
-import SHE_CTE_ShearEstimation.BFDIntegrate as bfd_int
 import SHE_CTE_ShearEstimation.EstimateShear as est_she
-from SHE_CTE_ShearEstimation.bfd_integrate import perform_bfd_integration
 from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
@@ -129,7 +127,7 @@ def she_simulate_images(config_files, pipeline_config, data_images,
 def she_estimate_shear(data_images, stacked_image,
                        psf_images_and_tables, segmentation_images,
                        stacked_segmentation_image, detections_tables,
-                       bfd_training_data, ksb_training_data,
+                       ksb_training_data,
                        lensmc_training_data, momentsml_training_data,
                        regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
@@ -148,9 +146,6 @@ def she_estimate_shear(data_images, stacked_image,
     # Check to see if training data exists.
     # @TODO: Simplify, avoid repetitions
     shear_method_arg_string = ""
-    if bfd_training_data and bfd_training_data != 'None':
-        shear_method_arg_string += " --bfd_training_data %s" % get_relpath(
-            bfd_training_data, workdir)
     if ksb_training_data and ksb_training_data != 'None':
         shear_method_arg_string += " --ksb_training_data %s" % get_relpath(
             ksb_training_data, workdir)
@@ -192,55 +187,6 @@ def she_estimate_shear(data_images, stacked_image,
 
     try:
         estimate_shears_from_args(estshr_args)
-    except Exception as e:
-        logger.error("Execution failed with error: " + str(e))
-        raise
-    logger.info("Finished command execution successfully")
-    return
-
-
-def she_bfd_integrate(shear_estimates_product,
-                      bfd_training_data,
-                      pipeline_config, mdb,
-                      shear_estimates_product_update,
-                      workdir, logdir, sim_no):
-    """ Runs the SHE_CTE_BFDIntegrate method that performs                                                                         
-    the integration to obtain probabilities for BFD
-
-    @todo: use defined options for which Methods to use...                                                                            
-    # It is in the pipeline config file...                                                                                            
-    # Do checks for consistency (earlier)                                                                                             
-    """
-
-    logger = getLogger(__name__)
-
-    #@TODO: Replace with function call, see issue 11
-    # Check to see if training data exists.
-    # @TODO: Simplify, avoid repetitions
-    shear_method_arg_string = ""
-    if bfd_training_data and bfd_training_data != 'None':
-        shear_method_arg_string += " --bfd_training_data %s" % get_relpath(
-            bfd_training_data, workdir)
-
-    # @FIXME: --logdir is a pipeline runner option, not a shear_estimate option
-    # shear_estimate etc. use magic values for the logger..
-
-    argv = ("--shear_estimates_product %s%s "
-            "--pipeline_config %s --mdb %s "
-            "--shear_estimates_product_update %s "
-            "--workdir %s --logdir %s "
-            "--log-file %s/%s/she_bfd_integrate.out" %
-            (get_relpath(shear_estimates_product, workdir),
-             shear_method_arg_string,
-             get_relpath(pipeline_config, workdir),
-             get_relpath(mdb, workdir),
-             get_relpath(shear_estimates_product, workdir),
-             workdir, logdir, workdir, logdir)).split()
-
-    bfdint_args = pu.setup_function_args(argv, bfd_int, ERun_CTE + " SHE_CTE_BFDIntegrate")
-
-    try:
-        perform_bfd_integration(bfdint_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -579,7 +525,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     """
 
-    inputs_tuple = namedtuple("SIMInputs", "simulation_config bfd_training_data "
+    inputs_tuple = namedtuple("SIMInputs", "simulation_config "
                               "ksb_training_data lensmc_training_data momentsml_training_data "
                               "regauss_training_data pipeline_config mdb")
 
@@ -755,7 +701,6 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     # Inputs for thread
     simulate_inputs = inputs_tuple(*[
         args_to_set['simulation_config'],
-        args_to_set['bfd_training_data'],
         args_to_set['ksb_training_data'],
         args_to_set['lensmc_training_data'],
         args_to_set['momentsml_training_data'],
@@ -767,7 +712,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
 
 def she_simulate_and_measure_bias_statistics(simulation_config,
-                                             bfd_training_data, ksb_training_data,
+                                             ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
                                              regauss_training_data, pipeline_config, mdb, workdirTuple,
                                              simulation_no, logdir, est_shear_only):
@@ -802,7 +747,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        segmentation_images=segmentation_images,
                        stacked_segmentation_image=stacked_segmentation_image,
                        detections_tables=detections_tables,
-                       bfd_training_data=bfd_training_data,
                        ksb_training_data=ksb_training_data,
                        lensmc_training_data=lensmc_training_data,
                        momentsml_training_data=momentsml_training_data,
@@ -811,13 +755,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        mdb=mdb,
                        shear_estimates_product=shear_estimates_product,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
-
-    she_bfd_integrate(shear_estimates_product=shear_estimates_product,
-                      bfd_training_data=bfd_training_data,
-                      pipeline_config=pipeline_config,
-                      mdb=mdb,
-                      shear_estimates_product_update=shear_estimates_product,
-                      workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     # Complete after shear only if option set.
     if est_shear_only:
@@ -947,7 +884,6 @@ def run_pipeline_from_args(args):
                                                                      config_filename, workdir, simulation_configs, simulation_no)
 
             simulate_and_measure_args_list.append((simulate_measure_inputs.simulation_config,
-                                                   simulate_measure_inputs.bfd_training_data,
                                                    simulate_measure_inputs.ksb_training_data,
                                                    simulate_measure_inputs.lensmc_training_data,
                                                    simulate_measure_inputs.momentsml_training_data,
