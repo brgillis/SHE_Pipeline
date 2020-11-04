@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2019-12-11"
+__updated__ = "2020-11-04"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,6 +20,7 @@ __updated__ = "2019-12-11"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import _pickle
 from collections import namedtuple
 import math
 import multiprocessing
@@ -27,6 +28,12 @@ import os
 import time
 import xml.sax._exceptions
 
+from SHE_PPT import products
+from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+                             read_xml_product, read_listfile, write_listfile,
+                             read_pickled_product)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 from astropy.io import fits
 from astropy.table import Table
 import numpy
@@ -36,27 +43,20 @@ import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
 from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
 from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
 import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
-import SHE_CTE_ShearEstimation.EstimateShear as est_she
-from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 import SHE_CTE_ShearEstimation.BFDIntegrate as bfd_int
+import SHE_CTE_ShearEstimation.EstimateShear as est_she
 from SHE_CTE_ShearEstimation.bfd_integrate import perform_bfd_integration
+from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
 from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.pipeline_utility import ConfigKeys, write_config
 import SHE_Pipeline
 from SHE_Pipeline.pipeline_utilities import get_relpath
 import SHE_Pipeline.pipeline_utilities as pu
 import SHE_Pipeline.run_pipeline as rp
 from SHE_Pipeline_pkgdef.magic_values import ERun_CTE, ERun_GST,  ERun_MER, ERun_Pipeline
-import _pickle
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -868,11 +868,6 @@ def run_pipeline_from_args(args):
     """
 
     logger = getLogger(__name__)
-
-    # Check for pickled arguments, and override if found
-    if args.pickled_args is not None:
-        qualified_pickled_args_filename = find_file(args.pickled_args, args.workdir)
-        args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     check_args(args)  # add argument there..

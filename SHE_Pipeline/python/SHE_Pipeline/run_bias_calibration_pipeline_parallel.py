@@ -5,7 +5,7 @@
     Main executable for running bias calibration pipeline in parallel
 """
 
-__updated__ = "2020-09-28"
+__updated__ = "2020-11-04"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -897,11 +897,6 @@ def run_pipeline_from_args(args):
     """
 
     logger = getLogger(__name__)
-
-    # Check for pickled arguments, and override if found
-    if args.pickled_args is not None:
-        qualified_pickled_args_filename = find_file(args.pickled_args, args.workdir)
-        args = read_pickled_product(qualified_pickled_args_filename)
 
     # Check the arguments
     check_args(args)  # add argument there..
