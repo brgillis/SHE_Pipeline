@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2020-11-04"
+__updated__ = "2020-11-11"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -133,7 +133,7 @@ def she_estimate_shear(data_images, stacked_image,
                        regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, workdir, logdir, sim_no):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
-    the shear using 5 methods: BFD, KSB, LensMC, MomentsML and REGAUSS
+    the shear using 4 methods: KSB, LensMC, MomentsML and REGAUSS
 
     @todo: use defined options for which Methods to use...
     # It is in the pipeline config file...
@@ -321,6 +321,7 @@ def check_args(args):
         for allowed_pipeline in pipeline_info_dict:
             err_string += "\n  " + allowed_pipeline
         raise ValueError(err_string)
+    chosen_pipeline_info = pipeline_info_dict[pipeline]
 
     # Does the pipeline we want to run exist?
     if not os.path.exists(chosen_pipeline_info.qualified_pipeline_script):

@@ -1,7 +1,6 @@
 simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingNanoPlan.fits
 config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0NanoTemplate.conf
 
-bfd_training_data=None
 ksb_training_data=AUX/SHE_CTE_ShearEstimation/mock_ksb_training_product.xml
 lensmc_training_data=AUX/SHE_CTE_ShearEstimation/mock_lensmc_training_product.xml
 momentsml_training_data=None

@@ -16,6 +16,5 @@ elements_project(SHE_IAL_Pipelines 8.1 USE SHE_CTE 8.1
 # Indirect dependencies
 # ---------------------
 # SHE_MomentsML 1.9
-# SHE_BFD 0.7
 # SHE_LensMC 2.9
 

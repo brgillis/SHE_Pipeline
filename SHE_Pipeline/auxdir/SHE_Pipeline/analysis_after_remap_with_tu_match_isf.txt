@@ -32,7 +32,6 @@ she_exposure_reprojected_segmentation_map_listfile = she_exposure_reprojected_se
 # galaxy_population_priors_table = mock_galaxy_population_priors_table.fits
 # calibration_parameters_product = mock_calibration_parameters_product.bin
 
-bfd_training_data = None
 ksb_training_data = test_ksb_training.xml
 lensmc_training_data = test_lensmc_training.xml
 momentsml_training_data = None
