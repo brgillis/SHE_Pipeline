@@ -33,6 +33,7 @@ from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
                              read_pickled_product)
 from SHE_PPT.logging import getLogger
+from SHE_PPT.mdb import mdb_keys, Mdb
 from SHE_PPT.pipeline_utility import CalibrationConfigKeys
 from astropy.io import fits
 from astropy.table import Table
@@ -618,12 +619,20 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
         # Now, go through each data file of the product and symlink those from the workdir too
 
-        # If it's the MDB, skip from here
-        if input_port_name == 'mdb':
-            continue
-
+        # Download MDB files if needed
+        if input_port_name == "mdb":
+            if filename[:4] == "WEB/":
+                qualified_filename = find_file(filename)
+                mdb_dict = Mdb(qualified_filename).get_all()
+                web_mdb_path = os.path.split(filename)[0]
+                data_filenames = []
+                for key in (mdb_keys.vis_gain_coeffs, mdb_keys.vis_readout_noise_table):
+                    for data_filename in mdb_dict[key]['Value']:
+                        web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
+                        find_file(web_data_filename)
+                        data_filenames.append("data/" + data_filename)
         # Get all data files this product points to and symlink them to the main data dir
-        if qualified_filename[-4:] == ".xml":
+        elif qualified_filename[-4:] == ".xml":
             try:
                 p = read_xml_product(qualified_filename)
                 data_filenames = p.get_all_filenames()
@@ -650,6 +659,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
         # Set up the search path for data files
         data_search_path = (os.path.split(qualified_filename)[0] + ":" +
+                            os.path.split(qualified_filename)[0] + "/data:" +
                             os.path.split(qualified_filename)[0] + "/..:" +
                             os.path.split(qualified_filename)[0] + "/../data:" + search_path)
 
