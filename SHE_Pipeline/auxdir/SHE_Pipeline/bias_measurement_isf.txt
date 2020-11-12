@@ -8,4 +8,4 @@ regauss_training_data=WEB/SHE_PPT_8_5/test_regauss_training.xml
 
 pipeline_config=AUX/SHE_Pipeline/bias_measurement_config.txt
 
-mdb=EUC_MDB_MISSIONCONFIGURATION-SC456_2019-03-28T1224.00Z_01.xml
+mdb=WEB/SHE_PPT_8_5/sample_mdb-SC8.xml
