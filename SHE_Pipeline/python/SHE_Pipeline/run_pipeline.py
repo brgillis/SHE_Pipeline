@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-11-04"
+__updated__ = "2020-11-12"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -31,6 +31,7 @@ from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product, read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
+from SHE_PPT.mdb import mdb_keys, Mdb
 from SHE_PPT.pipeline_utility import write_config, read_config
 from astropy.table import Table
 from sklearn import pipeline
@@ -387,8 +388,21 @@ def create_isf(args,
         for input_port_name in args_to_set:
 
             # Skip ISF arguments that don't correspond to input ports
-            if input_port_name in non_filename_args or input_port_name == "mdb":
+            if input_port_name in non_filename_args:
                 continue
+
+            filename = args_to_set[input_port_name]
+
+            # Download MDB files if needed
+            if input_port_name == "mdb":
+                if filename[:4] == "WEB/":
+                    qualified_mdb_filename = find_file(filename)
+                    mdb_dict = Mdb(qualified_mdb_filename).get_all()
+                    web_mdb_path = os.path.split(filename)[0]
+                    for key in (mdb_keys.vis_gain_coeffs, mdb_keys.vis_readout_noise_table)
+                        for data_filename in mdb_dict[key]:
+                            web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
+                            find_file(web_data_filename)
 
             filename = args_to_set[input_port_name]
 
