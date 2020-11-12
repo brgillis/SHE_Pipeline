@@ -4,6 +4,6 @@ config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf
 ksb_training_data=WEB/SHE_PPT_8_5/test_ksb_training.xml
 lensmc_training_data=WEB/SHE_PPT_8_5/test_lensmc_training.xml
 momentsml_training_data=None
-regauss_training_data=WEB/SHE_PPT_8_5/test_regauss_training_product.xml
+regauss_training_data=WEB/SHE_PPT_8_5/test_regauss_training.xml
 
 pipeline_config=AUX/SHE_Pipeline/bias_measurement_config.txt
