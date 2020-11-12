@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2020-11-11"
+__updated__ = "2020-11-12"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -627,7 +627,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             try:
                 p = read_xml_product(qualified_filename)
                 data_filenames = p.get_all_filenames()
-            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as e:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
         elif qualified_filename[-5:] == ".json":
@@ -638,7 +638,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                 try:
                     p = read_xml_product(qualified_subfilename)
                     data_filenames += p.get_all_filenames()
-                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as e:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
         else:
