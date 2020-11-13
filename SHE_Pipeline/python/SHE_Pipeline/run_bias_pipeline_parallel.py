@@ -65,6 +65,8 @@ default_cluster_workdir = "/workspace/lodeen/workdir"
 
 non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir")
 
+logger = getLogger(__name__)
+
 
 def she_prepare_configs(simulation_plan, config_template,
                         simulation_configs, workdir):
@@ -817,8 +819,6 @@ def simulate_and_measure_mapped(args):
 def run_pipeline_from_args(args):
     """Main executable to run parallel pipeline.
     """
-
-    logger = getLogger(__name__)
 
     # Check the arguments
     chosen_pipeline_info = check_args(args)  # add argument there..
