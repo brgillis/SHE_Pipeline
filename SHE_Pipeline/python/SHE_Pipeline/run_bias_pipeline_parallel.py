@@ -960,7 +960,7 @@ def merge_outputs(workdir_list, batch,
 
                 for data_file in data_files:
 
-                    if data_file is None or data_file == "None":
+                    if data_file is None or data_file == "None" or data_file == "data/None" or data_file == "" or data_file == "data/":
                         continue
 
                     old_qualified_data_file_filename = os.path.join(workdir.workdir, data_file)
