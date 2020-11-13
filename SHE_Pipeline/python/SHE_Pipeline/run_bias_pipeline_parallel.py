@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2020-11-12"
+__updated__ = "2020-11-13"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -132,7 +132,8 @@ def she_estimate_shear(data_images, stacked_image,
                        ksb_training_data,
                        lensmc_training_data, momentsml_training_data,
                        regauss_training_data, pipeline_config, mdb,
-                       shear_estimates_product, workdir, logdir, sim_no):
+                       shear_estimates_product, she_lensmc_chains,
+                       workdir, logdir, sim_no):
     """ Runs the SHE_CTE_EstimateShear method that calculates 
     the shear using 4 methods: KSB, LensMC, MomentsML and REGAUSS
 
@@ -168,7 +169,7 @@ def she_estimate_shear(data_images, stacked_image,
             "--stacked_image %s --psf_images_and_tables %s "
             "--segmentation_images %s --stacked_segmentation_image %s "
             "--detections_tables %s%s --pipeline_config %s --mdb %s "
-            "--shear_estimates_product %s --workdir %s --logdir %s "
+            "--shear_estimates_product %s --she_lensmc_chains %s --workdir %s --logdir %s "
             "--log-file %s/%s/she_estimate_shear.out" %
             (get_relpath(data_images, workdir),
              get_relpath(stacked_image, workdir),
@@ -180,6 +181,7 @@ def she_estimate_shear(data_images, stacked_image,
              get_relpath(pipeline_config, workdir),
              get_relpath(mdb, workdir),
              get_relpath(shear_estimates_product, workdir),
+             get_relpath(she_lensmc_chains, workdir),
              workdir, logdir, workdir, logdir)).split()
     #
 
@@ -750,6 +752,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                         workdir, logdir, simulation_no)
 
     shear_estimates_product = os.path.join('data', 'shear_estimates_product.xml')
+    she_lensmc_chains = os.path.join('data', 'she_lensmc_chains.xml')
 
     she_estimate_shear(data_images=data_image_list,
                        stacked_image=stacked_data_image,
@@ -764,6 +767,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                        pipeline_config=pipeline_config,
                        mdb=mdb,
                        shear_estimates_product=shear_estimates_product,
+                       she_lensmc_chains=she_lensmc_chains,
                        workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     # Complete after shear only if option set.
