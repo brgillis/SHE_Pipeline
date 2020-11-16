@@ -5,7 +5,7 @@
     Magic values for the package definitions
 """
 
-__updated__ = "2020-08-04"
+__updated__ = "2020-11-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,12 +20,12 @@ __updated__ = "2020-08-04"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-SHE_CTE_version = "8.0"
-SHE_GST_version = "1.9"
-SHE_MER_version = "8.1"
-SHE_PSF_version = "8.1"
+import SHE_CTE
+import SHE_GST
+import SHE_MER_RemapMosaic
+import SHE_PSFToolkit
 
-ERun_CTE = "E-Run SHE_CTE " + SHE_CTE_version + " "
-ERun_MER = "E-Run SHE_MER " + SHE_MER_version + " "
-ERun_GST = "E-Run SHE_GST " + SHE_GST_version + " "
-ERun_PSF = "E-Run SHE_PSFToolkit " + SHE_PSF_version + " "
+ERun_CTE = "E-Run SHE_CTE " + SHE_CTE.__version__ + " "
+ERun_MER = "E-Run SHE_MER " + SHE_MER_RemapMosaic.__version__ + " "
+ERun_GST = "E-Run SHE_GST " + SHE_GST.__version__ + " "
+ERun_PSF = "E-Run SHE_PSFToolkit " + SHE_PSFToolkit.__version__ + " "

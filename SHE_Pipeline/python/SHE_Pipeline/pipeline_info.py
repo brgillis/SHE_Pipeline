@@ -5,7 +5,7 @@
     Info about each pipeline's source code locations.
 """
 
-__updated__ = "2020-07-23"
+__updated__ = "2020-11-11"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -112,7 +112,6 @@ pipeline_info_dict = {}
 
 analysis_optional_ports = ("phz_output_cat",
                            "spe_output_cat",
-                           "bfd_training_data",
                            "momentsml_training_data",
                            "pipeline_config")
 

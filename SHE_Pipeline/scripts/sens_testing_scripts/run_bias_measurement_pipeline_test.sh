@@ -36,7 +36,7 @@ source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
 
 export BINARY_TAG=x86_64-co7-gcc48-o2g
 
-E-Run SHE_Pipeline 0.8.25 SHE_Pipeline_RunBiasParallel --isf $ISF --isf_args config_template $CFG_TEMPLATE_HEAD$TEMPLATE_PREFIX$TAG$TEMPLATE_POSTFIX mdb $SCRIPTDIR/EUC_MDB_MISSIONCONFIGURATION-SC456_2019-03-28T1224.00Z_01.xml bfd_training_data $SCRIPTDIR/EUC_SHE_BFD-TRAINING-P_0_20190528T140053.8Z_00.07.xml --workdir $WORKDIR --config_args  SHE_CTE_EstimateShear_methods "KSB REGAUSS LensMC MomentsML" SHE_CTE_MeasureBias_archive_dir $ARCHIVE_DIR/$TAG/sens_$I --plan_args MSEED_MIN $SEED_MIN MSEED_MAX $SEED_MAX NSEED_MIN $SEED_MIN NSEED_MAX $SEED_MAX NUM_GALAXIES $NUM_GALAXIES_PER_SEED --cluster --number_threads $NUM_THREADS
+E-Run SHE_Pipeline 0.8.25 SHE_Pipeline_RunBiasParallel --isf $ISF --isf_args config_template $CFG_TEMPLATE_HEAD$TEMPLATE_PREFIX$TAG$TEMPLATE_POSTFIX mdb $SCRIPTDIR/WEB/SHE_PPT_8_5/sample_mdb-SC8.xml --workdir $WORKDIR --config_args  SHE_CTE_EstimateShear_methods "KSB REGAUSS LensMC MomentsML" SHE_CTE_MeasureBias_archive_dir $ARCHIVE_DIR/$TAG/sens_$I --plan_args MSEED_MIN $SEED_MIN MSEED_MAX $SEED_MAX NSEED_MIN $SEED_MIN NSEED_MAX $SEED_MAX NUM_GALAXIES $NUM_GALAXIES_PER_SEED --cluster --number_threads $NUM_THREADS
 
 # python3 /ceph/home/hpcgill1/bin/rm_r.py $WORKDIR
 

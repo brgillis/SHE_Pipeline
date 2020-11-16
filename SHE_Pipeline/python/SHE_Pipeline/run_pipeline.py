@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-10-13"
+__updated__ = "2020-11-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -31,6 +31,7 @@ from SHE_PPT import products
 from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
                              read_pickled_product, write_pickled_product, read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
+from SHE_PPT.mdb import mdb_keys, Mdb
 from SHE_PPT.pipeline_utility import write_config, read_config
 from astropy.table import Table
 from sklearn import pipeline
@@ -100,7 +101,7 @@ def check_args(args):
 
     # Does the pipeline we want to run exist?
     if not os.path.exists(chosen_pipeline_info.qualified_pipeline_script):
-        logger.error("Pipeline '" + pipeline_filename + "' cannot be found. Expected location: " +
+        logger.error("Pipeline '" + args.pipeline + "' cannot be found. Expected location: " +
                      chosen_pipeline_info.qualified_pipeline_script)
 
     # If no ISF is specified, use the default for this pipeline
@@ -387,7 +388,7 @@ def create_isf(args,
         for input_port_name in args_to_set:
 
             # Skip ISF arguments that don't correspond to input ports
-            if input_port_name in non_filename_args or input_port_name == "mdb":
+            if input_port_name in non_filename_args:
                 continue
 
             filename = args_to_set[input_port_name]
@@ -396,56 +397,70 @@ def create_isf(args,
             if filename is None or filename == "None":
                 continue
 
-            # Find the qualified location of the file
-            try:
-                qualified_filename = find_file(filename, path=search_path)
-            except RuntimeError as e:
-                raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
+            data_filenames = []
 
-            # Symlink the filename from the "data" directory within the workdir
-            new_filename = os.path.join("data", os.path.split(filename)[1])
-            try:
-                if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
-                    os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
-            except FileExistsError as e:
+            # Download MDB files if needed
+            if input_port_name == "mdb":
+                if filename[:4] == "WEB/":
+                    qualified_filename = find_file(filename)
+                    mdb_dict = Mdb(qualified_filename).get_all()
+                    web_mdb_path = os.path.split(filename)[0]
+                    for key in (mdb_keys.vis_gain_coeffs, mdb_keys.vis_readout_noise_table):
+                        for data_filename in mdb_dict[key]['Value']:
+                            web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
+                            find_file(web_data_filename)
+                            data_filenames.append("data/" + data_filename)
+            else:
+
+                # Find the qualified location of the file
                 try:
-                    os.remove(os.path.join(args.workdir, new_filename))
+                    qualified_filename = find_file(filename, path=search_path)
+                except RuntimeError as e:
+                    raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
+
+                # Symlink the filename from the "data" directory within the workdir
+                new_filename = os.path.join("data", os.path.split(filename)[1])
+                try:
+                    if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
+                        os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+                except FileExistsError as e:
                     try:
-                        os.unlink(os.path.join(args.workdir, new_filename))
+                        os.remove(os.path.join(args.workdir, new_filename))
+                        try:
+                            os.unlink(os.path.join(args.workdir, new_filename))
+                        except Exception as _:
+                            pass
                     except Exception as _:
                         pass
-                except Exception as _:
-                    pass
-                if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
-                    os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
+                    if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
+                        os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
-            # Update the filename in the args_to_set to the new location
-            args_to_set[input_port_name] = new_filename
+                # Update the filename in the args_to_set to the new location
+                args_to_set[input_port_name] = new_filename
 
-            # Now, go through each data file of the product and symlink those from the workdir too
+                # Now, go through each data file of the product and symlink those from the workdir too
 
-            # Skip (but warn) if it's not an XML data product
-            if qualified_filename[-4:] == ".xml":
-                try:
-                    p = read_xml_product(qualified_filename)
-                    data_filenames = p.get_all_filenames()
-                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
-                    logger.error("Cannot read file " + qualified_filename + ".")
-                    raise
-            elif qualified_filename[-5:] == ".json":
-                subfilenames = read_listfile(qualified_filename)
-                data_filenames = []
-                for subfilename in subfilenames:
-                    qualified_subfilename = find_file(subfilename, path=search_path)
+                # Skip (but warn) if it's not an XML data product
+                if qualified_filename[-4:] == ".xml":
                     try:
-                        p = read_xml_product(qualified_subfilename)
-                        data_filenames += p.get_all_filenames()
+                        p = read_xml_product(qualified_filename)
+                        data_filenames = p.get_all_filenames()
                     except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
                         logger.error("Cannot read file " + qualified_filename + ".")
                         raise
-            else:
-                logger.warn("Input file " + filename + " is not an XML data product.")
-                continue
+                elif qualified_filename[-5:] == ".json":
+                    subfilenames = read_listfile(qualified_filename)
+                    for subfilename in subfilenames:
+                        qualified_subfilename = find_file(subfilename, path=search_path)
+                        try:
+                            p = read_xml_product(qualified_subfilename)
+                            data_filenames += p.get_all_filenames()
+                        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                            logger.error("Cannot read file " + qualified_filename + ".")
+                            raise
+                else:
+                    logger.warn("Input file " + filename + " is not an XML data product.")
+                    continue
 
             if len(data_filenames) == 0:
                 continue

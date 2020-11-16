@@ -5,7 +5,7 @@
     Main program for calling one of the pipelines.
 """
 
-__updated__ = "2019-04-26"
+__updated__ = "2020-11-04"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -75,12 +75,6 @@ def defineSpecificProgramOptions():
 
     parser.add_argument('--workdir', type=str,)
     parser.add_argument('--logdir', type=str,)
-
-    # Input arguments for when called by a meta pipeline
-    parser.add_argument('--pickled_args', type=str, default=None,
-                        help="Pickled file of arguments for this task. If supplied, will override all other arguments.")
-    parser.add_argument('--parent_workdir', type=str, default=None,
-                        help="Work directory of the parent pipeline.")
 
     # Output arguments for the bias measurement pipeline
     parser.add_argument('--she_bias_measurements', type=str, default='she_bias_measurements.xml',

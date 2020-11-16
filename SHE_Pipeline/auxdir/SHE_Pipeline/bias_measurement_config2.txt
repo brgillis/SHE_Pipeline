@@ -1,6 +1,6 @@
 SHE_CTE_CleanupBiasMeasurement_cleanup = True
 
-SHE_CTE_EstimateShear_methods = MomentsML BFD
+SHE_CTE_EstimateShear_methods = MomentsML
 
 SHE_CTE_MeasureBias_archive_dir=None
 SHE_CTE_MeasureBias_webdav_archive=False
