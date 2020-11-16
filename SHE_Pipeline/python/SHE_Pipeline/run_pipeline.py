@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2020-11-12"
+__updated__ = "2020-11-16"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -397,13 +397,14 @@ def create_isf(args,
             if filename is None or filename == "None":
                 continue
 
+            data_filenames = []
+
             # Download MDB files if needed
             if input_port_name == "mdb":
                 if filename[:4] == "WEB/":
                     qualified_filename = find_file(filename)
                     mdb_dict = Mdb(qualified_filename).get_all()
                     web_mdb_path = os.path.split(filename)[0]
-                    data_filenames = []
                     for key in (mdb_keys.vis_gain_coeffs, mdb_keys.vis_readout_noise_table):
                         for data_filename in mdb_dict[key]['Value']:
                             web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
@@ -449,7 +450,6 @@ def create_isf(args,
                         raise
                 elif qualified_filename[-5:] == ".json":
                     subfilenames = read_listfile(qualified_filename)
-                    data_filenames = []
                     for subfilename in subfilenames:
                         qualified_subfilename = find_file(subfilename, path=search_path)
                         try:
