@@ -6,8 +6,8 @@ mdb = sample_mdb-SC8.xml
 
 # SIM Products
 
-tu_galaxy_catalog=GalCat.xml
-tu_star_catalog=StarCat.xml
+tu_galaxy_catalog_list = galcats.json
+tu_star_catalog_list = starcats.json
 
 # VIS Products
 
