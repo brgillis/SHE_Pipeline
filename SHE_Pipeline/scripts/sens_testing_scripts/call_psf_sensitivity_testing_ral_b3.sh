@@ -9,7 +9,7 @@ SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 SLEEP_TIME=1m
 RETRY_SLEEP=8h
-JOB_LIMIT=400
+JOB_LIMIT=100
 
 SEED_START=1
 SEEDS_PER_BATCH=96
@@ -50,7 +50,7 @@ do
 
 			mkdir -p $ARCHIVE_DIR/$TAG
 
-			CMD="sbatch -p $QUEUE -N 1 -n $NUM_THREADS -o $LOGDIR/sens_testing_"$TAG"_"$I".out -e $LOGDIR/sens_testing_"$TAG"_"$I".err $SCRIPTDIR/run_bias_measurement_pipeline.sh $SEED_START $SEEDS_PER_BATCH $NUM_GALAXIES_PER_SEED $TAG $I $NUM_THREADS $ARCHIVE_DIR $WORKSPACE_ROOT $SCRIPTDIR $TEMPLATE_PREFIX $TEMPLATE_POSTFIX"
+			CMD="sbatch -p $QUEUE -N 1 -n $NUM_THREADS -o $LOGDIR/sens_testing_"$TAG"_"$I".out -e $LOGDIR/sens_testing_"$TAG"_"$I".err $SCRIPTDIR/run_bias_measurement_pipeline.sh $SEED_START $SEEDS_PER_BATCH $NUM_GALAXIES_PER_SEED $TAG $I $NUM_THREADS $ARCHIVE_DIR $WORKSPACE_ROOT $SCRIPTDIR $TEMPLATE_PREFIX $TEMPLATE_POSTFIX &"
 
 			RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
 			while [ $RUNNING_JOBS -ge $JOB_LIMIT ]

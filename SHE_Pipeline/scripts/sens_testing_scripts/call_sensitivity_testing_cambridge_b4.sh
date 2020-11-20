@@ -9,7 +9,7 @@ SCRIPTDIR="/ceph/home/hpcgill1/sens_testing_scripts"
 
 SLEEP_TIME=1m
 RETRY_SLEEP=2h
-JOB_LIMIT=200
+JOB_LIMIT=400
 
 SEED_START=1
 SEEDS_PER_BATCH=96
