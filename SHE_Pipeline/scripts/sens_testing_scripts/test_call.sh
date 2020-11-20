@@ -56,11 +56,11 @@ do
 
                         exit 0
 
-			RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
+			RUNNING_JOBS=`squeue | grep " $QUEUE " | wc -l`
 			while [ $RUNNING_JOBS -ge $JOB_LIMIT ]
 			do
 			    sleep $SLEEP_TIME
-			    RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
+			    RUNNING_JOBS=`squeue | grep " $QUEUE " | wc -l`
 			done
 
 			echo "Executing command: $CMD"

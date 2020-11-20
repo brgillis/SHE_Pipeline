@@ -52,11 +52,11 @@ do
 
 			CMD="sbatch -p $QUEUE -N 1 -n $NUM_THREADS -o $LOGDIR/sens_testing_"$TAG"_"$I".out -e $LOGDIR/sens_testing_"$TAG"_"$I".err $SCRIPTDIR/run_bias_measurement_pipeline_no_lensmc.sh $SEED_START $SEEDS_PER_BATCH $NUM_GALAXIES_PER_SEED $TAG $I $NUM_THREADS $ARCHIVE_DIR $WORKSPACE_ROOT $SCRIPTDIR $TEMPLATE_PREFIX $TEMPLATE_POSTFIX"
 
-			RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
+			RUNNING_JOBS=`squeue | grep " $QUEUE " | wc -l`
 			while [ $RUNNING_JOBS -ge $JOB_LIMIT ]
 			do
 			    sleep $SLEEP_TIME
-			    RUNNING_JOBS=`squeue | grep $QUEUE | wc -l`
+			    RUNNING_JOBS=`squeue | grep " $QUEUE " | wc -l`
 			done
 
 			echo "Executing command: $CMD"
