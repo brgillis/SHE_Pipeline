@@ -90,7 +90,7 @@ class TestRunPipeline():
 
         sync = DataSync("testdata/sync.conf", "testdata/test_workdir.txt")
         sync.download()
-        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_0/test_workdir/vis_calibrated_frame_listfile.json")
+        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_1/test_workdir/vis_calibrated_frame_listfile.json")
 
         assert os.path.isfile(qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
 
