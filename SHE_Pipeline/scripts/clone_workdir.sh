@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SOURCEDIR=/mnt/cephfs/share/SC7_migrated/SC7M_workdir
+SOURCEDIR=/mnt/cephfs/share/SC7_migrated/SC7M_805_workdir
 
 # Check we're given one argument
 if [ "$#" -eq 1 ]; then
