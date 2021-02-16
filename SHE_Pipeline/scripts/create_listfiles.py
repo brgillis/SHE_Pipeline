@@ -85,7 +85,7 @@ ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
 
 FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "phz_output_cat = None",
-                                "ksb_training_data = test_ksb_training.xml"
+                                "ksb_training_data = test_ksb_training.xml",
                                 "lensmc_training_data = test_lensmc_training.xml",
                                 "momentsml_training_data = None",
                                 "regauss_training_data = test_regauss_training.xml",
@@ -303,7 +303,7 @@ for obs_id in observation_id_set:
     with open(isf_filename, "w") as fo:
         # Write these listfile filenames to the ISF
         for prod_key in PRODUCT_KEYS:
-            fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}\n")
+            fo.write(f"{ISF_PORTS[prod_key]} = {filename_dict[prod_key]}\n")
         # Write the fixed product filenames to the ISF
         for l in FIXED_ANALYSIS_ISF_FILENAMES:
             fo.write(l + "\n")
