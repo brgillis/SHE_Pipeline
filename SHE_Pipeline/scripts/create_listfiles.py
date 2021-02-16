@@ -47,11 +47,14 @@ logger = getLogger(__name__)
 
 ROOT_DIR = "."
 
-ANALYSIS_ISF_HEAD = "analysis_isf_"
-ANALYSIS_ISF_TAIL = ".txt"
+ANALYSIS_ISF_HEAD = "analysis_"
+ANALYSIS_ISF_TAIL = "_isf.txt"
 
-RECONCILIATION_ISF_HEAD = "reconciliation_isf_"
-RECONCILIATION_ISF_TAIL = ".txt"
+AFTER_REMAP_TAG = "after_remap_"
+TU_MATCH_TAG = "with_tu_match_"
+
+RECONCILIATION_ISF_HEAD = "reconciliation_"
+RECONCILIATION_ISF_TAIL = "_isf.txt"
 
 MDB_FILENAME = "sample_mdb-SC8.xml"
 
@@ -71,7 +74,28 @@ class ProdKeys(Enum):
 PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG,
                 ProdKeys.TUS)
 
-# ISF ports
+# Which pipelines a given product is used for
+# 1 = only for that variant, -1 = only not that variant, 0 = both variants
+ONLY_FOR_AFTER_REMAP = {ProdKeys.MFC: 0,
+                        ProdKeys.MSEG: -1,
+                        ProdKeys.SESEG: 1,
+                        ProdKeys.SSSEG: 1,
+                        ProdKeys.VCF: 0,
+                        ProdKeys.VSF: 0,
+                        ProdKeys.TUG: 0,
+                        ProdKeys.TUS: 0,
+                        }
+ONLY_FOR_TU_MATCH = {ProdKeys.MFC: 0,
+                     ProdKeys.MSEG: 0,
+                     ProdKeys.SESEG: 0,
+                     ProdKeys.SSSEG: 0,
+                     ProdKeys.VCF: 0,
+                     ProdKeys.VSF: 0,
+                     ProdKeys.TUG: 1,
+                     ProdKeys.TUS: 1,
+                     }
+
+# ISF ports and common filenames
 
 ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
              ProdKeys.MSEG: "mer_segmentation_map_listfile",
@@ -298,15 +322,33 @@ for obs_id in observation_id_set:
     filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].filename_head + \
         str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail
 
-    # Write the ISF for this observation
-    isf_filename = ANALYSIS_ISF_HEAD + str(obs_id) + ANALYSIS_ISF_TAIL
-    with open(isf_filename, "w") as fo:
-        # Write these listfile filenames to the ISF
-        for prod_key in PRODUCT_KEYS:
-            fo.write(f"{ISF_PORTS[prod_key]} = {filename_dict[prod_key]}\n")
-        # Write the fixed product filenames to the ISF
-        for l in FIXED_ANALYSIS_ISF_FILENAMES:
-            fo.write(l + "\n")
+    # Write the ISF for this observation for each variant
+    for after_remap in (False, True):
+        for with_tu_match in (False, True):
+
+            # Get the filename for this specific variant
+            isf_filename = ANALYSIS_ISF_HEAD
+            if after_remap:
+                isf_filename += AFTER_REMAP_TAG
+            if with_tu_match:
+                isf_filename += TU_MATCH_TAG
+            isf_filename += str(obs_id) + ANALYSIS_ISF_TAIL
+
+            # Write the ISF
+            with open(isf_filename, "w") as fo:
+                # Write these listfile filenames to the ISF
+                for prod_key in PRODUCT_KEYS:
+                    # Determine whether to write this key or not from the variant
+                    met_criteria = True
+                    for criteria, variant in ((ONLY_FOR_AFTER_REMAP[prod_key], after_remap),
+                                              (ONLY_FOR_TU_MATCH[prod_key], with_tu_match)):
+                        if (criteria == 1 and not variant) or (criteria == -1 and variant):
+                            met_criteria = False
+                    if met_criteria:
+                        fo.write(f"{ISF_PORTS[prod_key]} = {filename_dict[prod_key]}\n")
+                # Write the fixed product filenames to the ISF
+                for l in FIXED_ANALYSIS_ISF_FILENAMES:
+                    fo.write(l + "\n")
 
 
 # Set up Reconciliation listfiles and ISFs for each Tile ID
