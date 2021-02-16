@@ -187,7 +187,7 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
             product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
 
 # Add tile IDs from the final catalogs
-for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC]:
+for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
     tile_id = final_catalog_fileprod.product.Data.TileIndex
     tile_id_set.add(tile_id)
 
