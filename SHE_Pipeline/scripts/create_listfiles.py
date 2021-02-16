@@ -14,7 +14,7 @@ from enum import Enum
 import os
 
 from SHE_PPT import products
-from SHE_PPT.file_io import read_xml_product, write_listfile
+from SHE_PPT.file_io import read_xml_product, write_listfile, find_aux_file
 from SHE_PPT.products.mer_final_catalog import dpdMerFinalCatalog
 from SHE_PPT.products.mer_segmentation_map import dpdMerSegmentationMap
 from SHE_PPT.products.she_exposure_segmentation_map import dpdSheExposureReprojectedSegmentationMap
@@ -42,6 +42,12 @@ __updated__ = "2021-02-16"
 
 ROOT_DIR = "."
 
+ANALYSIS_ISF_HEAD = "analysis_isf_"
+ANALYSIS_ISF_TAIL = ".txt"
+
+RECONCILIATION_ISF_HEAD = "reconciliation_isf_"
+RECONCILIATION_ISF_TAIL = ".txt"
+
 
 class ProdKeys(Enum):
     # Dict keys Enum
@@ -55,6 +61,26 @@ class ProdKeys(Enum):
 
 PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.VCF, ProdKeys.VSF)
 
+# ISF ports
+
+ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
+             ProdKeys.MSEG: "mer_segmentation_map_listfile",
+             ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_listfile",
+             ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
+             ProdKeys.VCF: "vis_calibrated_frame_listfile",
+             ProdKeys.VSF: "vis_stacked_frame",
+             }
+
+FIXED_ANALYSIS_ISF_FILENAMES = ["mdb = sample_mdb-SC8.xml",
+                                "phz_output_cat = None",
+                                "ksb_training_data = test_ksb_training.xml"
+                                "lensmc_training_data = test_lensmc_training.xml",
+                                "momentsml_training_data = None",
+                                "regauss_training_data = test_regauss_training.xml",
+                                "spe_output_cat = None"]
+
+RECONCILIATION_ISF_FILENAMES = ["she_validated_measurements_listfile=SheValidatedMeasurementsListfile-TILEID.json",
+                                "she_lensmc_chains_listfile=SheLensMcChainsListfile-TILEID.json"]
 # Product types
 
 PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
@@ -86,7 +112,8 @@ FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
 
 
 # A namedtuple type for all data of each product type
-ProductTypeData = namedtuple("ProductTypeData", ["type", "full_list", "obs_id_dict", "tile_id_dict","filename_head", "filename_tail"])
+ProductTypeData = namedtuple("ProductTypeData", ["type", "full_list",
+                                                 "obs_id_dict", "tile_id_dict", "filename_head", "filename_tail"])
 
 # A namedtuple type for a filename and product
 FileProduct = namedtuple("FileProduct", ["filename", "product"])
@@ -114,15 +141,15 @@ for filename in all_filenames:
 
     # Find the type of the product and add it to the appropriate list
     for product_key in PRODUCT_KEYS:
-        
+
         product_type_data = product_type_data_dict[product_key]
-        
+
         if not isinstance(product, product_type_data.type):
             continue
-        
+
         # Add this to the full list for the product
         product_type_data.full_list.append(FileProduct(filename, product))
-        
+
 # Get sets of all Observation and Tile IDs
 observation_id_set = set()
 tile_id_set = set()
@@ -131,16 +158,16 @@ tile_id_set = set()
 for stacked_frame_fileprod in product_type_data_dict[ProdKeys.VSF].full_list:
     obs_id = stacked_frame_fileprod.product.Data.ObservationSequence.ObservationId
     observation_id_set.add(obs_id)
-    
+
     # Also add this to the dict for fileprods of stacked frames for this ID
     product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id] = [stacked_frame_fileprod]
-    
+
     # And init the list for this obs_id in the obs_id_dict for other types
     for prod_key in PRODUCT_KEYS:
         if prod_key == ProdKeys.VSF:
             continue
         product_type_data_dict[prod_key].obs_id_dict[obs_id] = []
-        
+
 # Fill in the obs_id_dicts for other product types
 for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
                                 (ProdKeys.MSEG, "Data.ObservationIdList", True),
@@ -150,7 +177,7 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
                                 ):
     product_type_data = product_type_data_dict[prod_key]
     for fileprod in product_type_data.full_list:
-        obs_id_or_list = get_nested_attr(fileprod.product,attr)
+        obs_id_or_list = get_nested_attr(fileprod.product, attr)
         if is_list:
             # List of IDs, so iterate over it and add to each list
             for obs_id in obs_id_or_list:
@@ -158,21 +185,21 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
         else:
             # Just one ID, so add it directly
             product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
-    
+
 # Add tile IDs from the final catalogs
 for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC]:
     tile_id = final_catalog_fileprod.product.Data.TileIndex
     tile_id_set.add(tile_id)
-    
+
     # Also add this to the dict for fileprods of final catalogs for this ID
     product_type_data_dict[ProdKeys.MFC].tile_id_dict[tile_id] = [final_catalog_fileprod]
-    
+
     # And init the list for this obs_id in the obs_id_dict for other types
     for prod_key in PRODUCT_KEYS:
         if prod_key == ProdKeys.MFC:
             continue
         product_type_data_dict[prod_key].tile_id_dict[obs_id] = []
-        
+
 # Fill in the tile_id_dicts for other product types
 for prod_key, attr, is_tile in ((ProdKeys.MSEG, "Data.TileIndex", True),
                                 (ProdKeys.SESEG, "Data.ObservationId", False),
@@ -183,16 +210,78 @@ for prod_key, attr, is_tile in ((ProdKeys.MSEG, "Data.TileIndex", True),
     product_type_data = product_type_data_dict[prod_key]
     for fileprod in product_type_data.full_list:
         if is_tile:
-            tile_id = get_nested_attr(fileprod.product,attr)
+            tile_id = get_nested_attr(fileprod.product, attr)
         else:
             # This is an observation product, so we'll have to find its corresponding tiles indirectly
-            obs_id = get_nested_attr(fileprod.product,attr)
+            obs_id = get_nested_attr(fileprod.product, attr)
             for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
                 if obs_id in final_catalog_fileprod.product.Data.ObservationIdList:
                     tile_id = final_catalog_fileprod.product.Data.TileIndex
         product_type_data.tile_id_dict[tile_id].append(fileprod)
-                    
-    
+
+
 # Set up Analysis listfiles and ISFs for each observation ID
-for observation_id in observation_id_set:
-    
+for obs_id in observation_id_set:
+
+    filename_dict = {}
+
+    # Set up and write the listfiles
+    for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
+                              (ProdKeys.MSEG, "Data.TileIndex"),
+                              (ProdKeys.SESEG, "Data.PointingId"),
+                              (ProdKeys.SSSEG, "Data.PointingId"),
+                              (ProdKeys.VCF, "Data.PointingId"),
+                              ):
+
+        product_type_data = product_type_data_dict[prod_key]
+        filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
+        filename_dict[prod_key] = filename
+
+        obs_fileprod_list = product_type_data.obs_id_dict[obs_id]
+        obs_fileprod_list.sort(key=lambda p: get_nested_attr(p, sort_by))
+
+        obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
+
+        write_listfile(os.path.join(ROOT_DIR, filename), obs_filename_list)
+
+    # Set the filename for the VIS Calibrated Frame product
+    filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
+
+    # Write the ISF for this observation
+    isf_filename = ANALYSIS_ISF_HEAD + str(obs_id) + ANALYSIS_ISF_TAIL
+    with open(isf_filename, "w") as fo:
+        # Write these listfile filenames to the ISF
+        for prod_key in PRODUCT_KEYS:
+            fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}")
+        # Write the fixed product filenames to the ISF
+        for l in FIXED_ANALYSIS_ISF_FILENAMES:
+            fo.write(l)
+
+# Set up Reconciliation listfiles and ISFs for each Tile ID
+for tile_id in tile_id_set:
+
+    filename_dict = {}
+
+    # Set up and write the listfiles
+    prod_key = ProdKeys.MFC
+    sort_by = "Data.TileIndex"
+
+    product_type_data = product_type_data_dict[prod_key]
+    filename = product_type_data.filename_head + str(tile_id) + product_type_data.filename_tail
+    filename_dict[prod_key] = filename
+
+    obs_fileprod_list = product_type_data.tile_id_dict[tile_id]
+    obs_fileprod_list.sort(key=lambda p: get_nested_attr(p, sort_by))
+
+    obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
+
+    write_listfile(os.path.join(ROOT_DIR, filename), obs_filename_list)
+
+    # Write the ISF for this tile
+    isf_filename = RECONCILIATION_ISF_HEAD + str(tile_id) + RECONCILIATION_ISF_TAIL
+    with open(isf_filename, "w") as fo:
+        # Write the final catalog listfile filename to the ISF
+        fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}")
+        # Write the fixed product filenames to the ISF
+        for l in RECONCILIATION_ISF_FILENAMES:
+            fo.write(l.replace("TILEID", str(tile_id)))
