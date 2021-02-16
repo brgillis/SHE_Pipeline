@@ -213,11 +213,11 @@ for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
         product_type_data_dict[prod_key].tile_id_dict[obs_id] = []
 
 if len(observation_id_set) == 0:
-    logger.warning("No observation IDs found.")
+    logger.error("No observation IDs found.")
     exit()
 
 if len(tile_id_set) == 0:
-    logger.warning("No tile IDs found.")
+    logger.error("No tile IDs found.")
     exit()
 
 # Fill in the tile_id_dicts for other product types
