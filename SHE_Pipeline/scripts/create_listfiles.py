@@ -36,6 +36,8 @@ from SHE_PPT.products.mer_final_catalog import dpdMerFinalCatalog
 from SHE_PPT.products.mer_segmentation_map import dpdMerSegmentationMap
 from SHE_PPT.products.she_exposure_segmentation_map import dpdSheExposureReprojectedSegmentationMap
 from SHE_PPT.products.she_stack_segmentation_map import dpdSheStackReprojectedSegmentationMap
+from SHE_PPT.products.tu_gal_cat import dpdGalaxyCatalogProduct
+from SHE_PPT.products.tu_star_cat import dpdStarsCatalogProduct
 from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
 from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
 from SHE_PPT.utility import get_nested_attr
@@ -62,9 +64,12 @@ class ProdKeys(Enum):
     SSSEG = "SHE Stack Reprojected Segmentation Map"
     VCF = "VIS Calibrated Frame"
     VSF = "VIS Stacked Frame"
+    TUG = "TU Galaxy Catalog"
+    TUS = "TU Star Catalog"
 
 
-PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.VCF, ProdKeys.VSF)
+PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG,
+                ProdKeys.TUS)
 
 # ISF ports
 
@@ -74,6 +79,8 @@ ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
              ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
              ProdKeys.VCF: "vis_calibrated_frame_listfile",
              ProdKeys.VSF: "vis_stacked_frame",
+             ProdKeys.TUG: "tu_galaxy_catalog_list",
+             ProdKeys.TUS: "tu_star_catalog_list",
              }
 
 FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
@@ -94,6 +101,8 @@ PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
                  ProdKeys.SSSEG: dpdSheStackReprojectedSegmentationMap,
                  ProdKeys.VCF: dpdVisCalibratedFrame,
                  ProdKeys.VSF: dpdVisStackedFrame,
+                 ProdKeys.TUG: dpdGalaxyCatalogProduct,
+                 ProdKeys.TUS: dpdStarsCatalogProduct,
                  }
 
 
@@ -101,10 +110,12 @@ PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
 
 FILENAME_HEADS = {ProdKeys.MFC: "mer_final_catalog_obs_",
                   ProdKeys.MSEG: "mer_segmentation_map_obs_",
-                  ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_obs_",
-                  ProdKeys.SSSEG: "she_exposure_reprojected_segmentation_map_obs_",
-                  ProdKeys.VCF: "vis_calibrated_frame_",
+                  ProdKeys.SESEG: "she_stack_reprojected_segmentation_map_obs_",
+                  ProdKeys.SSSEG: None,
+                  ProdKeys.VCF: "vis_calibrated_frame_obs_",
                   ProdKeys.VSF: None,
+                  ProdKeys.TUG: "galcats",
+                  ProdKeys.TUS: "starcats",
                   }
 
 FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
@@ -113,12 +124,18 @@ FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
                   ProdKeys.SSSEG: "_product.xml",
                   ProdKeys.VCF: "_listfile.json",
                   ProdKeys.VSF: None,
+                  ProdKeys.TUG: ".json",
+                  ProdKeys.TUS: ".json",
                   }
 
 
 # A namedtuple type for all data of each product type
-ProductTypeData = namedtuple("ProductTypeData", ["type", "full_list",
-                                                 "obs_id_dict", "tile_id_dict", "filename_head", "filename_tail"])
+ProductTypeData = namedtuple("ProductTypeData", ["type",
+                                                 "full_list",
+                                                 "obs_id_dict",
+                                                 "tile_id_dict",
+                                                 "filename_head",
+                                                 "filename_tail"])
 
 # A namedtuple type for a filename and product
 FileProduct = namedtuple("FileProduct", ["filename", "product"])
@@ -240,10 +257,23 @@ for prod_key, attr, is_tile in ((ProdKeys.MSEG, "Data.TileIndex", True),
         product_type_data.tile_id_dict[tile_id].append(fileprod)
 
 
+filename_dict = {}
+
+# Write Analysis listfiles for the galaxy and star catalogues
+for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
+
+    product_type_data = product_type_data_dict[prod_key]
+    filename = product_type_data.filename_head + product_type_data.filename_tail
+    filename_dict[prod_key] = filename
+
+    fileprod_list = product_type_data.full_list
+
+    filename_list = [fileprod.filename for fileprod in fileprod_list]
+
+    write_listfile(os.path.join(ROOT_DIR, filename), filename_list)
+
 # Set up Analysis listfiles and ISFs for each observation ID
 for obs_id in observation_id_set:
-
-    filename_dict = {}
 
     # Set up and write the listfiles
     for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
@@ -277,6 +307,7 @@ for obs_id in observation_id_set:
         # Write the fixed product filenames to the ISF
         for l in FIXED_ANALYSIS_ISF_FILENAMES:
             fo.write(l + "\n")
+
 
 # Set up Reconciliation listfiles and ISFs for each Tile ID
 for tile_id in tile_id_set:
