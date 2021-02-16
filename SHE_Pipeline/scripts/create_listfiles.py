@@ -139,7 +139,7 @@ all_filenames = os.listdir(ROOT_DIR)
 
 for filename in all_filenames:
 
-    if filename == MDB_FILENAME or filename[-4] != ".xml":
+    if filename == MDB_FILENAME or filename[-4:] != ".xml":
         continue
 
     product = read_xml_product(filename, workdir=ROOT_DIR)
@@ -168,7 +168,7 @@ tile_id_set = set()
 
 # Add observation IDs from the stacked frames
 for stacked_frame_fileprod in product_type_data_dict[ProdKeys.VSF].full_list:
-    obs_id = stacked_frame_fileprod.product.Data.ObservationSequence.ObservationId
+    obs_id = stacked_frame_fileprod.product.Data.ObservationId
     observation_id_set.add(obs_id)
 
     # Also add this to the dict for fileprods of stacked frames for this ID
@@ -185,7 +185,7 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
                                 (ProdKeys.MSEG, "Data.ObservationIdList", True),
                                 (ProdKeys.SESEG, "Data.ObservationId", False),
                                 (ProdKeys.SSSEG, "Data.ObservationId", False),
-                                (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", True),
+                                (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", False),
                                 ):
     product_type_data = product_type_data_dict[prod_key]
     for fileprod in product_type_data.full_list:
@@ -210,7 +210,7 @@ for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
     for prod_key in PRODUCT_KEYS:
         if prod_key == ProdKeys.MFC:
             continue
-        product_type_data_dict[prod_key].tile_id_dict[obs_id] = []
+        product_type_data_dict[prod_key].tile_id_dict[tile_id] = []
 
 if len(observation_id_set) == 0:
     logger.error("No observation IDs found.")
@@ -249,8 +249,7 @@ for obs_id in observation_id_set:
     for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
                               (ProdKeys.MSEG, "Data.TileIndex"),
                               (ProdKeys.SESEG, "Data.PointingId"),
-                              (ProdKeys.SSSEG, "Data.PointingId"),
-                              (ProdKeys.VCF, "Data.PointingId"),
+                              (ProdKeys.VCF, "Data.ObservationSequence.PointingId"),
                               ):
 
         product_type_data = product_type_data_dict[prod_key]
@@ -258,24 +257,26 @@ for obs_id in observation_id_set:
         filename_dict[prod_key] = filename
 
         obs_fileprod_list = product_type_data.obs_id_dict[obs_id]
-        obs_fileprod_list.sort(key=lambda p: get_nested_attr(p, sort_by))
+        obs_fileprod_list.sort(key=lambda fp: get_nested_attr(fp.product, sort_by))
 
         obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
 
         write_listfile(os.path.join(ROOT_DIR, filename), obs_filename_list)
 
-    # Set the filename for the VIS Calibrated Frame product
+    # Set the filename for the VIS Calibrated Frame product and SHE Stacked Segmentation Map product
     filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
+    filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].filename_head + \
+        str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail
 
     # Write the ISF for this observation
     isf_filename = ANALYSIS_ISF_HEAD + str(obs_id) + ANALYSIS_ISF_TAIL
     with open(isf_filename, "w") as fo:
         # Write these listfile filenames to the ISF
         for prod_key in PRODUCT_KEYS:
-            fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}")
+            fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}\n")
         # Write the fixed product filenames to the ISF
         for l in FIXED_ANALYSIS_ISF_FILENAMES:
-            fo.write(l)
+            fo.write(l + "\n")
 
 # Set up Reconciliation listfiles and ISFs for each Tile ID
 for tile_id in tile_id_set:
@@ -291,7 +292,7 @@ for tile_id in tile_id_set:
     filename_dict[prod_key] = filename
 
     obs_fileprod_list = product_type_data.tile_id_dict[tile_id]
-    obs_fileprod_list.sort(key=lambda p: get_nested_attr(p, sort_by))
+    obs_fileprod_list.sort(key=lambda fp: get_nested_attr(fp.product, sort_by))
 
     obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
 
@@ -301,7 +302,7 @@ for tile_id in tile_id_set:
     isf_filename = RECONCILIATION_ISF_HEAD + str(tile_id) + RECONCILIATION_ISF_TAIL
     with open(isf_filename, "w") as fo:
         # Write the final catalog listfile filename to the ISF
-        fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}")
+        fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}\n")
         # Write the fixed product filenames to the ISF
         for l in RECONCILIATION_ISF_FILENAMES:
-            fo.write(l.replace("TILEID", str(tile_id)))
+            fo.write(l.replace("TILEID", str(tile_id)) + "\n")
