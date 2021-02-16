@@ -9,20 +9,6 @@
     
     Must be run with E-Run.
 """
-from collections import namedtuple
-from enum import Enum
-import os
-
-from SHE_PPT import products
-from SHE_PPT.file_io import read_xml_product, write_listfile, find_aux_file
-from SHE_PPT.products.mer_final_catalog import dpdMerFinalCatalog
-from SHE_PPT.products.mer_segmentation_map import dpdMerSegmentationMap
-from SHE_PPT.products.she_exposure_segmentation_map import dpdSheExposureReprojectedSegmentationMap
-from SHE_PPT.products.she_stack_segmentation_map import dpdSheStackReprojectedSegmentationMap
-from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
-from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
-from SHE_PPT.utility import get_nested_attr
-
 
 __updated__ = "2021-02-16"
 
@@ -39,6 +25,23 @@ __updated__ = "2021-02-16"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+from collections import namedtuple
+from enum import Enum
+import os
+
+from SHE_PPT import products
+from SHE_PPT.file_io import read_xml_product, write_listfile, find_aux_file
+from SHE_PPT.logging import getLogger
+from SHE_PPT.products.mer_final_catalog import dpdMerFinalCatalog
+from SHE_PPT.products.mer_segmentation_map import dpdMerSegmentationMap
+from SHE_PPT.products.she_exposure_segmentation_map import dpdSheExposureReprojectedSegmentationMap
+from SHE_PPT.products.she_stack_segmentation_map import dpdSheStackReprojectedSegmentationMap
+from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
+from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
+from SHE_PPT.utility import get_nested_attr
+
+
+logger = getLogger(__name__)
 
 ROOT_DIR = "."
 
@@ -47,6 +50,8 @@ ANALYSIS_ISF_TAIL = ".txt"
 
 RECONCILIATION_ISF_HEAD = "reconciliation_isf_"
 RECONCILIATION_ISF_TAIL = ".txt"
+
+MDB_FILENAME = "sample_mdb-SC8.xml"
 
 
 class ProdKeys(Enum):
@@ -71,7 +76,7 @@ ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
              ProdKeys.VSF: "vis_stacked_frame",
              }
 
-FIXED_ANALYSIS_ISF_FILENAMES = ["mdb = sample_mdb-SC8.xml",
+FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "phz_output_cat = None",
                                 "ksb_training_data = test_ksb_training.xml"
                                 "lensmc_training_data = test_lensmc_training.xml",
@@ -134,10 +139,12 @@ all_filenames = os.listdir(ROOT_DIR)
 
 for filename in all_filenames:
 
-    if not filename[-4] == ".xml":
+    if filename == MDB_FILENAME or filename[-4] != ".xml":
         continue
 
     product = read_xml_product(filename, workdir=ROOT_DIR)
+
+    identified_product = False
 
     # Find the type of the product and add it to the appropriate list
     for product_key in PRODUCT_KEYS:
@@ -147,8 +154,13 @@ for filename in all_filenames:
         if not isinstance(product, product_type_data.type):
             continue
 
+        identified_product = True
+
         # Add this to the full list for the product
         product_type_data.full_list.append(FileProduct(filename, product))
+
+    if not identified_product:
+        logger.warning(f"Cannot identify type of product {filename}")
 
 # Get sets of all Observation and Tile IDs
 observation_id_set = set()
@@ -199,6 +211,14 @@ for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
         if prod_key == ProdKeys.MFC:
             continue
         product_type_data_dict[prod_key].tile_id_dict[obs_id] = []
+
+if len(observation_id_set) == 0:
+    logger.warning("No observation IDs found.")
+    exit()
+
+if len(tile_id_set) == 0:
+    logger.warning("No tile IDs found.")
+    exit()
 
 # Fill in the tile_id_dicts for other product types
 for prod_key, attr, is_tile in ((ProdKeys.MSEG, "Data.TileIndex", True),
