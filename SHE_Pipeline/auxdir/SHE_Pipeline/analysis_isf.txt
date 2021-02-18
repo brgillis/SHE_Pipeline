@@ -1,40 +1,11 @@
-# LE1 Products
-
-# aocs_time_series_products = mock_aocs_time_series_products.json
-
+mer_final_catalog_listfile = mer_final_catalog_obs_31283_listfile.json
+mer_segmentation_map_listfile = mer_segmentation_map_obs_31283_listfile.json
+vis_calibrated_frame_listfile = vis_calibrated_frame_obs_31283_listfile.json
+vis_stacked_frame = DpdVisStackedFrame__EUC_VIS_SDCFRPROD_ProcessField_4.3.3_VIS_SC8_GSIR_VIS_SWF1_R3_0_31283_CG20201228-00-dpdstacked_frame-0.xml
 mdb = sample_mdb-SC8.xml
-
-# SIM Products
-
-# tu_galaxy_catalog = GalCat.xml
-# tu_star_catalog = StarCat.xml
-
-# VIS Products
-
-vis_calibrated_frame_listfile = vis_calibrated_frame_listfile.json
-vis_stacked_frame = DpdVisStackedFrame.xml
-
-# MER Products
-
-mer_segmentation_map_listfile = mer_segmentation_map_listfile.json
-mer_final_catalog_listfile = mer_final_catalog_listfile.json
-
-# PHZ Products
-
 phz_output_cat = None
-
-# SHE_Products
-
-# she_stack_reprojected_segmentation_map = DpdSheStackReprojectedSegmentationMap.xml
-# she_exposure_reprojected_segmentation_map_listfile = she_exposure_reprojected_segmentation_maps.json
-
-# psf_calibration_products = mock_psf_calibration_products.json
-# galaxy_population_priors_table = mock_galaxy_population_priors_table.fits
-# calibration_parameters_product = mock_calibration_parameters_product.bin
-
 ksb_training_data = test_ksb_training.xml
 lensmc_training_data = test_lensmc_training.xml
 momentsml_training_data = None
 regauss_training_data = test_regauss_training.xml
-
 spe_output_cat = None
