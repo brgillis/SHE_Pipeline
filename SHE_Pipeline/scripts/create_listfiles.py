@@ -255,30 +255,9 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
                 observation_id_set.add(obs_id_or_list)
 
-# Add tile IDs from the final catalogs
-for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
-    tile_id = final_catalog_fileprod.product.Data.TileIndex
-    tile_id_set.add(tile_id)
-
-    # Also add this to the dict for fileprods of final catalogs for this ID
-    product_type_data_dict[ProdKeys.MFC].tile_id_dict[tile_id] = [final_catalog_fileprod]
-
-    # And init the list for this obs_id in the obs_id_dict for other types
-    for prod_key in ANALYSIS_PRODUCT_KEYS:
-        if prod_key == ProdKeys.MFC:
-            continue
-        product_type_data_dict[prod_key].tile_id_dict[tile_id] = []
-
-if len(observation_id_set) == 0:
-    logger.error("No observation IDs found.")
-    exit()
-
-if len(tile_id_set) == 0:
-    logger.error("No tile IDs found.")
-    exit()
-
-# Fill in the tile_id_dicts for other product types
-for prod_key, attr, is_tile in ((ProdKeys.MSEG, "Data.TileIndex", True),
+# Fill in the tile_id_dicts for all product types
+for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
+                                (ProdKeys.MSEG, "Data.TileIndex", True),
                                 (ProdKeys.SESEG, "Data.ObservationId", False),
                                 (ProdKeys.SSSEG, "Data.ObservationId", False),
                                 (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", False),
@@ -294,8 +273,20 @@ for prod_key, attr, is_tile in ((ProdKeys.MSEG, "Data.TileIndex", True),
             for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
                 if obs_id in final_catalog_fileprod.product.Data.ObservationIdList:
                     tile_id = final_catalog_fileprod.product.Data.TileIndex
-        product_type_data.tile_id_dict[tile_id].append(fileprod)
+        if tile_id in product_type_data.tile_id_dict:
+            product_type_data.tile_id_dict[tile_id].append(fileprod)
+        else:
+            product_type_data.tile_id_dict[tile_id] = [fileprod]
+            tile_id_set.add(tile_id)
 
+
+if len(observation_id_set) == 0:
+    logger.error("No observation IDs found.")
+    exit()
+
+if len(tile_id_set) == 0:
+    logger.error("No tile IDs found.")
+    exit()
 
 filename_dict = {}
 
