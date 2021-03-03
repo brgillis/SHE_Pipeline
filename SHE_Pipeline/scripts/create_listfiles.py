@@ -374,6 +374,11 @@ for tile_id in tile_id_set:
 
     tile_valid = True
 
+    if not tile_id in product_type_data_dict[ProdKeys.MFC].tile_id_dict:
+        continue
+
+    reconciliation_filename_dict[ProdKeys.MFC] = product_type_data_dict[ProdKeys.MFC].tile_id_dict[tile_id][0].filename
+
     # Set up and write the listfiles
     for prod_key, sort_by in ((ProdKeys.SVM, "Data.ObservationId"),
                               (ProdKeys.SLMC, "Data.ObservationId"),
