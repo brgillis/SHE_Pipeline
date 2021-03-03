@@ -372,7 +372,7 @@ for obs_id in observation_id_set:
 # Set up Reconciliation listfiles and ISFs for each Tile ID
 for tile_id in tile_id_set:
 
-    reconciliation_filename_dict = {}
+    tile_valid = True
 
     # Set up and write the listfiles
     for prod_key, sort_by in ((ProdKeys.SVM, "Data.ObservationId"),
@@ -380,6 +380,11 @@ for tile_id in tile_id_set:
                               ):
 
         product_type_data = product_type_data_dict[prod_key]
+
+        if not tile_id in product_type_data.tile_id_dict:
+            tile_valid = False
+            break
+
         filename = product_type_data.filename_head + str(tile_id) + product_type_data.filename_tail
         reconciliation_filename_dict[prod_key] = filename
 
@@ -389,6 +394,9 @@ for tile_id in tile_id_set:
         obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
 
         write_listfile(os.path.join(ROOT_DIR, filename), obs_filename_list)
+
+    if not tile_valid:
+        continue
 
     # Write the ISF for this tile
     isf_filename = RECONCILIATION_ISF_HEAD + str(tile_id) + RECONCILIATION_ISF_TAIL
