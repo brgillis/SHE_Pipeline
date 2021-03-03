@@ -120,7 +120,7 @@ FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "regauss_training_data = test_regauss_training.xml",
                                 "spe_output_cat = None"]
 
-RECONCILIATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_product",
+RECONCILIATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog",
                             ProdKeys.SVM: "she_validated_measurements_listfile",
                             ProdKeys.SLMC: "she_lensmc_chains_listfile",
                             }
