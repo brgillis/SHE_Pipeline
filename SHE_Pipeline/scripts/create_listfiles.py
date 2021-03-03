@@ -75,8 +75,9 @@ class ProdKeys(Enum):
     TUS = "TU Star Catalog"
 
 
-PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.SVM, ProdKeys.SLMC,
-                ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG, ProdKeys.TUS)
+ANALYSIS_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG,
+                         ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG, ProdKeys.TUS)
+RECONCILIATION_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.SVM, ProdKeys.SLMC,)
 
 # Which pipelines a given product is used for
 # 1 = only for that variant, -1 = only not that variant, 0 = both variants
@@ -181,7 +182,7 @@ FileProduct = namedtuple("FileProduct", ["filename", "product"])
 
 # Init dict of data for each product type
 product_type_data_dict = {}
-for key in PRODUCT_KEYS:
+for key in ANALYSIS_PRODUCT_KEYS:
     product_type_data_dict[key] = ProductTypeData(PRODUCT_TYPES[key],
                                                   [],
                                                   {},
@@ -203,7 +204,7 @@ for filename in all_filenames:
     identified_product = False
 
     # Find the type of the product and add it to the appropriate list
-    for product_key in PRODUCT_KEYS:
+    for product_key in ANALYSIS_PRODUCT_KEYS + RECONCILIATION_PRODUCT_KEYS:
 
         product_type_data = product_type_data_dict[product_key]
 
@@ -231,7 +232,7 @@ for stacked_frame_fileprod in product_type_data_dict[ProdKeys.VSF].full_list:
     product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id] = [stacked_frame_fileprod]
 
     # And init the list for this obs_id in the obs_id_dict for other types
-    for prod_key in PRODUCT_KEYS:
+    for prod_key in ANALYSIS_PRODUCT_KEYS:
         if prod_key == ProdKeys.VSF:
             continue
         product_type_data_dict[prod_key].obs_id_dict[obs_id] = []
@@ -263,7 +264,7 @@ for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
     product_type_data_dict[ProdKeys.MFC].tile_id_dict[tile_id] = [final_catalog_fileprod]
 
     # And init the list for this obs_id in the obs_id_dict for other types
-    for prod_key in PRODUCT_KEYS:
+    for prod_key in ANALYSIS_PRODUCT_KEYS:
         if prod_key == ProdKeys.MFC:
             continue
         product_type_data_dict[prod_key].tile_id_dict[tile_id] = []
@@ -352,7 +353,7 @@ for obs_id in observation_id_set:
             # Write the ISF
             with open(isf_filename, "w") as fo:
                 # Write these listfile filenames to the ISF
-                for prod_key in PRODUCT_KEYS:
+                for prod_key in ANALYSIS_PRODUCT_KEYS:
                     # Determine whether to write this key or not from the variant
                     met_criteria = True
                     for criteria, variant in ((ONLY_FOR_AFTER_REMAP[prod_key], after_remap),
