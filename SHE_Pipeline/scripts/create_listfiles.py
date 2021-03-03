@@ -257,9 +257,14 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
             for obs_id in obs_id_or_list:
                 if obs_id in product_type_data.obs_id_dict:
                     product_type_data.obs_id_dict[obs_id].append(fileprod)
+                else:
+                    product_type_data.obs_id_dict[obs_id] = [fileprod]
         else:
             # Just one ID, so add it directly
-            product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
+            if obs_id_or_list in product_type_data.obs_id_dict:
+                product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
+            else:
+                product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
 
 # Add tile IDs from the final catalogs
 for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
