@@ -226,27 +226,14 @@ for filename in all_filenames:
 observation_id_set = set()
 tile_id_set = set()
 
-# Add observation IDs from the stacked frames
-for stacked_frame_fileprod in product_type_data_dict[ProdKeys.VSF].full_list:
-    obs_id = stacked_frame_fileprod.product.Data.ObservationId
-    observation_id_set.add(obs_id)
-
-    # Also add this to the dict for fileprods of stacked frames for this ID
-    product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id] = [stacked_frame_fileprod]
-
-    # And init the list for this obs_id in the obs_id_dict for other types
-    for prod_key in ANALYSIS_PRODUCT_KEYS + RECONCILIATION_PRODUCT_KEYS:
-        if prod_key == ProdKeys.VSF:
-            continue
-        product_type_data_dict[prod_key].obs_id_dict[obs_id] = []
-
-# Fill in the obs_id_dicts for other product types
+# Fill in the obs_id_dicts for all product types
 for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
                                 (ProdKeys.MSEG, "Data.ObservationIdList", True),
                                 (ProdKeys.SESEG, "Data.ObservationId", False),
                                 (ProdKeys.SSSEG, "Data.ObservationId", False),
                                 (ProdKeys.SVM, "Data.ObservationId", False),
                                 (ProdKeys.SLMC, "Data.ObservationId", False),
+                                (ProdKeys.VSF, "Data.ObservationId", False),
                                 (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", False),
                                 ):
     product_type_data = product_type_data_dict[prod_key]
@@ -259,12 +246,14 @@ for prod_key, attr, is_list in ((ProdKeys.MFC, "Data.ObservationIdList", True),
                     product_type_data.obs_id_dict[obs_id].append(fileprod)
                 else:
                     product_type_data.obs_id_dict[obs_id] = [fileprod]
+                    observation_id_set.add(obs_id)
         else:
             # Just one ID, so add it directly
             if obs_id_or_list in product_type_data.obs_id_dict:
                 product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
             else:
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
+                observation_id_set.add(obs_id_or_list)
 
 # Add tile IDs from the final catalogs
 for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
