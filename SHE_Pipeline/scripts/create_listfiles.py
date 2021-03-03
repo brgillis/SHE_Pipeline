@@ -305,6 +305,8 @@ for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
 # Set up Analysis listfiles and ISFs for each observation ID
 for obs_id in observation_id_set:
 
+    analysis_valid = True
+
     # Set up and write the listfiles
     for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
                               (ProdKeys.MSEG, "Data.TileIndex"),
@@ -313,6 +315,12 @@ for obs_id in observation_id_set:
                               ):
 
         product_type_data = product_type_data_dict[prod_key]
+
+        if not obs_id in product_type_data.obs_id_dict:
+            # This product isn't present, so skip it and mark as invalid for the analysis pipeline
+            analysis_valid = False
+            break
+
         filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
         filename_dict[prod_key] = filename
 
@@ -322,6 +330,9 @@ for obs_id in observation_id_set:
         obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
 
         write_listfile(os.path.join(ROOT_DIR, filename), obs_filename_list)
+
+    if not analysis_valid:
+        continue
 
     # Set the filename for the VIS Calibrated Frame product and SHE Stacked Segmentation Map product
     filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
