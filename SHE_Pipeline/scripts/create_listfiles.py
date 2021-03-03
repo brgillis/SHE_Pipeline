@@ -265,18 +265,20 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
     product_type_data = product_type_data_dict[prod_key]
     for fileprod in product_type_data.full_list:
         if is_tile:
-            tile_id = get_nested_attr(fileprod.product, attr)
+            tile_ids = [get_nested_attr(fileprod.product, attr)]
         else:
             # This is an observation product, so we'll have to find its corresponding tiles indirectly
             obs_id = get_nested_attr(fileprod.product, attr)
+            tile_ids = []
             for final_catalog_fileprod in product_type_data_dict[ProdKeys.MFC].full_list:
                 if obs_id in final_catalog_fileprod.product.Data.ObservationIdList:
-                    tile_id = final_catalog_fileprod.product.Data.TileIndex
-        if tile_id in product_type_data.tile_id_dict:
-            product_type_data.tile_id_dict[tile_id].append(fileprod)
-        else:
-            product_type_data.tile_id_dict[tile_id] = [fileprod]
-            tile_id_set.add(tile_id)
+                    tile_ids.append(final_catalog_fileprod.product.Data.TileIndex)
+        for tile_id in tile_ids:
+            if tile_id in product_type_data.tile_id_dict:
+                product_type_data.tile_id_dict[tile_id].append(fileprod)
+            else:
+                product_type_data.tile_id_dict[tile_id] = [fileprod]
+                tile_id_set.add(tile_id)
 
 
 if len(observation_id_set) == 0:
