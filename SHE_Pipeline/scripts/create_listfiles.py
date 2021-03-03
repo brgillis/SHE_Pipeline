@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-02-16"
+__updated__ = "2021-03-03"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -35,7 +35,9 @@ from SHE_PPT.logging import getLogger
 from SHE_PPT.products.mer_final_catalog import dpdMerFinalCatalog
 from SHE_PPT.products.mer_segmentation_map import dpdMerSegmentationMap
 from SHE_PPT.products.she_exposure_segmentation_map import dpdSheExposureReprojectedSegmentationMap
+from SHE_PPT.products.she_lensmc_chains import dpdSheLensMcChains
 from SHE_PPT.products.she_stack_segmentation_map import dpdSheStackReprojectedSegmentationMap
+from SHE_PPT.products.she_validated_measurements import dpdSheValidatedMeasurements
 from SHE_PPT.products.tu_gal_cat import dpdGalaxyCatalogProduct
 from SHE_PPT.products.tu_star_cat import dpdStarsCatalogProduct
 from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
@@ -65,14 +67,16 @@ class ProdKeys(Enum):
     MSEG = "MER Segmentation Map"
     SESEG = "SHE Exposure Reprojected Segmentation Map"
     SSSEG = "SHE Stack Reprojected Segmentation Map"
+    SVM = "SHE Validated Measurements"
+    SLMC = "SHE LensMC Chains"
     VCF = "VIS Calibrated Frame"
     VSF = "VIS Stacked Frame"
     TUG = "TU Galaxy Catalog"
     TUS = "TU Star Catalog"
 
 
-PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG,
-                ProdKeys.TUS)
+PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG, ProdKeys.SVM, ProdKeys.SLMC,
+                ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG, ProdKeys.TUS)
 
 # Which pipelines a given product is used for
 # 1 = only for that variant, -1 = only not that variant, 0 = both variants
@@ -97,15 +101,15 @@ ONLY_FOR_TU_MATCH = {ProdKeys.MFC: 0,
 
 # ISF ports and common filenames
 
-ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
-             ProdKeys.MSEG: "mer_segmentation_map_listfile",
-             ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_listfile",
-             ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
-             ProdKeys.VCF: "vis_calibrated_frame_listfile",
-             ProdKeys.VSF: "vis_stacked_frame",
-             ProdKeys.TUG: "tu_galaxy_catalog_list",
-             ProdKeys.TUS: "tu_star_catalog_list",
-             }
+ANALYSIS_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
+                      ProdKeys.MSEG: "mer_segmentation_map_listfile",
+                      ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_listfile",
+                      ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
+                      ProdKeys.VCF: "vis_calibrated_frame_listfile",
+                      ProdKeys.VSF: "vis_stacked_frame",
+                      ProdKeys.TUG: "tu_galaxy_catalog_list",
+                      ProdKeys.TUS: "tu_star_catalog_list",
+                      }
 
 FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "phz_output_cat = None",
@@ -115,6 +119,11 @@ FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "regauss_training_data = test_regauss_training.xml",
                                 "spe_output_cat = None"]
 
+RECONCILIATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
+                            ProdKeys.SVM: "she_validated_measurements_listfile",
+                            ProdKeys.SLMC: "she_lensmc_chains_listfile",
+                            }
+
 RECONCILIATION_ISF_FILENAMES = ["she_validated_measurements_listfile=SheValidatedMeasurementsListfile-TILEID.json",
                                 "she_lensmc_chains_listfile=SheLensMcChainsListfile-TILEID.json"]
 # Product types
@@ -123,6 +132,8 @@ PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
                  ProdKeys.MSEG: dpdMerSegmentationMap,
                  ProdKeys.SESEG: dpdSheExposureReprojectedSegmentationMap,
                  ProdKeys.SSSEG: dpdSheStackReprojectedSegmentationMap,
+                 ProdKeys.SVM: dpdSheValidatedMeasurements,
+                 ProdKeys.SLMC: dpdSheLensMcChains,
                  ProdKeys.VCF: dpdVisCalibratedFrame,
                  ProdKeys.VSF: dpdVisStackedFrame,
                  ProdKeys.TUG: dpdGalaxyCatalogProduct,
@@ -345,7 +356,7 @@ for obs_id in observation_id_set:
                         if (criteria == 1 and not variant) or (criteria == -1 and variant):
                             met_criteria = False
                     if met_criteria:
-                        fo.write(f"{ISF_PORTS[prod_key]} = {filename_dict[prod_key]}\n")
+                        fo.write(f"{ANALYSIS_ISF_PORTS[prod_key]} = {filename_dict[prod_key]}\n")
                 # Write the fixed product filenames to the ISF
                 for l in FIXED_ANALYSIS_ISF_FILENAMES:
                     fo.write(l + "\n")
@@ -375,7 +386,7 @@ for tile_id in tile_id_set:
     isf_filename = RECONCILIATION_ISF_HEAD + str(tile_id) + RECONCILIATION_ISF_TAIL
     with open(isf_filename, "w") as fo:
         # Write the final catalog listfile filename to the ISF
-        fo.write(f"{ISF_PORTS[prod_key]}={filename_dict[prod_key]}\n")
+        fo.write(f"{RECONCILIATION_ISF_PORTS[prod_key]}={filename_dict[prod_key]}\n")
         # Write the fixed product filenames to the ISF
         for l in RECONCILIATION_ISF_FILENAMES:
             fo.write(l.replace("TILEID", str(tile_id)) + "\n")
