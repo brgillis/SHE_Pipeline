@@ -257,6 +257,8 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                                 (ProdKeys.MSEG, "Data.TileIndex", True),
                                 (ProdKeys.SESEG, "Data.ObservationId", False),
                                 (ProdKeys.SSSEG, "Data.ObservationId", False),
+                                (ProdKeys.SVM, "Data.ObservationId", False),
+                                (ProdKeys.SLMC, "Data.ObservationId", False),
                                 (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", False),
                                 (ProdKeys.VSF, "Data.ObservationId", False),
                                 ):
