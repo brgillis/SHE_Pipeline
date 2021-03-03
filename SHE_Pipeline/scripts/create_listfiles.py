@@ -182,7 +182,7 @@ FileProduct = namedtuple("FileProduct", ["filename", "product"])
 
 # Init dict of data for each product type
 product_type_data_dict = {}
-for key in ANALYSIS_PRODUCT_KEYS:
+for key in ANALYSIS_PRODUCT_KEYS + RECONCILIATION_PRODUCT_KEYS:
     product_type_data_dict[key] = ProductTypeData(PRODUCT_TYPES[key],
                                                   [],
                                                   {},
