@@ -1,10 +1,63 @@
 Changelog for SHE_Pipeline
 
+Changes in v8.1
+========================
+
+API Changes
+-----------
+- Updated default template work directory and ISFs to reference SC8 data
+- Removed BFD from default shear estimation methods list
+
+
+Dependency Changes
+------------------
+- Now depends on SHE_CTE 8.1, SHE_GST 8.0, SHE_MER 8.2, SHE_PSFToolkit 8.4, SHE_Validation 0.1,
+  ST_PipelineChecker 0.4.0, and inherits dependencies on SHE_LensMC 3., SHE_MomentsML 8.1, SHE_PPT 8.7,
+  ST_DataModelBindings 8.0.5, ST_DataModelTools 8.0.5,  EL_Utils 1.1.0, and Elements 5.12.0
+
+
+Deprecated Features
+-------------------
+- "Meta" and "controlled" pipeline functionality removed
+- Removed scripts from old bash implementations of pipeline
+
+
+Bug Fixes
+---------
+
+
+New Features
+------------
+- Added she_validate_cti_gal step to analysis pipeline
+- SHE_IAL_Pipelines_Run script automatically downloads needed MDB files if necessary
+- Added script create_listfiles.py to automatically generate listfiles of input for Analysis and Reconciliation
+  pipelines
+- Added scripts get_all_mer_products.sh, get_all_sim_products.sh, and get_all_vis_products.sh to download MER, SIM, and
+  VIS data from EAS
+
+
+
+New config features
+-------------------
+
+
+Miscellaneous
+-------------
+- Added tests with ST_PipelineChecker
+- Updated pipeline definitions, package definitions, and pipeline scripts for use in SC8
+- Added PPO for analysis pipeline
+- Updated debug pipeline config to match changes to pipeline runner
+- Updated location of test data on WebDAV to SHE_Pipeline_8_1/
+- Increased walltime for Shear Reconciliation task to 4 hours, based on testing
+- Better importing and testing of __version__ variables
+
+
 Changes from v0.10 to v8.0
 ========================
 
 API Changes
 -----------
+
 
 Dependency Changes
 ------------------
