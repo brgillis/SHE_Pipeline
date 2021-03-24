@@ -5,7 +5,7 @@
     Tests of running the pipelines.
 """
 
-__updated__ = "2020-07-30"
+__updated__ = "2021-03-24"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -90,24 +90,23 @@ class TestRunPipeline():
 
         sync = DataSync("testdata/sync.conf", "testdata/test_workdir.txt")
         sync.download()
-        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_1/test_workdir/vis_calibrated_frame_listfile.json")
+        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_1/test_workdir/sample_mdb-SC8.xml")
 
         assert os.path.isfile(qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
 
         # Get the workdir based on where the data images listfile is
         self.workdir = os.path.split(qualified_data_images_filename)[0]
         self.logdir = os.path.join(self.workdir, "logs")
-        
-        return
 
+        return
 
     def test_dry_run_pipelines(self):
         """ Test that all versions are set up correctly
         """
 
         for pipeline in pipeline_info_dict:
-            
-            if pipeline=="analysis":
+
+            if pipeline == "analysis":
                 skip_file_setup = False
             else:
                 skip_file_setup = True
