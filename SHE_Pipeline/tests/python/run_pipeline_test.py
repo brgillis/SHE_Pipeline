@@ -5,7 +5,7 @@
     Tests of running the pipelines.
 """
 
-__updated__ = "2020-07-30"
+__updated__ = "2021-03-26"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -90,7 +90,7 @@ class TestRunPipeline():
 
         sync = DataSync("testdata/sync.conf", "testdata/test_workdir.txt")
         sync.download()
-        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_1/test_workdir/vis_calibrated_frame_listfile.json")
+        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_1/test_workdir/sample_mdb-SC8.xml")
 
         assert os.path.isfile(qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
 
@@ -107,7 +107,7 @@ class TestRunPipeline():
 
         for pipeline in pipeline_info_dict:
             
-            if pipeline=="analysis":
+            if pipeline == "analysis":
                 skip_file_setup = False
             else:
                 skip_file_setup = True
