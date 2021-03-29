@@ -246,6 +246,9 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
             for obs_id in obs_id_or_list:
                 if obs_id in product_type_data.obs_id_dict:
                     product_type_data.obs_id_dict[obs_id].append(fileprod)
+                else:
+                    product_type_data.obs_id_dict[obs_id] = [fileprod]
+                    observation_id_set.add(obs_id)
         else:
             # Just one ID, so add it directly
             if obs_id_or_list in product_type_data.obs_id_dict:
