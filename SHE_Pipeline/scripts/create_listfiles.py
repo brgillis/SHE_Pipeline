@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-03-03"
+__updated__ = "2021-03-29"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -222,6 +222,8 @@ for filename in all_filenames:
     if not identified_product:
         logger.warning(f"Cannot identify type of product {filename}")
 
+logger.info(f"Read in {len(product_type_data.full_list)} data products.")
+
 # Get sets of all Observation and Tile IDs
 observation_id_set = set()
 tile_id_set = set()
@@ -252,6 +254,8 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
                 observation_id_set.add(obs_id_or_list)
 
+logger.info(f"Identified the following Observation IDs: {observation_id_set}")
+
 # Fill in the tile_id_dicts for all product types
 for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                                 (ProdKeys.MSEG, "Data.TileIndex", True),
@@ -280,6 +284,8 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                 product_type_data.tile_id_dict[tile_id] = [fileprod]
                 tile_id_set.add(tile_id)
 
+logger.info(f"Identified the following Tile IDs: {tile_id_set}")
+
 
 if len(observation_id_set) == 0:
     logger.error("No observation IDs found.")
@@ -291,6 +297,8 @@ if len(tile_id_set) == 0:
 
 analysis_filename_dict = {}
 reconciliation_filename_dict = {}
+
+logger.info("Writing TU Galaxy and Star Catalog listfiles.")
 
 # Write Analysis listfiles for the galaxy and star catalogues
 for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
@@ -305,8 +313,14 @@ for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
 
     write_listfile(os.path.join(ROOT_DIR, filename), filename_list)
 
+logger.info("Finished writing TU Galaxy and Star Catalog listfiles.")
+
+logger.info("Writing Analysis listfiles and ISFs.")
+
 # Set up Analysis listfiles and ISFs for each observation ID
 for obs_id in observation_id_set:
+
+    logger.info(f"Writing Analysis listfiles and ISFs for observation ID {obs_id}")
 
     analysis_valid = True
 
@@ -322,6 +336,7 @@ for obs_id in observation_id_set:
         if not obs_id in product_type_data.obs_id_dict:
             # This product isn't present, so skip it and mark as invalid for the analysis pipeline
             analysis_valid = False
+            logger.error(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
             break
 
         filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
@@ -370,9 +385,16 @@ for obs_id in observation_id_set:
                 for l in FIXED_ANALYSIS_ISF_FILENAMES:
                     fo.write(l + "\n")
 
+    logger.info(f"Finished writing Analysis listfiles and ISFs for observation ID {obs_id}")
+
+logger.info("Finished writing Analysis listfiles and ISFs.")
+
+logger.info("Writing Reconciliation listfiles and ISFs.")
 
 # Set up Reconciliation listfiles and ISFs for each Tile ID
 for tile_id in tile_id_set:
+
+    logger.info(f"Writing Reconciliation listfiles and ISFs for tile ID {tile_id}")
 
     tile_valid = True
 
@@ -390,6 +412,7 @@ for tile_id in tile_id_set:
 
         if not tile_id in product_type_data.tile_id_dict:
             tile_valid = False
+            logger.error(f"Product type {prod_key.value} not present for tile ID {tile_id}.")
             break
 
         filename = product_type_data.filename_head + str(tile_id) + product_type_data.filename_tail
@@ -411,3 +434,9 @@ for tile_id in tile_id_set:
         # Write these listfile filenames to the ISF
         for prod_key in RECONCILIATION_PRODUCT_KEYS:
             fo.write(f"{RECONCILIATION_ISF_PORTS[prod_key]} = {reconciliation_filename_dict[prod_key]}\n")
+
+    logger.info(f"Finished writing Reconciliation listfiles and ISFs for tile ID {tile_id}")
+
+logger.info("Finished writing Reconciliation listfiles and ISFs.")
+
+logger.info("Script execution complete.")
