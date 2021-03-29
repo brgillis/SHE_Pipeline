@@ -336,14 +336,15 @@ for obs_id in observation_id_set:
 
         product_type_data = product_type_data_dict[prod_key]
 
-        if not obs_id in product_type_data.obs_id_dict:
-            # This product isn't present, so skip it and mark as invalid for the analysis pipeline
-            analysis_valid = False
-            logger.error(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
-            break
-
         filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
         analysis_filename_dict[prod_key] = filename
+
+        if not obs_id in product_type_data.obs_id_dict:
+            logger.error(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
+            if prod_key != ProdKeys.SESEG:
+                # This product isn't present, so skip it and mark as invalid for the analysis pipeline
+                analysis_valid = False
+                break
 
         obs_fileprod_list = product_type_data.obs_id_dict[obs_id]
         obs_fileprod_list.sort(key=lambda fp: get_nested_attr(fp.product, sort_by))
