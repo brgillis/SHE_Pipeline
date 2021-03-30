@@ -123,8 +123,24 @@ pipelinerunner.profiling.pilots=0
 pipelinerunner.profiling.payload_jobs=0
 #pipelinerunner.profiling.additional_cmd=
 
-pipelinerunner.pilot.generic_heavy.cores=8
-pipelinerunner.pilot.generic_heavy.ramInMB=16384
-pipelinerunner.pilot.generic_heavy.walltimeInMin=4320
-pipelinerunner.pilot.generic_heavy.loglevel=INFO
-pipelinerunner.pilot.generic_heavy.maxInstances=1
+pipelinerunner.messaging.socketType=ipc
+pipelinerunner.messaging.subSocketBindAddress=${PIPELINERUNNER_RUNID}_sub.sock
+pipelinerunner.messaging.pubSocketBindAddress=${PIPELINERUNNER_RUNID}_pub.sock
+
+pipelinerunner.pilot.genericLight.cores=4
+pipelinerunner.pilot.genericLight.ramInMB=18000
+pipelinerunner.pilot.genericLight.walltimeInMin=4320
+pipelinerunner.pilot.genericLight.maxInstances=1
+
+environment.sourcingScripts.empty=; echo
+environment.sourcingScripts.ialtest=$PIPELINERUNNER_PACKAGE/test_pipelines/executables/ialtest_env.sh
+environment.sourcingScripts.eden-2.0=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.eden-2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.2.0=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.eden-2.1=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.eden-2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.2.1=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+
+environment.sourcingScriptsDefault=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
