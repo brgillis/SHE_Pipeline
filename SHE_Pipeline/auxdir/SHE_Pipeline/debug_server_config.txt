@@ -23,7 +23,7 @@ pipelinerunner.messaging.subSocketBindAddress=${PIPELINERUNNER_RUNID}_sub.sock
 pipelinerunner.messaging.pubSocketBindAddress=${PIPELINERUNNER_RUNID}_pub.sock
 
 pipelinerunner.pilot.genericLight.cores=4
-pipelinerunner.pilot.genericLight.ramInMB=18000
+pipelinerunner.pilot.genericLight.ramInMB=16384
 pipelinerunner.pilot.genericLight.walltimeInMin=4320
 pipelinerunner.pilot.genericLight.maxInstances=1
 
