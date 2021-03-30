@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-02-05"
+__updated__ = "2021-03-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -43,7 +43,9 @@ import subprocess as sbp
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
-default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.1.5/ppo/lodeen-ial.properties"
+
+default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.1/ppo/lodeen-ial.properties"
+debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
 
 default_eden_version_master = "Eden-2.1"
 default_eden_version_dev = "Eden-2.1-dev"
@@ -52,7 +54,8 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.1.4/bin/pipeline_runner.py"
+pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.1"
+pipeline_runner_exec = f"{pipeline_runner_path}/bin/python {pipeline_runner_path}/bin/pipeline_runner.py submit"
 
 logger = getLogger(__name__)
 
@@ -576,7 +579,7 @@ def run_pipeline_from_args(args):
     qualified_isf_filename = create_isf(args, config_filename, chosen_pipeline_info=chosen_pipeline_info)
 
     if args.use_debug_server_config:
-        server_config = find_aux_file("SHE_Pipeline/debug_server_config.txt")
+        server_config = find_file(debug_server_config)
     else:
         server_config = args.server_config
         if server_config is None and not args.cluster:
