@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-03-29"
+__updated__ = "2021-03-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -245,14 +245,16 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
             # List of IDs, so iterate over it and add to each list
             for obs_id in obs_id_or_list:
                 if obs_id in product_type_data.obs_id_dict:
-                    product_type_data.obs_id_dict[obs_id].append(fileprod)
+                    if not fileprod in product_type_data.obs_id_dict[obs_id]:
+                        product_type_data.obs_id_dict[obs_id].append(fileprod)
                 else:
                     product_type_data.obs_id_dict[obs_id] = [fileprod]
                     observation_id_set.add(obs_id)
         else:
             # Just one ID, so add it directly
             if obs_id_or_list in product_type_data.obs_id_dict:
-                product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
+                if not fileprod in product_type_data.obs_id_dict[obs_id_or_list]:
+                    product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
             else:
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
                 observation_id_set.add(obs_id_or_list)
@@ -282,7 +284,8 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                     tile_ids.append(final_catalog_fileprod.product.Data.TileIndex)
         for tile_id in tile_ids:
             if tile_id in product_type_data.tile_id_dict:
-                product_type_data.tile_id_dict[tile_id].append(fileprod)
+                if not fileprod in product_type_data.tile_id_dict[tile_id]:
+                    product_type_data.tile_id_dict[tile_id].append(fileprod)
             else:
                 product_type_data.tile_id_dict[tile_id] = [fileprod]
                 tile_id_set.add(tile_id)
