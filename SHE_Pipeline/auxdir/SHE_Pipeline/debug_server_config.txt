@@ -127,10 +127,20 @@ pipelinerunner.messaging.socketType=ipc
 pipelinerunner.messaging.subSocketBindAddress=${PIPELINERUNNER_RUNID}_sub.sock
 pipelinerunner.messaging.pubSocketBindAddress=${PIPELINERUNNER_RUNID}_pub.sock
 
-pipelinerunner.pilot.genericLight.cores=4
-pipelinerunner.pilot.genericLight.ramInMB=16384
-pipelinerunner.pilot.genericLight.walltimeInMin=4320
-pipelinerunner.pilot.genericLight.maxInstances=1
+pipelinerunner.pilots.genericLight.CPUcores=2
+pipelinerunner.pilots.genericLight.rssInMB=4132
+pipelinerunner.pilots.genericLight.walltimeInMin=4320
+pipelinerunner.pilots.genericLight.maxInstances=0
+
+pipelinerunner.pilots.genericMedium.CPUcores=8
+pipelinerunner.pilots.genericMedium.rssInMB=16384
+pipelinerunner.pilots.genericMedium.walltimeInMin=4320
+pipelinerunner.pilots.genericMedium.maxInstances=0
+
+pipelinerunner.pilots.genericHeavy.CPUcores=16
+pipelinerunner.pilots.genericHeavy.rssInMB=32768
+pipelinerunner.pilots.genericHeavy.walltimeInMin=4320
+pipelinerunner.pilots.genericHeavy.maxInstances=1
 
 environment.sourcingScripts.empty=; echo
 environment.sourcingScripts.ialtest=$PIPELINERUNNER_PACKAGE/test_pipelines/executables/ialtest_env.sh
