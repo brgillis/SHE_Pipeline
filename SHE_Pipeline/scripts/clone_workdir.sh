@@ -33,13 +33,12 @@ if [ $? -ne 0 ]; then
 fi
 
 mkdir data
+chmod a+rwx data
+
 ln -s $SOURCEDIR/data/* data/
 ln -s $SOURCEDIR/* .
 
 echo "Please ignore the 'ln: failed to create symbolic link './data': File exists' error - it's expected"
-
-chmod a+x . data
-chmod a+rw . * */*
 
 cd $STARTDIR
 

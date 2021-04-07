@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-02-05"
+__updated__ = "2021-03-30"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -43,7 +43,9 @@ import subprocess as sbp
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
-default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.1.5/ppo/lodeen-ial.properties"
+
+default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.1/ppo/lodeen-ial.properties"
+debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
 
 default_eden_version_master = "Eden-2.1"
 default_eden_version_dev = "Eden-2.1-dev"
@@ -52,7 +54,11 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_exec = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.1.4/bin/pipeline_runner.py"
+pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.1"
+pipeline_runner_exec = f"{pipeline_runner_path}/bin/python {pipeline_runner_path}/bin/pipeline_runner.py"
+
+submit_command = "submit"
+localrun_command = "localrun"
 
 logger = getLogger(__name__)
 
@@ -539,11 +545,17 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, dry_run=False):
+def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, local_run=False, dry_run=False):
     """Sets up and calls a command to execute the pipeline.
     """
 
-    cmd = pipeline_runner_exec + ' --pipeline=' + pipeline_info.pipeline_script + ' --data=' + isf
+    if local_run:
+        command_type = localrun_command
+    else:
+        command_type = submit_command
+    pipeline_runner_command = pipeline_runner_exec + " " + command_type
+
+    cmd = pipeline_runner_command + ' --pipeline=' + pipeline_info.pipeline_script + ' --data=' + isf
     if server_config is not None:
         cmd += ' --config=' + server_config
     if serverurl is not None:
@@ -576,11 +588,13 @@ def run_pipeline_from_args(args):
     qualified_isf_filename = create_isf(args, config_filename, chosen_pipeline_info=chosen_pipeline_info)
 
     if args.use_debug_server_config:
-        server_config = find_aux_file("SHE_Pipeline/debug_server_config.txt")
+        server_config = find_file(debug_server_config)
+        local_run = True
     else:
         server_config = args.server_config
         if server_config is None and not args.cluster:
             server_config = default_server_config
+        local_run = False
 
     # Try to call the pipeline
     try:
@@ -589,6 +603,7 @@ def run_pipeline_from_args(args):
                          serverurl=args.serverurl,
                          workdir=args.workdir,
                          server_config=server_config,
+                         local_run=local_run,
                          dry_run=args.dry_run)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions

@@ -50,6 +50,7 @@ Miscellaneous
 - Updated location of test data on WebDAV to SHE_Pipeline_8_1/
 - Increased walltime for Shear Reconciliation task to 4 hours, based on testing
 - Better importing and testing of __version__ variables
+- Now uses pipeline_runner version 2.2.1
 
 
 Changes from v0.10 to v8.0
