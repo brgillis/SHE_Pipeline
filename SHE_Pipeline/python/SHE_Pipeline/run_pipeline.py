@@ -44,6 +44,7 @@ default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.1.5/ppo/lodeen-ial.properties"
+default_server_url = "http://ial:50000"
 
 default_eden_version_master = "Eden-2.1"
 default_eden_version_dev = "Eden-2.1-dev"
@@ -558,6 +559,8 @@ def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, loca
         cmd += ' --config=' + server_config
     if serverurl is not None:
         cmd += ' --serverurl="' + serverurl + '"'
+    elif not local_run:
+        cmd += ' --serverurl="' + default_server_url + '"'
 
     if dry_run:
         logger.info("If this were not a dry run, the following command would now be called:\n" + cmd)
