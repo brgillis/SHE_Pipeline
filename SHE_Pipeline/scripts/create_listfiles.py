@@ -334,7 +334,6 @@ for obs_id in observation_id_set:
     for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
                               (ProdKeys.MSEG, "Data.TileIndex"),
                               (ProdKeys.SESEG, "Data.PointingId"),
-                              (ProdKeys.SSSEG, None),
                               (ProdKeys.VCF, "Data.ObservationSequence.PointingId"),
                               ):
 
