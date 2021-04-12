@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-03-30"
+__updated__ = "2021-04-12"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -334,13 +334,11 @@ for obs_id in observation_id_set:
     for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
                               (ProdKeys.MSEG, "Data.TileIndex"),
                               (ProdKeys.SESEG, "Data.PointingId"),
+                              (ProdKeys.SSSEG, None),
                               (ProdKeys.VCF, "Data.ObservationSequence.PointingId"),
                               ):
 
         product_type_data = product_type_data_dict[prod_key]
-
-        filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
-        analysis_filename_dict[prod_key] = filename
 
         if not obs_id in product_type_data.obs_id_dict:
             if prod_key != ProdKeys.SESEG:
@@ -361,8 +359,12 @@ for obs_id in observation_id_set:
 
     # Set the filename for the VIS Calibrated Frame product and SHE Stacked Segmentation Map product
     analysis_filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
-    analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].filename_head + \
-        str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail
+    if obs_id in product_type_data_dict[ProdKeys.SSSEG].obs_id_dict:
+        analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].obs_id_dict[obs_id][0].filename
+    else:
+        logger.error("Stack reprojected segmentation map product not available; default filename will be used in ISFs.")
+        analysis_filename_dict[ProdKeys.SSSEG] = (product_type_data_dict[ProdKeys.SSSEG].filename_head +
+                                                  str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail)
 
     # Write the ISF for this observation for each variant
     for after_remap in (False, True):
