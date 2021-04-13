@@ -15,7 +15,7 @@
 # Unique identifier for IAL instance
 general.instancename=NOSDC
 # Absolute path to base directory on IAL host
-general.rootdirectory=/home/$USER/euclid-ial
+general.rootdirectory=/home/$USER/euclid-ial/$PIPELINERUNNER_RUNID
 pipelinerunner.concurrentruns=50
 	
 ###########################
