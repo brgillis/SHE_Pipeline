@@ -7,7 +7,7 @@
 #####################
 # GENERAL Properties										
 #####################
-general.rootDirectory=/home/$USER/euclid-ial
+general.rootdirectory=/home/$USER/euclid-ial/$PIPELINERUNNER_RUNID
 	
 ###########################
 # WORKSPACE-Access, SHARED
