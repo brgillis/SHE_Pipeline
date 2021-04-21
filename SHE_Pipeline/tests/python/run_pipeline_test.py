@@ -5,7 +5,7 @@
     Tests of running the pipelines.
 """
 
-__updated__ = "2021-03-26"
+__updated__ = "2021-04-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -97,16 +97,15 @@ class TestRunPipeline():
         # Get the workdir based on where the data images listfile is
         self.workdir = os.path.split(qualified_data_images_filename)[0]
         self.logdir = os.path.join(self.workdir, "logs")
-        
-        return
 
+        return
 
     def test_dry_run_pipelines(self):
         """ Test that all versions are set up correctly
         """
 
         for pipeline in pipeline_info_dict:
-            
+
             if pipeline == "analysis":
                 skip_file_setup = False
             else:

@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-04-07"
+__updated__ = "2021-04-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -43,8 +43,9 @@ import subprocess as sbp
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
-default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.1.5/ppo/lodeen-ial.properties"
-default_server_url = "http://ial:50000"
+
+default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.1/ppo/lodeen-ial.properties"
+debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
 
 default_eden_version_master = "Eden-2.1"
 default_eden_version_dev = "Eden-2.1-dev"
