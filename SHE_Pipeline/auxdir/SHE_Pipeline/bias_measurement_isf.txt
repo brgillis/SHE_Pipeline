@@ -2,7 +2,7 @@ simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMicroPlan.fits
 config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf
 
 ksb_training_data=WEB/SHE_PPT_8_7/test_ksb_training.xml
-lensmc_training_data=WEB/SHE_PPT_8_7/test_lensmc_training.xml
+lensmc_training_data=WEB/SHE_LensMC_3_2/EUC_SHE_LENSMC-TRAINING_TEST_20210305T110458.783961Z_3.2.xml
 momentsml_training_data=None
 regauss_training_data=WEB/SHE_PPT_8_7/test_regauss_training.xml
 
