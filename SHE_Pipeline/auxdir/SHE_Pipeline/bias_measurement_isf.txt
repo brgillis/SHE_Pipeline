@@ -1,11 +1,11 @@
 simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMiniPlan.fits
 config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf
 
-ksb_training_data=WEB/SHE_PPT_8_5/test_ksb_training.xml
-lensmc_training_data=WEB/SHE_PPT_8_5/test_lensmc_training.xml
+ksb_training_data=WEB/SHE_PPT_8_7/test_ksb_training.xml
+lensmc_training_data=WEB/SHE_PPT_8_7/test_lensmc_training.xml
 momentsml_training_data=None
-regauss_training_data=WEB/SHE_PPT_8_5/test_regauss_training.xml
+regauss_training_data=WEB/SHE_PPT_8_7/test_regauss_training.xml
 
 pipeline_config=AUX/SHE_Pipeline/bias_measurement_config.txt
 
-mdb=WEB/SHE_PPT_8_5/sample_mdb-SC8.xml
+mdb=WEB/SHE_PPT_8_7/sample_mdb-SC8.xml
