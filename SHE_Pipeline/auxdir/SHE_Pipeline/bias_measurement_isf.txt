@@ -1,4 +1,4 @@
-simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMiniPlan.fits
+simulation_plan=AUX/SHE_GST_PrepareConfigs/SensitivityTestingMicroPlan.fits
 config_template=AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf
 
 ksb_training_data=WEB/SHE_PPT_8_7/test_ksb_training.xml
