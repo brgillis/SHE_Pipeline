@@ -6,7 +6,7 @@ find_package(ElementsProject)
 #---------------------------------------------------------------
 
 # Declare project name and version
-elements_project(SHE_IAL_Pipelines 8.1.11 USE SHE_CTE 8.1.5
+elements_project(SHE_IAL_Pipelines 8.1.12 USE SHE_CTE 8.1.5
                                               SHE_GST 8.0.2
                                       	      SHE_MER 8.2.5
                                        	      SHE_PSFToolkit 8.4.2
