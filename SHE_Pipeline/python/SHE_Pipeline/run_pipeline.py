@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-04-27"
+__updated__ = "2021-05-05"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -601,7 +601,7 @@ def run_pipeline_from_args(args):
         else:
             local_run = True
             if server_config is None:
-                server_config = debug_server_config
+                server_config = find_file(debug_server_config)
 
     if local_run:
         serverurl = None
