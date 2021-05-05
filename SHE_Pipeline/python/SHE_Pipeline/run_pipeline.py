@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-03-30"
+__updated__ = "2021-05-05"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -46,6 +46,8 @@ default_cluster_workdir = "/workspace/lodeen/workdir"
 
 default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.1/ppo/lodeen-ial.properties"
 debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
+
+default_serverurl = "http://ial:50000"
 
 default_eden_version_master = "Eden-2.1"
 default_eden_version_dev = "Eden-2.1-dev"
@@ -592,9 +594,21 @@ def run_pipeline_from_args(args):
         local_run = True
     else:
         server_config = args.server_config
-        if server_config is None and not args.cluster:
-            server_config = default_server_config
-        local_run = False
+        if args.cluster:
+            local_run = False
+            if server_config is None:
+                server_config = default_server_config
+        else:
+            local_run = True
+            if server_config is None:
+                server_config = find_file(debug_server_config)
+
+    if local_run:
+        serverurl = None
+    else:
+        serverurl = args.serverurl
+        if serverurl is None:
+            serverurl = default_serverurl
 
     # Try to call the pipeline
     try:

@@ -5,7 +5,7 @@
     Tests of running the pipelines.
 """
 
-__updated__ = "2021-03-24"
+__updated__ = "2021-04-21"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #

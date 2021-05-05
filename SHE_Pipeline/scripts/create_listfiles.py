@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-03-03"
+__updated__ = "2021-04-12"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -222,6 +222,8 @@ for filename in all_filenames:
     if not identified_product:
         logger.warning(f"Cannot identify type of product {filename}")
 
+logger.info(f"Read in {len(product_type_data.full_list)} data products.")
+
 # Get sets of all Observation and Tile IDs
 observation_id_set = set()
 tile_id_set = set()
@@ -243,14 +245,21 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
             # List of IDs, so iterate over it and add to each list
             for obs_id in obs_id_or_list:
                 if obs_id in product_type_data.obs_id_dict:
-                    product_type_data.obs_id_dict[obs_id].append(fileprod)
+                    if not fileprod in product_type_data.obs_id_dict[obs_id]:
+                        product_type_data.obs_id_dict[obs_id].append(fileprod)
+                else:
+                    product_type_data.obs_id_dict[obs_id] = [fileprod]
+                    observation_id_set.add(obs_id)
         else:
             # Just one ID, so add it directly
             if obs_id_or_list in product_type_data.obs_id_dict:
-                product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
+                if not fileprod in product_type_data.obs_id_dict[obs_id_or_list]:
+                    product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
             else:
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
                 observation_id_set.add(obs_id_or_list)
+
+logger.info(f"Identified the following Observation IDs: {observation_id_set}")
 
 # Fill in the tile_id_dicts for all product types
 for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
@@ -275,10 +284,13 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                     tile_ids.append(final_catalog_fileprod.product.Data.TileIndex)
         for tile_id in tile_ids:
             if tile_id in product_type_data.tile_id_dict:
-                product_type_data.tile_id_dict[tile_id].append(fileprod)
+                if not fileprod in product_type_data.tile_id_dict[tile_id]:
+                    product_type_data.tile_id_dict[tile_id].append(fileprod)
             else:
                 product_type_data.tile_id_dict[tile_id] = [fileprod]
                 tile_id_set.add(tile_id)
+
+logger.info(f"Identified the following Tile IDs: {tile_id_set}")
 
 
 if len(observation_id_set) == 0:
@@ -291,6 +303,8 @@ if len(tile_id_set) == 0:
 
 analysis_filename_dict = {}
 reconciliation_filename_dict = {}
+
+logger.info("Writing TU Galaxy and Star Catalog listfiles.")
 
 # Write Analysis listfiles for the galaxy and star catalogues
 for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
@@ -305,8 +319,14 @@ for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
 
     write_listfile(os.path.join(ROOT_DIR, filename), filename_list)
 
+logger.info("Finished writing TU Galaxy and Star Catalog listfiles.")
+
+logger.info("Writing Analysis listfiles and ISFs.")
+
 # Set up Analysis listfiles and ISFs for each observation ID
 for obs_id in observation_id_set:
+
+    logger.info(f"Writing Analysis listfiles and ISFs for observation ID {obs_id}")
 
     analysis_valid = True
 
@@ -319,13 +339,15 @@ for obs_id in observation_id_set:
 
         product_type_data = product_type_data_dict[prod_key]
 
-        if not obs_id in product_type_data.obs_id_dict:
-            # This product isn't present, so skip it and mark as invalid for the analysis pipeline
-            analysis_valid = False
-            break
-
         filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
         analysis_filename_dict[prod_key] = filename
+
+        if not obs_id in product_type_data.obs_id_dict:
+            if prod_key != ProdKeys.SESEG:
+                # This product isn't present, so skip it and mark as invalid for the analysis pipeline
+                analysis_valid = False
+            logger.error(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
+            continue
 
         obs_fileprod_list = product_type_data.obs_id_dict[obs_id]
         obs_fileprod_list.sort(key=lambda fp: get_nested_attr(fp.product, sort_by))
@@ -339,8 +361,12 @@ for obs_id in observation_id_set:
 
     # Set the filename for the VIS Calibrated Frame product and SHE Stacked Segmentation Map product
     analysis_filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
-    analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].filename_head + \
-        str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail
+    if obs_id in product_type_data_dict[ProdKeys.SSSEG].obs_id_dict:
+        analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].obs_id_dict[obs_id][0].filename
+    else:
+        logger.error("Stack reprojected segmentation map product not available; default filename will be used in ISFs.")
+        analysis_filename_dict[ProdKeys.SSSEG] = (product_type_data_dict[ProdKeys.SSSEG].filename_head +
+                                                  str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail)
 
     # Write the ISF for this observation for each variant
     for after_remap in (False, True):
@@ -370,9 +396,16 @@ for obs_id in observation_id_set:
                 for l in FIXED_ANALYSIS_ISF_FILENAMES:
                     fo.write(l + "\n")
 
+    logger.info(f"Finished writing Analysis listfiles and ISFs for observation ID {obs_id}")
+
+logger.info("Finished writing Analysis listfiles and ISFs.")
+
+logger.info("Writing Reconciliation listfiles and ISFs.")
 
 # Set up Reconciliation listfiles and ISFs for each Tile ID
 for tile_id in tile_id_set:
+
+    logger.info(f"Writing Reconciliation listfiles and ISFs for tile ID {tile_id}")
 
     tile_valid = True
 
@@ -390,6 +423,7 @@ for tile_id in tile_id_set:
 
         if not tile_id in product_type_data.tile_id_dict:
             tile_valid = False
+            logger.error(f"Product type {prod_key.value} not present for tile ID {tile_id}.")
             break
 
         filename = product_type_data.filename_head + str(tile_id) + product_type_data.filename_tail
@@ -411,3 +445,9 @@ for tile_id in tile_id_set:
         # Write these listfile filenames to the ISF
         for prod_key in RECONCILIATION_PRODUCT_KEYS:
             fo.write(f"{RECONCILIATION_ISF_PORTS[prod_key]} = {reconciliation_filename_dict[prod_key]}\n")
+
+    logger.info(f"Finished writing Reconciliation listfiles and ISFs for tile ID {tile_id}")
+
+logger.info("Finished writing Reconciliation listfiles and ISFs.")
+
+logger.info("Script execution complete.")
