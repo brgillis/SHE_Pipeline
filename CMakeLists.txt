@@ -9,7 +9,7 @@ find_package(ElementsProject)
 elements_project(SHE_IAL_Pipelines 8.1.15 USE SHE_CTE 8.1.7
                                               SHE_GST 8.0.4
                                       	      SHE_MER 8.2.8
-                                      	      SHE_PSFToolkit 8.5.2
+                                      	      SHE_PSFToolkit 8.5.3
                                       	      SHE_Validation 0.1.4
                                       	      ST_PipelineChecker 1.0.0
                                       	      )
