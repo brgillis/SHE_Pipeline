@@ -16,9 +16,9 @@ must be passed the location of the contained scripts directory as the first argu
 The pipeline depends upon the following common tools projects (on the Dev branch of cvmfs):
 
 - Elements v5.2.2
-- EuclidDmBindings v2.2.1
-- DMTools v2.2.1
-- MDBTools v2.2.1
+- EuclidDmBindings v2.2.2
+- DMTools v2.2.2
+- MDBTools v2.2.2
 
 Additionally, the following projects must be installed to run the analysis pipeline:
 
