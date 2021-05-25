@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-05-24"
+__updated__ = "2021-05-25"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -56,7 +56,7 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.1"
+pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.2"
 pipeline_runner_exec = f"{pipeline_runner_path}/bin/python {pipeline_runner_path}/bin/pipeline_runner.py"
 
 submit_command = "submit"
