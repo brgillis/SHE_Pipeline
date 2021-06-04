@@ -7,7 +7,11 @@
 #####################
 # GENERAL Properties										
 #####################
-general.rootdirectory=/home/$USER/euclid-ial/$PIPELINERUNNER_RUNID
+general.rootDirectory=/home/$USER/euclid-ial/$PIPELINERUNNER_RUNID
+
+# In case your general.rootPath is on a sharedFs, please set the DB location to a path on disk, e.g.:
+# pipelinerunner.databaseDirectory=/tmp/pipelinerunner_db/$PIPELINERUNNER_RUNID
+# --> Use this for localmode runs as /tmp gets wiped after reboot. Not for Server instances which should be persisitent.
 	
 ###########################
 # WORKSPACE-Access, SHARED
@@ -39,13 +43,13 @@ pipelinerunner.pilots.genericHeavy.maxInstances=1
 
 environment.sourcingScripts.empty=; echo
 environment.sourcingScripts.ialtest=$PIPELINERUNNER_PACKAGE/test_pipelines/executables/ialtest_env.sh
-environment.sourcingScripts.eden-2.0=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
-environment.sourcingScripts.eden-2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
-environment.sourcingScripts.2.0=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
-environment.sourcingScripts.2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
-environment.sourcingScripts.eden-2.1=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
-environment.sourcingScripts.eden-2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
-environment.sourcingScripts.2.1=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
-environment.sourcingScripts.2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.eden-2.0=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.eden-2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.2.0=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.2.0-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.0/etc/profile.d/euclid.sh
+environment.sourcingScripts.eden-2.1=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.eden-2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.2.1=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScripts.2.1-dev=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
 
-environment.sourcingScriptsDefault=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2/ppo/clean_cvmfs_environment.sh && source /cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
+environment.sourcingScriptsDefault=/cvmfs/euclid.in2p3.fr/CentOS7/EDEN-2.1/bin/activate
