@@ -78,7 +78,7 @@ class ProdKeys(Enum):
 
 
 ANALYSIS_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG,
-                         ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG, ProdKeys.TUS, ProdKeys.TUO)
+                         ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUO)
 
 ANALYSIS_VALIDATION_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.VCF, ProdKeys.SVM, ProdKeys.SLMC, ProdKeys.TUO)
 
