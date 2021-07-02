@@ -114,6 +114,8 @@ ANALYSIS_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
                       ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
                       ProdKeys.VCF: "vis_calibrated_frame_listfile",
                       ProdKeys.VSF: "vis_stacked_frame",
+                      ProdKeys.SVM: "she_validated_measurements_product",
+                      ProdKeys.SLMC: "she_lensmc_chains_product",
                       ProdKeys.TUO: "tu_output_product",
                       }
 
