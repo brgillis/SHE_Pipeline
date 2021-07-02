@@ -380,13 +380,30 @@ for obs_id in observation_id_set:
         continue
 
     # Set the filename for products we only have one of per observation
+
     analysis_filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
+
     if obs_id in product_type_data_dict[ProdKeys.SSSEG].obs_id_dict:
         analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].obs_id_dict[obs_id][0].filename
     else:
         logger.error("Stack reprojected segmentation map product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SSSEG] = (product_type_data_dict[ProdKeys.SSSEG].filename_head +
                                                   str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail)
+
+    if obs_id in product_type_data_dict[ProdKeys.SVM].obs_id_dict:
+        analysis_filename_dict[ProdKeys.SVM] = product_type_data_dict[ProdKeys.SVM].obs_id_dict[obs_id][0].filename
+    else:
+        logger.error("Validated Shear Measurements product not available; default filename will be used in ISFs.")
+        analysis_filename_dict[ProdKeys.SVM] = (product_type_data_dict[ProdKeys.SVM].filename_head +
+                                                str(obs_id) + product_type_data_dict[ProdKeys.SVM].filename_tail)
+
+    if obs_id in product_type_data_dict[ProdKeys.SLMC].obs_id_dict:
+        analysis_filename_dict[ProdKeys.SLMC] = product_type_data_dict[ProdKeys.SLMC].obs_id_dict[obs_id][0].filename
+    else:
+        logger.error("LensMC Chains product not available; default filename will be used in ISFs.")
+        analysis_filename_dict[ProdKeys.SLMC] = (product_type_data_dict[ProdKeys.SLMC].filename_head +
+                                                 str(obs_id) + product_type_data_dict[ProdKeys.SLMC].filename_tail)
+
     if obs_id in product_type_data_dict[ProdKeys.TUO].obs_id_dict:
         analysis_filename_dict[ProdKeys.TUO] = product_type_data_dict[ProdKeys.TUO].obs_id_dict[obs_id][0].filename
     else:
