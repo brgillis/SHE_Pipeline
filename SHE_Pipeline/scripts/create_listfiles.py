@@ -232,7 +232,7 @@ for filename in all_filenames:
     if not identified_product:
         logger.warning(f"Cannot identify type of product {filename}")
 
-logger.info(f"Read in {len(product_type_data.full_list)} data products.")
+logger.info(f"Read in data products.")
 
 # Get sets of all Observation and Tile IDs
 observation_id_set = set()
