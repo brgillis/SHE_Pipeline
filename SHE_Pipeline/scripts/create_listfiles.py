@@ -114,8 +114,6 @@ ANALYSIS_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
                       ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
                       ProdKeys.VCF: "vis_calibrated_frame_listfile",
                       ProdKeys.VSF: "vis_stacked_frame",
-                      ProdKeys.SVM: "she_validated_measurements_product",
-                      ProdKeys.SLMC: "she_lensmc_chains_product",
                       ProdKeys.TUO: "tu_output_product",
                       }
 
@@ -129,8 +127,8 @@ FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
 
 ANALYSIS_VALIDATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
                                  ProdKeys.VCF: "vis_calibrated_frame_listfile",
-                                 ProdKeys.SVM: "she_validated_measurements_listfile",
-                                 ProdKeys.SLMC: "she_lensmc_chains_listfile",
+                                 ProdKeys.SVM: "she_validated_measurements",
+                                 ProdKeys.SLMC: "she_lensmc_chains",
                                  ProdKeys.TUO: "tu_output_product",
                                  }
 
@@ -197,7 +195,7 @@ FileProduct = namedtuple("FileProduct", ["filename", "product"])
 
 # Init dict of data for each product type
 product_type_data_dict = {}
-for key in ANALYSIS_PRODUCT_KEYS + RECONCILIATION_PRODUCT_KEYS:
+for key in ANALYSIS_PRODUCT_KEYS + ANALYSIS_VALIDATION_PRODUCT_KEYS + RECONCILIATION_PRODUCT_KEYS:
     product_type_data_dict[key] = ProductTypeData(PRODUCT_TYPES[key],
                                                   [],
                                                   {},
@@ -444,7 +442,7 @@ for obs_id in observation_id_set:
     with open(isf_filename, "w") as fo:
         # Write these listfile filenames to the ISF
         for prod_key in ANALYSIS_VALIDATION_PRODUCT_KEYS:
-            fo.write(f"{ANALYSIS_ISF_PORTS[prod_key]} = {analysis_filename_dict[prod_key]}\n")
+            fo.write(f"{ANALYSIS_VALIDATION_ISF_PORTS[prod_key]} = {analysis_filename_dict[prod_key]}\n")
 
     logger.info(f"Finished writing Analysis Validation ISF for observation ID {obs_id}.")
 
