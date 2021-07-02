@@ -56,6 +56,9 @@ ANALYSIS_ISF_TAIL = "_isf.txt"
 AFTER_REMAP_TAG = "after_remap_"
 TU_MATCH_TAG = "with_tu_match_"
 
+ANALYSIS_VALIDATION_ISF_HEAD = "analysis_validation_"
+ANALYSIS_VALIDATION_ISF_TAIL = "_isf.txt"
+
 RECONCILIATION_ISF_HEAD = "reconciliation_"
 RECONCILIATION_ISF_TAIL = "_isf.txt"
 
