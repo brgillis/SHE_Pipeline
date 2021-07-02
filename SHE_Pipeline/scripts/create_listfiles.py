@@ -453,7 +453,7 @@ for obs_id in observation_id_set:
 
     logger.info(f"Writing Analysis Validation ISF for observation ID {obs_id}.")
 
-    isf_filename = f"{ANALYSIS_VALIDATION_ISF_HEAD} {obs_id} {ANALYSIS_ISF_TAIL}"
+    isf_filename = f"{ANALYSIS_VALIDATION_ISF_HEAD}{obs_id}{ANALYSIS_ISF_TAIL}"
 
     # Write the ISF
     with open(isf_filename, "w") as fo:
