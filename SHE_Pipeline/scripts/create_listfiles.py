@@ -316,22 +316,25 @@ if len(tile_id_set) == 0:
 analysis_filename_dict = {}
 reconciliation_filename_dict = {}
 
-logger.info("Writing TU Galaxy and Star Catalog listfiles.")
 
 # Write Analysis listfiles for the galaxy and star catalogues
-for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
+if ProdKeys.TUG in ANALYSIS_PRODUCT_KEYS and ProdKeys.TUS in ANALYSIS_PRODUCT_KEYS:
 
-    product_type_data = product_type_data_dict[prod_key]
-    filename = product_type_data.filename_head + product_type_data.filename_tail
-    analysis_filename_dict[prod_key] = filename
+    logger.info("Writing TU Galaxy and Star Catalog listfiles.")
 
-    fileprod_list = product_type_data.full_list
+    for prod_key in (ProdKeys.TUG, ProdKeys.TUS):
 
-    filename_list = [fileprod.filename for fileprod in fileprod_list]
+        product_type_data = product_type_data_dict[prod_key]
+        filename = product_type_data.filename_head + product_type_data.filename_tail
+        analysis_filename_dict[prod_key] = filename
 
-    write_listfile(os.path.join(ROOT_DIR, filename), filename_list)
+        fileprod_list = product_type_data.full_list
 
-logger.info("Finished writing TU Galaxy and Star Catalog listfiles.")
+        filename_list = [fileprod.filename for fileprod in fileprod_list]
+
+        write_listfile(os.path.join(ROOT_DIR, filename), filename_list)
+
+    logger.info("Finished writing TU Galaxy and Star Catalog listfiles.")
 
 logger.info("Writing Analysis listfiles and ISFs.")
 
