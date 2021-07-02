@@ -159,8 +159,10 @@ FILENAME_HEADS = {ProdKeys.MFC: "mer_final_catalog_obs_",
                   ProdKeys.MSEG: "mer_segmentation_map_obs_",
                   ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_obs_",
                   ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map_obs_",
-                  ProdKeys.SVM: "she_validated_measurements_listfile_tile_",
-                  ProdKeys.SLMC: "she_lensmc_chains_listfile_tile_",
+                  ProdKeys.SVM: {"Analysis": "she_validated_measurements_obs_",
+                                 "Reconciliation": "she_validated_measurements_tile_"},
+                  ProdKeys.SLMC: {"Analysis": "she_lensmc_chains_obs_",
+                                  "Reconciliation": "she_lensmc_chains_tile_"},
                   ProdKeys.VCF: "vis_calibrated_frame_obs_",
                   ProdKeys.VSF: None,
                   ProdKeys.TUG: "galcats",
@@ -172,8 +174,10 @@ FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
                   ProdKeys.MSEG: "_listfile.json",
                   ProdKeys.SESEG: "_listfile.json",
                   ProdKeys.SSSEG: "_product.xml",
-                  ProdKeys.SVM: "_listfile.json",
-                  ProdKeys.SLMC: "_listfile.json",
+                  ProdKeys.SVM: {"Analysis": "_product.xml",
+                                 "Reconciliation": "_listfile.json"},
+                  ProdKeys.SLMC: {"Analysis": "_product.xml",
+                                  "Reconciliation": "_listfile.json"},
                   ProdKeys.VCF: "_listfile.json",
                   ProdKeys.VSF: None,
                   ProdKeys.TUG: ".json",
@@ -394,15 +398,15 @@ for obs_id in observation_id_set:
         analysis_filename_dict[ProdKeys.SVM] = product_type_data_dict[ProdKeys.SVM].obs_id_dict[obs_id][0].filename
     else:
         logger.error("Validated Shear Measurements product not available; default filename will be used in ISFs.")
-        analysis_filename_dict[ProdKeys.SVM] = (product_type_data_dict[ProdKeys.SVM].filename_head +
-                                                str(obs_id) + product_type_data_dict[ProdKeys.SVM].filename_tail)
+        analysis_filename_dict[ProdKeys.SVM] = (product_type_data_dict[ProdKeys.SVM].filename_head["Analysis"] +
+                                                str(obs_id) + product_type_data_dict[ProdKeys.SVM].filename_tail["Analysis"])
 
     if obs_id in product_type_data_dict[ProdKeys.SLMC].obs_id_dict:
         analysis_filename_dict[ProdKeys.SLMC] = product_type_data_dict[ProdKeys.SLMC].obs_id_dict[obs_id][0].filename
     else:
         logger.error("LensMC Chains product not available; default filename will be used in ISFs.")
-        analysis_filename_dict[ProdKeys.SLMC] = (product_type_data_dict[ProdKeys.SLMC].filename_head +
-                                                 str(obs_id) + product_type_data_dict[ProdKeys.SLMC].filename_tail)
+        analysis_filename_dict[ProdKeys.SLMC] = (product_type_data_dict[ProdKeys.SLMC].filename_head["Analysis"] +
+                                                 str(obs_id) + product_type_data_dict[ProdKeys.SLMC].filename_tail["Analysis"])
 
     if obs_id in product_type_data_dict[ProdKeys.TUO].obs_id_dict:
         analysis_filename_dict[ProdKeys.TUO] = product_type_data_dict[ProdKeys.TUO].obs_id_dict[obs_id][0].filename
