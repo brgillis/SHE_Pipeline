@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-04-12"
+__updated__ = "2021-07-02"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -39,6 +39,7 @@ from SHE_PPT.products.she_lensmc_chains import dpdSheLensMcChains
 from SHE_PPT.products.she_stack_segmentation_map import dpdSheStackReprojectedSegmentationMap
 from SHE_PPT.products.she_validated_measurements import dpdSheValidatedMeasurements
 from SHE_PPT.products.tu_gal_cat import dpdGalaxyCatalogProduct
+from SHE_PPT.products.tu_output_cat import dpdTrueUniverseOutput
 from SHE_PPT.products.tu_star_cat import dpdStarsCatalogProduct
 from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
 from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
@@ -73,10 +74,14 @@ class ProdKeys(Enum):
     VSF = "VIS Stacked Frame"
     TUG = "TU Galaxy Catalog"
     TUS = "TU Star Catalog"
+    TUO = "TU Output Product"
 
 
 ANALYSIS_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.MSEG, ProdKeys.SESEG, ProdKeys.SSSEG,
-                         ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG, ProdKeys.TUS)
+                         ProdKeys.VCF, ProdKeys.VSF, ProdKeys.TUG, ProdKeys.TUS, ProdKeys.TUO)
+
+ANALYSIS_VALIDATION_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.VCF, ProdKeys.SVM, ProdKeys.SLMC, ProdKeys.TUO)
+
 RECONCILIATION_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.SVM, ProdKeys.SLMC,)
 
 # Which pipelines a given product is used for
@@ -87,8 +92,7 @@ ONLY_FOR_AFTER_REMAP = {ProdKeys.MFC: 0,
                         ProdKeys.SSSEG: 1,
                         ProdKeys.VCF: 0,
                         ProdKeys.VSF: 0,
-                        ProdKeys.TUG: 0,
-                        ProdKeys.TUS: 0,
+                        ProdKeys.TUO: 0,
                         }
 ONLY_FOR_TU_MATCH = {ProdKeys.MFC: 0,
                      ProdKeys.MSEG: 0,
@@ -96,8 +100,7 @@ ONLY_FOR_TU_MATCH = {ProdKeys.MFC: 0,
                      ProdKeys.SSSEG: 0,
                      ProdKeys.VCF: 0,
                      ProdKeys.VSF: 0,
-                     ProdKeys.TUG: 1,
-                     ProdKeys.TUS: 1,
+                     ProdKeys.TUO: 1,
                      }
 
 # ISF ports and common filenames
@@ -108,8 +111,7 @@ ANALYSIS_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
                       ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
                       ProdKeys.VCF: "vis_calibrated_frame_listfile",
                       ProdKeys.VSF: "vis_stacked_frame",
-                      ProdKeys.TUG: "tu_galaxy_catalog_list",
-                      ProdKeys.TUS: "tu_star_catalog_list",
+                      ProdKeys.TUO: "tu_output_product",
                       }
 
 FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
@@ -120,13 +122,18 @@ FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "regauss_training_data = test_regauss_training.xml",
                                 "spe_output_cat = None"]
 
+ANALYSIS_VALIDATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
+                                 ProdKeys.VCF: "vis_calibrated_frame_listfile",
+                                 ProdKeys.SVM: "she_validated_measurements_listfile",
+                                 ProdKeys.SLMC: "she_lensmc_chains_listfile",
+                                 ProdKeys.TUO: "tu_output_product",
+                                 }
+
 RECONCILIATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog",
                             ProdKeys.SVM: "she_validated_measurements_listfile",
                             ProdKeys.SLMC: "she_lensmc_chains_listfile",
                             }
 
-RECONCILIATION_ISF_FILENAMES = ["she_validated_measurements_listfile=SheValidatedMeasurementsListfile-TILEID.json",
-                                "she_lensmc_chains_listfile=SheLensMcChainsListfile-TILEID.json"]
 # Product types
 
 PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
@@ -139,6 +146,7 @@ PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
                  ProdKeys.VSF: dpdVisStackedFrame,
                  ProdKeys.TUG: dpdGalaxyCatalogProduct,
                  ProdKeys.TUS: dpdStarsCatalogProduct,
+                 ProdKeys.TUO: dpdTrueUniverseOutput,
                  }
 
 
@@ -154,6 +162,7 @@ FILENAME_HEADS = {ProdKeys.MFC: "mer_final_catalog_obs_",
                   ProdKeys.VSF: None,
                   ProdKeys.TUG: "galcats",
                   ProdKeys.TUS: "starcats",
+                  ProdKeys.TUO: "tu_output",
                   }
 
 FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
@@ -166,6 +175,7 @@ FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
                   ProdKeys.VSF: None,
                   ProdKeys.TUG: ".json",
                   ProdKeys.TUS: ".json",
+                  ProdKeys.TUO: "_product.xml",
                   }
 
 
@@ -201,7 +211,7 @@ for filename in all_filenames:
 
     try:
         product = read_xml_product(filename, workdir=ROOT_DIR)
-    except:
+    except Exception:
         raise ValueError("Can't interpret file " + filename)
 
     identified_product = False
@@ -237,6 +247,7 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
                                 (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", False),
                                 (ProdKeys.MFC, "Data.ObservationIdList", True),
                                 (ProdKeys.MSEG, "Data.ObservationIdList", True),
+                                (ProdKeys.TUO, "Data.EuclidPointingId", False),
                                 ):
     product_type_data = product_type_data_dict[prod_key]
     for fileprod in product_type_data.full_list:
@@ -270,6 +281,7 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                                 (ProdKeys.SLMC, "Data.ObservationId", False),
                                 (ProdKeys.VCF, "Data.ObservationSequence.ObservationId", False),
                                 (ProdKeys.VSF, "Data.ObservationId", False),
+                                (ProdKeys.TUO, "Data.EuclidPointingId", False),
                                 ):
     product_type_data = product_type_data_dict[prod_key]
     for fileprod in product_type_data.full_list:
@@ -323,12 +335,14 @@ logger.info("Finished writing TU Galaxy and Star Catalog listfiles.")
 
 logger.info("Writing Analysis listfiles and ISFs.")
 
+analysis_valid = {}
+
 # Set up Analysis listfiles and ISFs for each observation ID
 for obs_id in observation_id_set:
 
-    logger.info(f"Writing Analysis listfiles and ISFs for observation ID {obs_id}")
+    logger.info(f"Writing Analysis listfiles and ISFs for observation ID {obs_id}.")
 
-    analysis_valid = True
+    analysis_valid[obs_id] = True
 
     # Set up and write the listfiles
     for prod_key, sort_by in ((ProdKeys.MFC, "Data.TileIndex"),
@@ -345,7 +359,7 @@ for obs_id in observation_id_set:
         if not obs_id in product_type_data.obs_id_dict:
             if prod_key != ProdKeys.SESEG:
                 # This product isn't present, so skip it and mark as invalid for the analysis pipeline
-                analysis_valid = False
+                analysis_valid[obs_id] = False
             logger.error(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
             continue
 
@@ -356,10 +370,10 @@ for obs_id in observation_id_set:
 
         write_listfile(os.path.join(ROOT_DIR, filename), obs_filename_list)
 
-    if not analysis_valid:
+    if not analysis_valid[obs_id]:
         continue
 
-    # Set the filename for the VIS Calibrated Frame product and SHE Stacked Segmentation Map product
+    # Set the filename for products we only have one of per observation
     analysis_filename_dict[ProdKeys.VSF] = product_type_data_dict[ProdKeys.VSF].obs_id_dict[obs_id][0].filename
     if obs_id in product_type_data_dict[ProdKeys.SSSEG].obs_id_dict:
         analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].obs_id_dict[obs_id][0].filename
@@ -367,6 +381,12 @@ for obs_id in observation_id_set:
         logger.error("Stack reprojected segmentation map product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SSSEG] = (product_type_data_dict[ProdKeys.SSSEG].filename_head +
                                                   str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail)
+    if obs_id in product_type_data_dict[ProdKeys.TUO].obs_id_dict:
+        analysis_filename_dict[ProdKeys.TUO] = product_type_data_dict[ProdKeys.TUO].obs_id_dict[obs_id][0].filename
+    else:
+        logger.error("True Universe Output Product not available; default filename will be used in ISFs.")
+        analysis_filename_dict[ProdKeys.TUO] = (product_type_data_dict[ProdKeys.TUO].filename_head +
+                                                str(obs_id) + product_type_data_dict[ProdKeys.TUO].filename_tail)
 
     # Write the ISF for this observation for each variant
     for after_remap in (False, True):
@@ -396,16 +416,39 @@ for obs_id in observation_id_set:
                 for l in FIXED_ANALYSIS_ISF_FILENAMES:
                     fo.write(l + "\n")
 
-    logger.info(f"Finished writing Analysis listfiles and ISFs for observation ID {obs_id}")
+    logger.info(f"Finished writing Analysis listfiles and ISF for observation ID {obs_id}.")
 
 logger.info("Finished writing Analysis listfiles and ISFs.")
+
+# Write the ISF for the Analysis Validation pipeline
+
+logger.info("Writing Analysis Validation ISFs.")
+for obs_id in observation_id_set:
+
+    if not analysis_valid[obs_id]:
+        continue
+
+    logger.info(f"Writing Analysis Validation ISF for observation ID {obs_id}.")
+
+    isf_filename = f"{ANALYSIS_VALIDATION_ISF_HEAD} {obs_id} {ANALYSIS_ISF_TAIL}"
+
+    # Write the ISF
+    with open(isf_filename, "w") as fo:
+        # Write these listfile filenames to the ISF
+        for prod_key in ANALYSIS_VALIDATION_PRODUCT_KEYS:
+            fo.write(f"{ANALYSIS_ISF_PORTS[prod_key]} = {analysis_filename_dict[prod_key]}\n")
+
+    logger.info(f"Finished writing Analysis Validation ISF for observation ID {obs_id}.")
+
+
+logger.info("Finished writing Analysis Validation ISFs.")
 
 logger.info("Writing Reconciliation listfiles and ISFs.")
 
 # Set up Reconciliation listfiles and ISFs for each Tile ID
 for tile_id in tile_id_set:
 
-    logger.info(f"Writing Reconciliation listfiles and ISFs for tile ID {tile_id}")
+    logger.info(f"Writing Reconciliation listfiles and ISFs for tile ID {tile_id}.")
 
     tile_valid = True
 
@@ -446,7 +489,7 @@ for tile_id in tile_id_set:
         for prod_key in RECONCILIATION_PRODUCT_KEYS:
             fo.write(f"{RECONCILIATION_ISF_PORTS[prod_key]} = {reconciliation_filename_dict[prod_key]}\n")
 
-    logger.info(f"Finished writing Reconciliation listfiles and ISFs for tile ID {tile_id}")
+    logger.info(f"Finished writing Reconciliation listfiles and ISFs for tile ID {tile_id}.")
 
 logger.info("Finished writing Reconciliation listfiles and ISFs.")
 
