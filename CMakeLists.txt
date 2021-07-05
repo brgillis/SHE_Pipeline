@@ -18,5 +18,5 @@ elements_project(SHE_IAL_Pipelines 8.2 USE SHE_CTE 8.2
 # ---------------------
 # SHE_MomentsML 8.2
 # SHE_LensMC 3.3
-# SHE_PPT 8.9
+# SHE_PPT 8.10
 
