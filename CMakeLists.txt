@@ -10,7 +10,7 @@ elements_project(SHE_IAL_Pipelines 8.2 USE SHE_CTE 8.2
                                            SHE_GST 8.1
                                       	   SHE_MER 8.3
                                       	   SHE_PSFToolkit 8.6
-                                      	   SHE_Validation 0.2
+                                      	   SHE_Validation 8.1
                                       	   ST_PipelineChecker 1.0.1
                                       	   )
 
