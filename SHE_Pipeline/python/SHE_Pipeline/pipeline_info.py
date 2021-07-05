@@ -5,7 +5,7 @@
     Info about each pipeline's source code locations.
 """
 
-__updated__ = "2020-11-11"
+__updated__ = "2021-07-05"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -69,8 +69,6 @@ class PipelineInfo(object):
         self._qualified_package_def = None
         self._qualified_config = None
         self._qualified_isf = None
-
-        return
 
     @property
     def qualified_pipeline_script(self):
