@@ -5,7 +5,7 @@
     Info about each pipeline's source code locations.
 """
 
-__updated__ = "2021-07-05"
+__updated__ = "2021-07-20"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -23,7 +23,8 @@ __updated__ = "2021-07-05"
 import os
 
 from SHE_PPT.file_io import find_aux_file
-from SHE_PPT.pipeline_utility import AnalysisConfigKeys, CalibrationConfigKeys, ReconciliationConfigKeys
+from SHE_PPT.pipeline_utility import (AnalysisConfigKeys, CalibrationConfigKeys,
+                                      ReconciliationConfigKeys, AnalysisValidationConfigKeys)
 
 common_auxdir = "SHE_Pipeline"
 
@@ -156,3 +157,9 @@ pipeline_info_dict["bias_measurement"] = PipelineInfo(lowercase_name="bias_measu
 pipeline_info_dict["reconciliation"] = PipelineInfo(lowercase_name="reconciliation",
                                                     uppercase_name="Shear_Reconciliation",
                                                     config_keys=ReconciliationConfigKeys)
+
+# Validation pipelines
+
+pipeline_info_dict["global_validation"] = PipelineInfo(lowercase_name="global_validation",
+                                                       uppercase_name="Global_Validation",
+                                                       config_keys=AnalysisValidationConfigKeys)
