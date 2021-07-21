@@ -1,12 +1,14 @@
 #/bin/bash
 
-for i in 0..100000
+for i in {0..100000}
 do
-	grep \<ObservationId\>10356\</ObservationId\> *.xml > /dev/null
-	if $?==1
+	grep \<ObservationId\>$i\</ObservationId\> *.xml > /dev/null
+	if [ $? -eq 1 ]; then
 		continue
-	fi
-	python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId==$i"	
+    fi
+	QUERY="Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId==$i"
+	echo "Query: $QUERY"
+	python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"	
 done
 
 
