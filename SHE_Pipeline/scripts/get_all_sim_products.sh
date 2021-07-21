@@ -1,6 +1,14 @@
 #/bin/bash
 
-python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "Header.DataSetRelease=SC8_MAIN_V0"
+for i in 0..100000
+do
+	grep \<ObservationId\>10356\</ObservationId\> *.xml > /dev/null
+	if $?==1
+		continue
+	fi
+	python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId==$i"	
+done
+
 
 # python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "Header.DataSetRelease=SC8_PF_VIS_79171_R19"
 
