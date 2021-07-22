@@ -1,7 +1,7 @@
 #/bin/bash
 
-SHE_JSON = "she_measurements_listfile.json"
-SIM_JSON = "tu_output_listfile.json"
+SHE_JSON=she_measurements_listfile.json
+SIM_JSON=tu_output_listfile.json
 
 echo -n [ >> SHE_JSON
 echo -n [ >> SIM_JSON
