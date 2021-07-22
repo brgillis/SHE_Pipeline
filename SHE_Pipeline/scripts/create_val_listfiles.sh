@@ -13,6 +13,9 @@ do
 		continue
     fi
 	SIM_FN=`grep -l \<EuclidPointingId\>$i\</EuclidPointingId\> *.xml`
+	if [ $? -eq 1 ]; then
+		continue
+    fi
 
 	echo -n \" >> $SHE_JSON
 	echo -n \" >> $SIM_JSON
