@@ -3,8 +3,8 @@
 SHE_JSON=she_measurements_listfile.json
 SIM_JSON=tu_output_listfile.json
 
-echo -n [ >> $SHE_JSON
-echo -n [ >> $SIM_JSON
+echo -n "[" >> $SHE_JSON
+echo -n "[" >> $SIM_JSON
 
 for i in {0..100000}
 do
@@ -27,5 +27,5 @@ do
 	echo -n \", >> $SIM_JSON
 done
 
-echo -n ] >> $SHE_JSON
+echo -n "]" >> $SHE_JSON
 echo -n ] >> $SIM_JSON
