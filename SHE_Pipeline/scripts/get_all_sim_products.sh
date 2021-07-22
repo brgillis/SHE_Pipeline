@@ -6,7 +6,7 @@ do
 	if [ $? -eq 1 ]; then
 		continue
     fi
-	QUERY='Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId==$i&&Header.ManualValidationStatus.ManualValidationStatus!="INVALID"&&Header.PipelineDefinitionId=="SIM-VIS"'
+	QUERY='Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId=='$i'&&Header.ManualValidationStatus.ManualValidationStatus!="INVALID"&&Header.PipelineDefinitionId=="SIM-VIS"'
 	echo "Query: $QUERY"
 	python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"	
 done
