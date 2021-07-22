@@ -24,6 +24,7 @@ do
     else
    		echo -n , >> $SHE_JSON
 		echo -n , >> $SIM_JSON 	
+	fi
 
 	echo -n \" >> $SHE_JSON
 	echo -n \" >> $SIM_JSON
