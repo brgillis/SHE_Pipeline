@@ -22,9 +22,5 @@
         <CreationDate>2021-06-11T17:16:41.542Z</CreationDate>
     </Header>
     <Data>
-        <BinnedVariable>
-            <VariableName>SIM_MAGNITUDE</VariableName>
-            <BinBoundaries>21. 23. 25.</BinBoundaries>
-        </BinnedVariable>
     </Data>
 </ns1:DpdSheBiasBins>
