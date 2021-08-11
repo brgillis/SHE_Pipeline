@@ -201,7 +201,7 @@ def she_estimate_shear(data_images, stacked_image,
 
 
 def she_measure_statistics(details_table, shear_estimates,
-                           pipeline_config, she_bias_statistics, workdir, logdir, sim_no):
+                           pipeline_config, she_bias_statistics, bins_description, workdir, logdir, sim_no):
     """ Runs the SHE_CTE_MeasureStatistics method on shear 
     estimates to get shear bias statistics.
     """
@@ -213,12 +213,14 @@ def she_measure_statistics(details_table, shear_estimates,
             "--shear_estimates %s --pipeline_config %s "
             "--she_bias_statistics %s "
             "--workdir %s "
-            "--log-file %s/%s/she_measure_statistics.out"
+            "--log-file %s/%s/she_measure_statistics.out "
+            "--bins_description %s"
             % (get_relpath(details_table, workdir),
                get_relpath(shear_estimates, workdir),
                get_relpath(pipeline_config, workdir),
                get_relpath(she_bias_statistics, workdir),
-               workdir, workdir, logdir)).split()
+               workdir, workdir, logdir,
+               get_relpath(bins_description,workdir))).split()
 
     measstats_args = pu.setup_function_args(argv, meas_stats,
                                             ERun_CTE + "SHE_CTE_MeasureStatistics")
@@ -277,7 +279,7 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
 
 
 def she_measure_bias(shear_bias_measurement_list, pipeline_config,
-                     shear_bias_measurement_final, workdir, logdir):
+                     shear_bias_measurement_final, bins_description, workdir, logdir):
     """ Runs the SHE_CTE_MeasureBias on a list of she_bias_measurements from
     all simulation runs.
     """
@@ -286,11 +288,13 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
     logger = getLogger(__name__)
     argv = ("--she_bias_statistics %s "
             "--pipeline_config %s --she_bias_measurements %s --workdir %s "
-            "--log-file %s/%s/she_measure_bias.out"
+            "--log-file %s/%s/she_measure_bias.out "
+            "--bins_description %s"
             % (get_relpath(shear_bias_measurement_list, workdir),
                get_relpath(pipeline_config, workdir),
                get_relpath(shear_bias_measurement_final, workdir),
-               workdir, workdir, logdir)).split()
+               workdir, workdir, logdir,
+               get_relpath(bins_description,workdir))).split()
 
     measbias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
     try:
@@ -533,7 +537,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     inputs_tuple = namedtuple("SIMInputs", "simulation_config "
                               "ksb_training_data lensmc_training_data momentsml_training_data "
-                              "regauss_training_data pipeline_config mdb")
+                              "regauss_training_data pipeline_config mdb bins_description")
 
     logger = getLogger(__name__)
 
@@ -720,15 +724,19 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         args_to_set['momentsml_training_data'],
         args_to_set['regauss_training_data'],
         args_to_set['pipeline_config'],
-        args_to_set['mdb']])
+        args_to_set['mdb'],
+        args_to_set["bins_description"]])
 
     return simulate_inputs
+
+    
 
 
 def she_simulate_and_measure_bias_statistics(simulation_config,
                                              ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
-                                             regauss_training_data, pipeline_config, mdb, workdirTuple,
+                                             regauss_training_data, pipeline_config, mdb, 
+                                             bins_description, workdirTuple,
                                              simulation_no, logdir, est_shear_only):
     """ Parallel processing parts of bias_measurement pipeline
 
@@ -783,6 +791,7 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                            shear_estimates=shear_estimates_product,
                            pipeline_config=pipeline_config,
                            she_bias_statistics=she_bias_statistics,
+                           bins_description=bins_description,
                            workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     she_bias_measurements = os.path.join('data',
@@ -904,6 +913,7 @@ def run_pipeline_from_args(args):
                                                    simulate_measure_inputs.regauss_training_data,
                                                    simulate_measure_inputs.pipeline_config,
                                                    simulate_measure_inputs.mdb,
+                                                   simulate_measure_inputs.bins_description,
                                                    workdir, simulation_no, args.logdir, args.est_shear_only))
 
     if simulate_and_measure_args_list:
@@ -924,11 +934,18 @@ def run_pipeline_from_args(args):
 
     # Run final process
     shear_bias_measurement_final = os.path.join(args.workdir, 'shear_bias_measurements_final.xml')
+    
+    #symlink the bins description from the ISF into measure_bias's workdir so it can be used
+    qualified_bins = find_file(args_to_set["bins_description"])
+    print(qualified_bins, type(qualified_bins))
+    bins_desc = "data/bins.xml"
+    print(os.path.join(args.workdir,bins_desc), type(os.path.join(args.workdir,bins_desc)))
+    os.symlink(qualified_bins,os.path.join(args.workdir,bins_desc))
 
     logger.info("Running final she_measure_bias to calculate "
                 "final shear: output in %s" % shear_bias_measurement_final)
     she_measure_bias(shear_bias_measurement_listfile, config_filename,
-                     shear_bias_measurement_final, args.workdir, args.logdir)
+                     shear_bias_measurement_final, bins_desc, args.workdir, args.logdir)
     logger.info("Pipeline completed!")
 
     return
