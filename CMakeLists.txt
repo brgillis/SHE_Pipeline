@@ -8,9 +8,9 @@ find_package(ElementsProject)
 # Declare project name and version
 elements_project(SHE_IAL_Pipelines 8.2 USE SHE_CTE 8.2
                                            SHE_GST 8.1
-                                      	   SHE_MER 8.3
-                                      	   SHE_PSFToolkit 8.8
-                                      	   SHE_Validation 8.1
+                                      	   SHE_MER 8.4
+                                      	   SHE_PSFToolkit 8.9
+                                      	   SHE_Validation 8.2
                                       	   ST_PipelineChecker 1.0.1
                                       	   )
 
