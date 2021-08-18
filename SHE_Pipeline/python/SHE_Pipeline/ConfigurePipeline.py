@@ -23,7 +23,7 @@ __updated__ = "2019-04-26"
 import argparse
 
 from SHE_PPT.file_io import find_file
-from SHE_PPT.utility import get_arguments_string
+from EL_PythonUtils.utilities import get_arguments_string
 
 from ElementsKernel.Logging import getLogger
 import SHE_Pipeline
