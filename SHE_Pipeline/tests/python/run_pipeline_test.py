@@ -5,7 +5,7 @@
     Tests of running the pipelines.
 """
 
-__updated__ = "2021-04-21"
+__updated__ = "2021-08-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -22,7 +22,6 @@ __updated__ = "2021-04-21"
 # Boston, MA 02110-1301 USA
 
 import os
-from os.path import join
 
 import pytest
 
@@ -78,8 +77,6 @@ class MockArgs(object):
         else:
             self.plan_args = plan_args
 
-        return
-
 
 class TestRunPipeline():
 
@@ -97,8 +94,6 @@ class TestRunPipeline():
         # Get the workdir based on where the data images listfile is
         self.workdir = os.path.split(qualified_data_images_filename)[0]
         self.logdir = os.path.join(self.workdir, "logs")
-
-        return
 
     def test_dry_run_pipelines(self):
         """ Test that all versions are set up correctly
@@ -118,5 +113,3 @@ class TestRunPipeline():
                                  skip_file_setup=skip_file_setup)
 
             run_pipeline_from_args(test_args)
-
-        return

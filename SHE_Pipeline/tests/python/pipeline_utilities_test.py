@@ -5,7 +5,7 @@
     Sample unit test
 """
 
-__updated__ = "2020-07-23"
+__updated__ = "2021-08-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -21,11 +21,8 @@ __updated__ = "2020-07-23"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301 US
 
-import logging
 import multiprocessing
 import os
-
-import pytest
 
 import SHE_Pipeline.pipeline_utilities as pu
 
@@ -36,15 +33,14 @@ class TestPipelineUtilities():
 
     # Test main functions
 
-    def simpleFunction(self, threadNo, raiseException=False):
+    def simple_function(self, thread_number, raise_exception=False):
         """ 
-        
+
         """
-        if raiseException:
+        if raise_exception:
             raise Exception("Test Exception")
-        lines = ['%s\n' % threadNo]
-        open('output2134_%s.dat' % (threadNo), 'w').writelines(lines)
-        return
+        lines = ['%s\n' % thread_number]
+        open('output2134_%s.dat' % (thread_number), 'w').writelines(lines)
 
     def test_run_threads1(self):
         """ Test run_threads on simple set of multiple processes
@@ -58,7 +54,7 @@ class TestPipelineUtilities():
                 os.remove(filename)
             filename_list.append(filename)
             prod_threads.append(multiprocessing.Process(
-                target=self.simpleFunction,
+                target=self.simple_function,
                 args=(ii,)))
         if prod_threads:
             try:
@@ -72,8 +68,6 @@ class TestPipelineUtilities():
             lines = open(filename).readlines()
             assert str(lines[0]).startswith(str(ii))
 
-        pass
-
     def test_run_threads2(self):
         """ Test run_threads on simple set processes,
         where exceptions are raised.
@@ -85,11 +79,11 @@ class TestPipelineUtilities():
             filename = 'output2134_%s.dat' % ii
             if os.path.exists(filename):
                 os.remove(filename)
-            raiseException = ii == 1
+            raise_exception = ii == 1
             filename_list.append(filename)
             prod_threads.append(multiprocessing.Process(
-                target=self.simpleFunction,
-                args=(ii, raiseException)))
+                target=self.simple_function,
+                args=(ii, raise_exception)))
         if prod_threads:
             try:
                 pu.run_threads(prod_threads)
@@ -98,12 +92,6 @@ class TestPipelineUtilities():
                     assert True
                 else:
                     assert False
-        # for ii,fileName in enumerate(fileNameList):
-        #    assert os.path.exists(fileName)
-        #    lines=open(fileName).readlines()
-        #    assert str(lines[0]).startswith(str(ii))
-
-        pass
 
     def test_run_threads3(self):
         """ Test run with more threads than allowed.
@@ -117,11 +105,11 @@ class TestPipelineUtilities():
             filename = 'output2134_%s.dat' % ii
             if os.path.exists(filename):
                 os.remove(filename)
-            raiseException = ii == 1
+            raise_exception = ii == 1
             filename_list.append(filename)
             prod_threads.append(multiprocessing.Process(
-                target=self.simpleFunction,
-                args=(ii, raiseException)))
+                target=self.simple_function,
+                args=(ii, raise_exception)))
         if prod_threads:
             try:
                 pu.run_threads(prod_threads)
@@ -129,6 +117,3 @@ class TestPipelineUtilities():
                 # But still seems to do it...
                 if '<ERROR>' in e:
                     assert True
-
-        pass
-

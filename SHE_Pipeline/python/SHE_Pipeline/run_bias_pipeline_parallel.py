@@ -5,7 +5,7 @@
     Main executable for running bias pipeline in parallel
 """
 
-__updated__ = "2020-11-13"
+__updated__ = "2021-08-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -25,38 +25,35 @@ from collections import namedtuple
 import math
 import multiprocessing
 import os
-import time
 import xml.sax._exceptions
 
+from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
+from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
+from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
+from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
+from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename,
+from SHE_PPT.file_io import (find_file, get_allowed_filename,
                              read_xml_product, read_listfile, write_listfile,
-                             read_pickled_product)
+                             )
 from SHE_PPT.logging import getLogger
 from SHE_PPT.mdb import mdb_keys, Mdb
 from SHE_PPT.pipeline_utility import CalibrationConfigKeys
-from astropy.io import fits
-from astropy.table import Table
-import numpy
 
 import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
 import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
-from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
-from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
 import SHE_CTE_PipelineUtility.CleanupBiasMeasurement as cleanup_bias
 import SHE_CTE_ShearEstimation.EstimateShear as est_she
-from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
 import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
-from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
-from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 import SHE_Pipeline
-from SHE_Pipeline.magic_values import ERun_CTE, ERun_GST,  ERun_MER
-from SHE_Pipeline.pipeline_info import pipeline_info_dict
-from SHE_Pipeline.pipeline_utilities import get_relpath
-import SHE_Pipeline.pipeline_utilities as pu
-import SHE_Pipeline.run_pipeline as rp
+
+from . import pipeline_utilities as pu
+from . import run_pipeline as rp
+from .constants import ERun_CTE, ERun_GST
+from .pipeline_info import pipeline_info_dict
+from .pipeline_utilities import get_relpath
 
 
 default_workdir = "/home/user/Work/workspace"
@@ -84,13 +81,12 @@ def she_prepare_configs(simulation_plan, config_template,
         listfile_filename=get_relpath(simulation_configs, workdir),
         workdir=workdir)
     logger.info("Prepared configurations")
-    return
 
 
 def she_simulate_images(config_files, pipeline_config, data_images,
                         stacked_data_image, psf_images_and_tables, segmentation_images,
                         stacked_segmentation_image, detections_tables, details_table,
-                        workdir, logdir, simNo):
+                        workdir, logdir, sim_number):
     """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
     catalogues etc.
     """
@@ -124,8 +120,7 @@ def she_simulate_images(config_files, pipeline_config, data_images,
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
-    logger.info("Finished command execution successfully")
-    return
+    logger.info("Finished command execution successfully.")
 
 
 def she_estimate_shear(data_images, stacked_image,
@@ -196,18 +191,15 @@ def she_estimate_shear(data_images, stacked_image,
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
-    logger.info("Finished command execution successfully")
-    return
+    logger.info("Finished command execution successfully.")
 
 
 def she_measure_statistics(details_table, shear_estimates,
-                           pipeline_config, she_bias_statistics, workdir, logdir, sim_no):
+                           pipeline_config, she_bias_statistics, workdir, logdir):
     """ Runs the SHE_CTE_MeasureStatistics method on shear 
     estimates to get shear bias statistics.
     """
     logger = getLogger(__name__)
-
-    #@TODO: Replace with function call, see issue 11
 
     argv = ("--details_table %s "
             "--shear_estimates %s --pipeline_config %s "
@@ -229,9 +221,7 @@ def she_measure_statistics(details_table, shear_estimates,
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
-    logger.info("Finished command execution successfully")
-
-    return
+    logger.info("Finished command execution successfully.")
 
 
 def she_cleanup_bias_measurement(simulation_config, data_images,
@@ -273,7 +263,6 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
         logger.error("Execution failed with error: " + str(e))
         raise
     logger.info("Finished command execution successfully")
-    return
 
 
 def she_measure_bias(shear_bias_measurement_list, pipeline_config,
@@ -299,7 +288,6 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
         logger.error("Execution failed with error: " + str(e))
         raise
     logger.info("Finished command execution successfully")
-    return
 
 
 def check_args(args):
@@ -405,7 +393,7 @@ def check_args(args):
         try:
             os.mkdir(args.workdir)
         except Exception as e:
-            logger.error("workdir (" + args.workdir + ") does not exist and cannot be created.")
+            logger.error(f"workdir ({args.workdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(args.workdir, 0o777)  # Does the cache directory exist within the workdir?
@@ -415,7 +403,7 @@ def check_args(args):
         try:
             os.mkdir(cache_dir)
         except Exception as e:
-            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            logger.error(f"Cache directory ({cache_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(cache_dir, 0o777)
@@ -427,7 +415,7 @@ def check_args(args):
         try:
             os.mkdir(data_dir)
         except Exception as e:
-            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            logger.error(f"Data directory ({data_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(data_dir, 0o777)
@@ -439,7 +427,7 @@ def check_args(args):
         try:
             os.mkdir(log_dir)
         except Exception as e:
-            logger.error("Log directory (" + log_dir + ") does not exist and cannot be created.")
+            logger.error(f"Log directory ({log_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(log_dir, 0o777)
@@ -449,7 +437,7 @@ def check_args(args):
         try:
             os.mkdir(qualified_logdir)
         except Exception as e:
-            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            logger.error(f"logdir ({qualified_logdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(qualified_logdir, 0o777)
@@ -496,14 +484,14 @@ def create_batches(args, sim_config_list):
 
     for batch_no in range(number_batches):
 
-        nThreads = args.number_threads
+        num_threads = args.number_threads
         min_sim_no = args.number_threads * batch_no
         max_sim_no = args.number_threads * (batch_no + 1)
         if max_sim_no > number_simulations:
-            nThreads = number_simulations - min_sim_no
+            num_threads = number_simulations - min_sim_no
             max_sim_no = number_simulations
 
-        batch_list.append(batch_tuple(batch_no, nThreads,
+        batch_list.append(batch_tuple(batch_no, num_threads,
                                       min_sim_no, max_sim_no))
 
     return batch_list, workdir_list
@@ -598,7 +586,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         # Find the qualified location of the file
         try:
             qualified_filename = find_file(filename, path=search_path)
-        except RuntimeError as e:
+        except RuntimeError as _:
             raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
 
         # Symlink the filename from the "data" directory within the workdir
@@ -606,7 +594,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         try:
             if not qualified_filename == os.path.join(workdir.workdir, new_filename):
                 os.symlink(qualified_filename, os.path.join(workdir.workdir, new_filename))
-        except FileExistsError as e:
+        except FileExistsError as _:
             try:
                 os.remove(os.path.join(workdir.workdir, new_filename))
                 try:
@@ -640,7 +628,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             try:
                 p = read_xml_product(qualified_filename)
                 data_filenames = p.get_all_filenames()
-            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as e:
+            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
         elif qualified_filename[-5:] == ".json":
@@ -651,7 +639,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                 try:
                     p = read_xml_product(qualified_subfilename)
                     data_filenames += p.get_all_filenames()
-                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as e:
+                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
         else:
@@ -676,11 +664,11 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             # Find the qualified location of the data file
             try:
                 qualified_data_filename = find_file(data_filename, path=data_search_path)
-            except RuntimeError as e:
+            except RuntimeError as _:
                 # Try searching for the file without the "data/" prefix
                 try:
                     qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
-                except RuntimeError as e:
+                except RuntimeError as _:
                     raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
@@ -809,8 +797,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
 
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")
 
-    return
-
 
 def simulate_and_measure_mapped(args):
     return she_simulate_and_measure_bias_statistics(*args)
@@ -861,7 +847,7 @@ def run_pipeline_from_args(args):
 
     if not ('config_template' in args_to_set and
             os.path.exists(find_file(args_to_set['config_template']))):
-        raise Exception("configuration template not found")
+        raise FileExistsError("configuration template not found")
 
     config_template = find_file(args_to_set['config_template'])
 
@@ -931,8 +917,6 @@ def run_pipeline_from_args(args):
                      shear_bias_measurement_final, args.workdir, args.logdir)
     logger.info("Pipeline completed!")
 
-    return
-
 
 def merge_outputs(workdir_list, batch,
                   shear_bias_measurement_listfile, parent_workdir):
@@ -942,7 +926,7 @@ def merge_outputs(workdir_list, batch,
 
     """
 
-    newList = []
+    new_list = []
     for workdir in workdir_list:
         thread_no = int(workdir.workdir.split('thread')[-1].split('_')[0])
         if thread_no < batch.nThreads:
@@ -951,7 +935,7 @@ def merge_outputs(workdir_list, batch,
             shear_bias_measfile = os.path.join('data', 'shear_bias_measurements_sim%s.xml' % sim_no)
             qualified_shear_bias_measfile = os.path.join(workdir.workdir, shear_bias_measfile)
             if os.path.exists(qualified_shear_bias_measfile):
-                newList.append(qualified_shear_bias_measfile)
+                new_list.append(qualified_shear_bias_measfile)
 
                 # Get all data files this product points to and symlink them to the main data dir
                 p = read_xml_product(shear_bias_measfile, workdir=workdir.workdir)
@@ -977,12 +961,10 @@ def merge_outputs(workdir_list, batch,
     sbml_list = []
     if os.path.exists(shear_bias_measurement_listfile):
         sbml_list = read_listfile(shear_bias_measurement_listfile)
-    sbml_list.extend(newList)
+    sbml_list.extend(new_list)
     write_listfile(shear_bias_measurement_listfile, sbml_list)
 
     # What are the main outputs needed for 2nd part?
     # rename? she_bias_measurements,
 
     # All the she_bias_measurements -- collate into .json file
-
-    return

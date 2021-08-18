@@ -22,5 +22,12 @@
         <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation_CTI/python</path>
         <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation_PSF/python</path>
         <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation_ShearBias/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_BiasMeasurement/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_PipelineUtility/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_ShearEstimation/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_ShearReconciliation/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_ShearValidation/python</path>
+        <path>/home/user/Work/Projects/SHE_GST/SHE_GST_GalaxyImageGeneration/python</path>
+        <path>/home/user/Work/Projects/SHE_GST/SHE_GST_PrepareConfigs/python</path>
     </pydev_pathproperty>
 </pydev_project>

@@ -19,20 +19,16 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301 USA
 
-import logging
-
-import pytest
-
 
 class TestRunBiasPipelineParallel(object):
     """ Unit tests for functions in run_bias_parallel
     """
-    
-    # Test main functions 
+
+    # Test main functions
 
     def external_process_run1(self):
         """ This should be 
-        
+
         Tests 
         """
 

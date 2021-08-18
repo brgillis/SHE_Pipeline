@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-05-25"
+__updated__ = "2021-08-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -21,24 +21,22 @@ __updated__ = "2021-05-25"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 import _pickle
-from copy import deepcopy
 import os
-from shutil import copyfile
-from time import sleep
 import xml.sax._exceptions
 
 from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, find_aux_file, get_allowed_filename, read_xml_product,
-                             read_pickled_product, write_pickled_product, read_listfile, write_listfile)
+from SHE_PPT.file_io import (find_file, get_allowed_filename, read_xml_product,
+                             read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
 from SHE_PPT.mdb import mdb_keys, Mdb
 from SHE_PPT.pipeline_utility import write_config, read_config
 from astropy.table import Table
-from sklearn import pipeline
 
 import SHE_Pipeline
-from SHE_Pipeline.pipeline_info import pipeline_info_dict
 import subprocess as sbp
+
+from .pipeline_info import pipeline_info_dict
+
 
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
@@ -279,11 +277,11 @@ def create_plan(args, retTable=False):
     simulation_plan_table = None
     try:
         simulation_plan_table = Table.read(qualified_plan_filename, format="fits")
-    except Exception as _e2:
+    except Exception as _:
         # Not a known table format, maybe an ascii table?
         try:
             simulation_plan_table = Table.read(qualified_plan_filename, format="ascii")
-        except IOError as _e3:
+        except IOError as _:
             pass
     # If it's still none, we couldn't identify it, so raise the initial exception
     if simulation_plan_table is None:
@@ -423,7 +421,7 @@ def create_isf(args,
                 # Find the qualified location of the file
                 try:
                     qualified_filename = find_file(filename, path=search_path)
-                except RuntimeError as e:
+                except RuntimeError as _:
                     raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
 
                 # Symlink the filename from the "data" directory within the workdir
@@ -431,7 +429,7 @@ def create_isf(args,
                 try:
                     if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
                         os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
-                except FileExistsError as e:
+                except FileExistsError as _:
                     try:
                         os.remove(os.path.join(args.workdir, new_filename))
                         try:
@@ -453,7 +451,7 @@ def create_isf(args,
                     try:
                         p = read_xml_product(qualified_filename)
                         data_filenames = p.get_all_filenames()
-                    except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                    except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
                         logger.error("Cannot read file " + qualified_filename + ".")
                         raise
                 elif qualified_filename[-5:] == ".json":
@@ -463,7 +461,7 @@ def create_isf(args,
                         try:
                             p = read_xml_product(qualified_subfilename)
                             data_filenames += p.get_all_filenames()
-                        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as e:
+                        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
                             logger.error("Cannot read file " + qualified_filename + ".")
                             raise
                 else:
@@ -487,12 +485,12 @@ def create_isf(args,
                 # Find the qualified location of the data file
                 try:
                     qualified_data_filename = find_file(data_filename, path=data_search_path)
-                except RuntimeError as e:
+                except RuntimeError as _:
                     # Try searching for the file without the "data/" prefix
                     try:
                         qualified_data_filename = find_file(
                             data_filename.replace("data/", "", 1), path=data_search_path)
-                    except RuntimeError as e:
+                    except RuntimeError as _:
                         raise RuntimeError("Data file " + data_filename +
                                            " cannot be found in path " + data_search_path)
 
@@ -547,7 +545,7 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, local_run=False, dry_run=False):
+def execute_pipeline(pipeline_info, isf, serverurl, server_config, local_run=False, dry_run=False):
     """Sets up and calls a command to execute the pipeline.
     """
 
@@ -568,8 +566,6 @@ def execute_pipeline(pipeline_info, isf, serverurl, workdir, server_config, loca
     else:
         logger.info("Calling pipeline with command: '" + cmd + "'")
         sbp.call(cmd, shell=True)
-
-    return
 
 
 def run_pipeline_from_args(args):
@@ -615,16 +611,13 @@ def run_pipeline_from_args(args):
         execute_pipeline(pipeline_info=chosen_pipeline_info,
                          isf=qualified_isf_filename,
                          serverurl=args.serverurl,
-                         workdir=args.workdir,
                          server_config=server_config,
                          local_run=local_run,
                          dry_run=args.dry_run)
     except Exception as e:
         # Cleanup the ISF on non-exit exceptions
         try:
-            os.remove(new_isf_filename)
+            os.remove(qualified_isf_filename)
         except Exception as e:
             logger.warn("Failsafe exception block triggered with exception: " + str(e))
         raise
-
-    return

@@ -5,7 +5,7 @@
     Utility functions for the parallel pipeline
 """
 
-__updated__ = "2019-12-19"
+__updated__ = "2021-08-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -20,14 +20,13 @@ __updated__ = "2019-12-19"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import argparse
 from collections import namedtuple
 import os
 from subprocess import Popen, PIPE, STDOUT
 import time
 
-from SHE_PPT.logging import getLogger
 from EL_PythonUtils.utilities import get_arguments_string
+from SHE_PPT.logging import getLogger
 
 
 # Creates directory structure
@@ -42,8 +41,7 @@ def get_relpath(file_path, workdir):
     """
     # If workdir doesn't exist, this will not work
     if not os.path.exists(workdir):
-        raise Exception("Work directory %s does not exist"
-                        % workdir)
+        raise FileNotFoundError("Work directory %s does not exist" % workdir)
 
     # Don't check to see if the file_path exists: it might
     # be an output.
@@ -74,7 +72,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
             try:
                 os.mkdir(workdir_base)
             except Exception as e:
-                logger.error("Workdir base (" + workdir_base + ") does not exist and cannot be created.")
+                logger.error(f"Workdir base ({workdir_base}) does not exist and cannot be created.")
                 raise e
         if args.cluster:
             os.chmod(workdir_base, 0o777)
@@ -85,7 +83,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
             try:
                 os.mkdir(cache_dir)
             except Exception as e:
-                logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+                logger.error(f"Cache directory ({cache_dir}) does not exist and cannot be created.")
                 raise e
         if args.cluster:
             os.chmod(cache_dir, 0o777)
@@ -97,7 +95,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
             try:
                 os.mkdir(data_dir)
             except Exception as e:
-                logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+                logger.error(f"Data directory ({data_dir}) does not exist and cannot be created.")
                 raise e
         if args.cluster:
             os.chmod(data_dir, 0o777)
@@ -109,7 +107,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
             try:
                 os.mkdir(log_dir)
             except Exception as e:
-                logger.error("Log directory (" + log_dir + ") does not exist and cannot be created.")
+                logger.error(f"Log directory ({log_dir}) does not exist and cannot be created.")
                 raise e
         if args.cluster:
             os.chmod(log_dir, 0o777)
@@ -126,7 +124,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
                     try:
                         os.mkdir(workdir)
                     except Exception as e:
-                        logger.error("Workdir (" + workdir + ") does not exist and cannot be created.")
+                        logger.error(f"Workdir ({workdir}) does not exist and cannot be created.")
                         raise e
                 if args.cluster:
                     os.chmod(workdir, 0o777)
@@ -138,7 +136,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
                     try:
                         os.mkdir(cache_dir)
                     except Exception as e:
-                        logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+                        logger.error(f"Cache directory ({cache_dir}) does not exist and cannot be created.")
                         raise e
                 if args.cluster:
                     os.chmod(cache_dir, 0o777)
@@ -150,7 +148,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
                     try:
                         os.mkdir(data_dir)
                     except Exception as e:
-                        logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+                        logger.error(f"Data directory ({data_dir}) does not exist and cannot be created.")
                         raise e
                 if args.cluster:
                     os.chmod(data_dir, 0o777)
@@ -162,7 +160,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
                     try:
                         os.mkdir(qualified_logdir)
                     except Exception as e:
-                        logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+                        logger.error(f"logdir ({qualified_logdir}) does not exist and cannot be created.")
                         raise e
                 if args.cluster:
                     os.chmod(qualified_logdir, 0o777)
@@ -206,9 +204,9 @@ def run_threads(threads):
                 logger.info("<ERROR> Thread failed. Terminating thread")
 
 
-def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True, cwd=None,
-                         env=None, close_fds=True, isVerbose=True, _isIterable=False,
-                         ignoreMsgs=None):
+def external_process_run(command, std_in='', raise_on_error=True, parse_std_out=True, cwd=None,
+                         env=None, close_fds=True, is_verbose=True, _is_iterable=False,
+                         ignore_msgs=None):
     """
     Run the given external program. Unless overridden, an exception is thrown
     on error and the output is logged. Originally written by Ross Collins for VDFS
@@ -219,17 +217,17 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
                          command with arguments as separate elements to not
                          run in a shell (faster if shell not needed).
     @type  command:      str or list(str)
-    @param stdIn:        Optionally supply some input for stdin.
-    @type  stdIn:        str
-    @param raiseOnError: If True, if the external process sends anything to
-                         stdErr then an exception is raised and the complete
-                         programme is logged. Otherwise, stdErr is just always
-                         redirected to stdOut.
-    @type  raiseOnError: bool
-    @param parseStdOut:  If True, stdout is captured, not print to screen, and
+    @param std_in:        Optionally supply some input for stdin.
+    @type  std_in:        str
+    @param raise_on_error: If True, if the external process sends anything to
+                         std_err then an exception is raised and the complete
+                         programme is logged. Otherwise, std_err is just always
+                         redirected to std_out.
+    @type  raise_on_error: bool
+    @param parse_std_out:  If True, stdout is captured, not print to screen, and
                          returned by this function, otherwise stdout is left
                          alone and will be sent to terminal as normal.
-    @type  parseStdOut:  bool
+    @type  parse_std_out:  bool
     @param cwd:          Run the external process with this directory as its
                          working directory.
     @type  cwd:          str
@@ -238,91 +236,91 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
     @param close_fds:    If True, close all open file-like objects before
                          executing external process.
     @type  close_fds:    bool
-    @param isVerbose:    If False, don't log the full command that was
+    @param is_verbose:    If False, don't log the full command that was
                          executed, even when Logger is in verbose mode.
-    @type  isVerbose:    bool
-    @param _isIterable:  Return an iterable stdout. NB: Use the L{out()}
+    @type  is_verbose:    bool
+    @param _is_iterable:  Return an iterable stdout. NB: Use the L{out()}
                          function instead of this option.
-    @type  _isIterable:  bool
-    @param ignoreMsgs:   List of strings that if they appear in stderr should
-                         override the raiseOnError if it is set to True.
-    @type  ignoreMsgs:   list(str)
+    @type  _is_iterable:  bool
+    @param ignore_msgs:   List of strings that if they appear in stderr should
+                         override the raise_on_error if it is set to True.
+    @type  ignore_msgs:   list(str)
 
     @return: Messages sent to stdout if parsed, otherwise an iterable file
-             object for stdout if _isIterable, else a return a code.
+             object for stdout if _is_iterable, else a return a code.
     @rtype:  list(str) or file or int
 
 
     @obsolete? Not currently used.... 
     """
-    # @FIXME: What is reported as stdErr is often stdOut.
+    # @FIXME: What is reported as std_err is often std_out.
     # Why??
     # Am I using the wrong PROC/PIPE?
     # IF WARN / INFO etc --> stdout
     # IF ERROR / Exception --> srderr
 
     logger = getLogger(__name__)
-    cmdStr = (command if isinstance(command, str) else ' '.join(command))
-    if isVerbose:
-        logger.info(cmdStr)
+    cmd_str = (command if isinstance(command, str) else ' '.join(command))
+    if is_verbose:
+        logger.info(cmd_str)
 
-    parseStdOut = parseStdOut or _isIterable
-    parseStdErr = True  # raiseOnError and not _isIterable
-    isMemError = False
+    parse_std_out = parse_std_out or _is_iterable
+    parse_std_err = True  # raise_on_error and not _is_iterable
+    is_mem_error = False
     while True:
         try:
             # @TODO: Is this the best command.
             # Why do info go to stderr.
             proc = Popen(command, shell=isinstance(command, str),
-                         stdin=(PIPE if stdIn else None),
-                         stdout=(PIPE if parseStdOut else None),
-                         stderr=(PIPE if parseStdErr else STDOUT),
+                         stdin=(PIPE if std_in else None),
+                         stdout=(PIPE if parse_std_out else None),
+                         stderr=(PIPE if parse_std_err else STDOUT),
                          close_fds=close_fds, cwd=cwd, env=env)
         except OSError as error:
             if "[Errno 12] Cannot allocate memory" not in str(error):
                 raise
-            if not isMemError:
+            if not is_mem_error:
                 logger.info("Memory allocation problem; delaying...")
-                isMemError = True
+                is_mem_error = True
                 close_fds = True
             time.sleep(60)
         else:
-            if isMemError:
+            if is_mem_error:
                 logger.info("Problem fixed; continuing...")
             break
 
-    if stdIn:
-        proc.stdin.write(stdIn + '\n')
+    if std_in:
+        proc.stdin.write(std_in + '\n')
         proc.stdin.flush()
 
-    if _isIterable:
+    if _is_iterable:
         return proc.stdout
 
-    stdOut = []
-    stdErr = []
+    std_out = []
+    std_err = []
     try:
-        if parseStdOut:
+        if parse_std_out:
             # Calling readlines() instead of iterating through stdout ensures
             # that KeyboardInterrupts are handled correctly.
-            stdOut = [line.strip() for line in proc.stdout.readlines()]
-            # if raiseOnError:
+            std_out = [line.strip() for line in proc.stdout.readlines()]
+            # if raise_on_error:
             #
-            stdErrInit = [line.strip() for line in proc.stderr.readlines()]
-            stdErr = [line for line in stdErrInit
+            std_err_init = [line.strip() for line in proc.stderr.readlines()]
+            std_err = [line for line in std_err_init
                       if 'ERROR' in str(line.upper()) or 'EXCEPTION' in str(line.upper())]
-            stdOut += [line for line in stdErrInit
+            std_out += [line for line in std_err_init
                        if not ('ERROR' in str(line.upper()) or
                                'EXCEPTION' in str(line.upper()))]
-        if not parseStdOut and not raiseOnError:
+        if not parse_std_out and not raise_on_error:
             return proc.wait()
 #    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
 #        with utils.noInterrupt():
 #            Logger.addMessage("KeyboardInterrupt - %s interrupted, "
 #              "waiting for process to end cleanly..." %
 #              os.path.basename(command.split()[0]))
-#            if parseStdOut:
+#            if parse_std_out:
 #                print(''.join(proc.stdout))
-#            if parseStdErr:
+#            if parse_std_err:
 #                print(''.join(proc.stderr))
 #            proc.wait()
 #        raise
@@ -335,39 +333,39 @@ def external_process_run(command, stdIn='', raiseOnError=True, parseStdOut=True,
         raise
 
     # If the stdErr messages are benign then ignore them
-    if stdErr and ignoreMsgs:
-        for stdErrStr in stdErr[:]:
-            if any(msg in stdErrStr for msg in ignoreMsgs):
-                stdErr.remove(stdErrStr)
+    if std_err and ignore_msgs:
+        for std_err_str in std_err[:]:
+            if any(msg in std_err_str for msg in ignore_msgs):
+                std_err.remove(std_err_str)
 
-    if stdErr:
-        if raiseOnError and (not isVerbose):
-            logger.error(cmdStr)
+    if std_err:
+        if raise_on_error and (not is_verbose):
+            logger.error(cmd_str)
 
-        for line in stdOut:
+        for line in std_out:
             logger.error(line)
 
-        for line in stdErr:
+        for line in std_err:
             logger.error('# ' + str(line))
 
-        if raiseOnError:
-            cmd = cmdStr.split(';')[-1].split()[0]
+        if raise_on_error:
+            cmd = cmd_str.split(';')[-1].split()[0]
             if cmd == "python":
-                cmd = ' '.join(cmdStr.split()[:2])
+                cmd = ' '.join(cmd_str.split()[:2])
 
-            raise Exception(cmd + " failed", stdErr)
+            raise Exception(cmd + " failed", std_err)
 
-    return stdOut, stdErr
+    return std_out, std_err
 
 
-def create_logs(log_directory, fileName, std_out, std_err):
+def create_logs(log_directory, file_name, std_out, std_err):
     """ @fixme: logging not properly working
     remove this when I get it working
 
     @obsolete? no longer used.
     """
-    stdout_filename = os.path.join(log_directory, fileName + ".log")
-    stderr_filename = os.path.join(log_directory, fileName + ".err")
+    stdout_filename = os.path.join(log_directory, file_name + ".log")
+    stderr_filename = os.path.join(log_directory, file_name + ".err")
 
     stdout_lines = [str(line) for line in std_out]
     open(stdout_filename, 'w').writelines(stdout_lines)
@@ -375,10 +373,8 @@ def create_logs(log_directory, fileName, std_out, std_err):
     stdout_lines = [str(line) for line in std_err]
     open(stderr_filename, 'w').writelines(stdout_lines)
 
-    return
 
-
-def setup_function_args(argv, command_line_int_ref, execName):
+def setup_function_args(argv, command_line_int_ref, exec_name):
     """
     """
     logger = getLogger(__name__)
@@ -390,7 +386,7 @@ def setup_function_args(argv, command_line_int_ref, execName):
                                     help='XML data product to contain file links to the shear estimates tables.')
 
     estshr_args = estshr_args_parser.parse_args(argv)
-    exec_cmd = get_arguments_string(estshr_args, cmd=execName,
+    exec_cmd = get_arguments_string(estshr_args, cmd=exec_name,
                                     store_true=["profile", "debug", "dry_run", "webdav_archive", "store_measurements_only", "use_bias_only"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
