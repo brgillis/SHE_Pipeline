@@ -313,6 +313,8 @@ def create_config(args, config_keys):
 
     arg_i = 0
     while arg_i < len(args.config_args):
+
+        # Try to find the value in one of the configs
         key = args.config_args[arg_i]
         enum_key = _check_key_is_valid(key, config_keys)
         args_to_set[enum_key] = args.config_args[arg_i + 1]
