@@ -5,7 +5,7 @@
     Main executable for running pipelines.
 """
 
-__updated__ = "2021-08-18"
+__updated__ = "2021-08-19"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -29,7 +29,7 @@ from SHE_PPT.file_io import (find_file, get_allowed_filename, read_xml_product,
                              read_listfile, write_listfile)
 from SHE_PPT.logging import getLogger
 from SHE_PPT.mdb import mdb_keys, Mdb
-from SHE_PPT.pipeline_utility import write_config, read_config
+from SHE_PPT.pipeline_utility import write_config, read_config, _check_key_is_valid
 from astropy.table import Table
 
 import SHE_Pipeline
@@ -313,7 +313,9 @@ def create_config(args, config_keys):
 
     arg_i = 0
     while arg_i < len(args.config_args):
-        args_to_set[args.config_args[arg_i]] = args.config_args[arg_i + 1]
+        key = args.config_args[arg_i]
+        enum_key = _check_key_is_valid(key, config_keys)
+        args_to_set[enum_key] = args.config_args[arg_i + 1]
         arg_i += 2
 
     # Write out the new config
