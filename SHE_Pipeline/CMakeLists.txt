@@ -10,7 +10,6 @@ elements_install_python_modules()
 # Install python programs
 elements_add_python_program(SHE_Pipeline_Run SHE_Pipeline.RunPipeline)
 elements_add_python_program(SHE_Pipeline_RunBiasParallel SHE_Pipeline.RunBiasPipelineParallel)
-elements_add_python_program(SHE_Pipeline_Configure SHE_Pipeline.ConfigurePipeline)
 
 # Install the configuration files
 elements_install_conf_files()
