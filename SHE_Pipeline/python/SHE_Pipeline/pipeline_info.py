@@ -24,7 +24,7 @@ import os
 
 from SHE_PPT.file_io import find_aux_file
 from SHE_PPT.pipeline_utility import (AnalysisConfigKeys, CalibrationConfigKeys,
-                                      ReconciliationConfigKeys, ValidationConfigKeys)
+                                      ReconciliationConfigKeys, ValidationConfigKeys, ScalingExperimentsConfigKeys)
 
 common_auxdir = "SHE_Pipeline"
 
@@ -163,3 +163,11 @@ pipeline_info_dict["reconciliation"] = PipelineInfo(lowercase_name="reconciliati
 pipeline_info_dict["global_validation"] = PipelineInfo(lowercase_name="global_validation",
                                                        uppercase_name="Global_Validation",
                                                        config_keys=ValidationConfigKeys)
+
+
+# Scaling Experiments pipeline
+
+pipeline_info_dict["scaling_experiments"] = PipelineInfo(lowercase_name="scaling_experiments",
+                                                       uppercase_name="Scaling_Experiments",
+                                                       config_keys=ScalingExperimentsConfigKeys)
+

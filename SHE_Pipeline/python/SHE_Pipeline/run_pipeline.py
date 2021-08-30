@@ -465,9 +465,9 @@ def create_isf(args,
                         try:
                             p = read_xml_product(qualified_subfilename)
                             data_filenames += p.get_all_filenames()
-                        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
-                            logger.error("Cannot read file " + qualified_filename + ".")
-                            raise
+                        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
+                            logger.warn("Cannot open subfile %s from %s (maybe not an XML?). "%(qualified_subfilename,qualified_filename))
+                            #raise
                 else:
                     logger.warn("Input file " + filename + " is not an XML data product.")
                     continue
