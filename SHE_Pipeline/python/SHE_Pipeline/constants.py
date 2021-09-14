@@ -1,11 +1,11 @@
-""" @file magic_values.py
+""" @file constants.py
 
     Created 14 may 2019
 
-    Magic values for the package definitions
+    Constant values for the package definitions
 """
 
-__updated__ = "2020-11-16"
+__updated__ = "2021-08-18"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #

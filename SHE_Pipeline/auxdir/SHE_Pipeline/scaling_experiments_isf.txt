@@ -1,0 +1,4 @@
+pipeline_config = AUX/scaling_experiments_config.txt
+input_fits_listfile = input_fits_listfile.json
+stacked_image = /mnt/cephfs/share/SC8_pilot/VIS/EUC_VIS_SWL-STK-000-000000-0000000__20210326T224502.118739Z.fits
+catalogue_listfile = catalogue_listfile.json

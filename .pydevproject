@@ -1,17 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?eclipse-pydev version="1.0"?><pydev_project>
-        
-    
-    <pydev_property name="org.python.pydev.PYTHON_PROJECT_INTERPRETER">python</pydev_property>
-        
-    
+    <pydev_property name="org.python.pydev.PYTHON_PROJECT_INTERPRETER">Default</pydev_property>
     <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python interpreter</pydev_property>
-        
-    
-    <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
-        
-        <path>/home/user/Work/Projects/SHE_PPT/SHE_PPT/python</path>
-        
+    <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
+        <path>/${PROJECT_DIR_NAME}/SHE_Pipeline/python</path>
+        <path>/${PROJECT_DIR_NAME}/SHE_Pipeline/tests/python</path>
     </pydev_pathproperty>
-    
+    <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
+        <path>/home/user/Work/Projects/EL_Utils/EL_PythonUtils/python</path>
+        <path>/home/user/Work/Projects/EL_Utils/EL_CoordsUtils/python</path>
+        <path>/home/user/Work/Projects/SHE_PPT/SHE_PPT/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE/python</path>
+        <path>/home/user/Work/Projects/SHE_GST/SHE_GST/python</path>
+        <path>/home/user/Work/Projects/SHE_LensMC/SHE_LensMC/python</path>
+        <path>/home/user/Work/Projects/SHE_MER/SHE_MER_RemapMosaic/python</path>
+        <path>/home/user/Work/Projects/SHE_MomentsML/SHE_CalibML/python</path>
+        <path>/home/user/Work/Projects/SHE_MomentsML/SHE_MomentsML/python</path>
+        <path>/home/user/Work/Projects/SHE_PSFToolkit/SHE_PSFToolkit/python</path>
+        <path>/home/user/Work/Projects/SHE_PSFToolkit/SHE_PSFToolkit_Fitting/python</path>
+        <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation/python</path>
+        <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation_CTI/python</path>
+        <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation_PSF/python</path>
+        <path>/home/user/Work/Projects/SHE_Validation/SHE_Validation_ShearBias/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_BiasMeasurement/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_PipelineUtility/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_ShearEstimation/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_ShearReconciliation/python</path>
+        <path>/home/user/Work/Projects/SHE_CTE/SHE_CTE_ShearValidation/python</path>
+        <path>/home/user/Work/Projects/SHE_GST/SHE_GST_GalaxyImageGeneration/python</path>
+        <path>/home/user/Work/Projects/SHE_GST/SHE_GST_PrepareConfigs/python</path>
+    </pydev_pathproperty>
 </pydev_project>
