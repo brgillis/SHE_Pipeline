@@ -1,0 +1,29 @@
+#Config options for the ScalingExperiments pipeline. All keys should be integers
+
+#Use HDF5 (1 = True, 0 = False - use FITS instead)
+HDF5 = 1
+
+#Use chunked HDF5 (T=1, F=0)
+chunked = 1
+
+#Use compression in HDF5 (T=1, F=0)
+compression = 0
+
+#Maximum number of batches to use (if -1 use all the batches)
+maxbatches = 32
+
+#Number of objects per batch
+batchsize = 20
+
+#Memory mapping for the FITS inputs (T=1,F=0)
+memmap = 1
+
+#Batch the objects spatially (T=1, 0=F) 
+#if false, batch by the order they appear in the detections catalogue
+spatial_batching = 1
+
+#mean "compute" time for each object
+mean_compute_time = 0
+
+#If dry run, don't actually do any reading/writing, just pretend to
+dry_run = 0

@@ -42,7 +42,7 @@ default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
-default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.4/ppo/lodeen-ial.properties"
+default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.5/ppo/lodeen-ial.properties"
 debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
 
 default_serverurl = "http://ial:50000"
@@ -54,7 +54,7 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.4"
+pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.5"
 pipeline_runner_exec = f"{pipeline_runner_path}/bin/python {pipeline_runner_path}/bin/pipeline_runner.py"
 
 submit_command = "submit"
@@ -462,12 +462,16 @@ def create_isf(args,
                     subfilenames = read_listfile(qualified_filename)
                     for subfilename in subfilenames:
                         qualified_subfilename = find_file(subfilename, path=search_path)
-                        try:
-                            p = read_xml_product(qualified_subfilename)
-                            data_filenames += p.get_all_filenames()
-                        except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
-                            logger.error("Cannot read file " + qualified_filename + ".")
-                            raise
+                        _, ext = os.path.splitext(qualified_subfilename)
+                        if ext in (".xml",".XML"):
+                            try:
+                                p = read_xml_product(qualified_subfilename)
+                                data_filenames += p.get_all_filenames()
+                            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
+                                logger.warn("Cannot open subfile %s from %s. "%(qualified_subfilename,qualified_filename))
+                                #raise
+                        else:
+                            logger.warn("Subfile %s from %s is not an XML file",qualified_subfilename,qualified_filename)
                 else:
                     logger.warn("Input file " + filename + " is not an XML data product.")
                     continue
