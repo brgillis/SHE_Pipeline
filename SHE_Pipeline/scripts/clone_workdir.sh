@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SOURCEDIR=/mnt/cephfs/share/SC8/SC8_workdir
+SOURCEDIR=/mnt/cephfs/share/SC8_pilot/template_workdir
 
 # Check we're given one argument
 if [ "$#" -eq 1 ]; then
