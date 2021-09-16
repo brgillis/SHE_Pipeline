@@ -1,7 +1,7 @@
 """ @file sample_test.py
 
     Created 16 August 2018
-    
+
     Sample unit test
 """
 
@@ -27,14 +27,14 @@ import os
 import SHE_Pipeline.pipeline_utilities as pu
 
 
-class TestPipelineUtilities():
+class TestPipelineUtilities:
     """ Unit tests for functions in run_bias_parallel
     """
 
     # Test main functions
 
     def simple_function(self, thread_number, raise_exception=False):
-        """ 
+        """
 
         """
         if raise_exception:

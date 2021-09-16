@@ -1,7 +1,7 @@
 """ @file sample_test.py
 
     Created 16 August 2018
-    
+
     Sample unit test
 """
 
@@ -20,16 +20,16 @@
 # Boston, MA 02110-1301 USA
 
 
-class TestRunBiasPipelineParallel(object):
+class TestRunBiasPipelineParallel:
     """ Unit tests for functions in run_bias_parallel
     """
 
     # Test main functions
 
     def external_process_run1(self):
-        """ This should be 
+        """ This should be
 
-        Tests 
+        Tests
         """
 
         assert True
