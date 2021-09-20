@@ -1,14 +1,13 @@
 #/bin/bash
 
 DATASETRELEASE=SC8_MAIN_V0
-# OBS_ID=10351
+# TILE_ID=90346 # When called at command-line, preface with TILE_ID=... to just query for a specific tile
 
 QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.DataSetRelease=$DATASETRELEASE"
-# QUERY="Header.DataSetRelease=$DATASETRELEASE"
 
-if [ ! -z ${OBS_ID+x} ]
+if [ ! -z ${TILE_ID+x} ]
 then
-  QUERY=$QUERY"&&Data.ObservationIdList==$OBS_ID"
+  QUERY=$QUERY"&&Data.TileIndex==TILE_ID"
 fi
 
 echo "Query: $QUERY"
