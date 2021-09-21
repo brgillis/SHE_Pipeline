@@ -1,5 +1,7 @@
 #/bin/bash
 
+BASEDIR=$(dirname $(realpath "$0"))
+
 for i in {0..100000}
 do
 	grep \<ObservationId\>$i\</ObservationId\> *.xml > /dev/null
@@ -8,7 +10,7 @@ do
     fi
 	QUERY='Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId=='$i'&&Header.ManualValidationStatus.ManualValidationStatus!="INVALID"&&Header.PipelineDefinitionId=="SIM-VIS"'
 	echo "Query: $QUERY"
-	python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"	
+	python $BASEDIR/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"
 done
 
 

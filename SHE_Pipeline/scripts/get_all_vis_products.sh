@@ -12,12 +12,14 @@ fi
 
 echo "Query: $QUERY"
 
+BASEDIR=$(dirname $(realpath "$0"))
+
 # Get the DpdVisStackedFrame product and fits files
-CMD='python '$HOME'/bin/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisStackedFrame --query "'$QUERY'"'
+CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisStackedFrame --query "'$QUERY'"'
 echo "Command: $CMD"
 eval $CMD
 
 # Get the DpdVisCalibratedFrame product and fits files
-CMD='python '$HOME'/bin/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY'"'
+CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY'"'
 echo "Command: $CMD"
 eval $CMD
