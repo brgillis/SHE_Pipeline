@@ -42,7 +42,9 @@ default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
-default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.5/ppo/lodeen-ial.properties"
+pipeline_runner_version = "2.2.7"
+
+default_server_config = f"/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/{pipeline_runner_version}/ppo/lodeen-ial.properties"
 debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
 
 default_serverurl = "http://ial:50000"
@@ -54,7 +56,7 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.5"
+pipeline_runner_path = f"/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/{pipeline_runner_version}"
 pipeline_runner_exec = f"{pipeline_runner_path}/bin/python {pipeline_runner_path}/bin/pipeline_runner.py"
 
 submit_command = "submit"
