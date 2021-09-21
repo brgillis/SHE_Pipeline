@@ -5,26 +5,31 @@ DATASETRELEASE=SC8_MAIN_V0
 
 QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.DataSetRelease=$DATASETRELEASE"
 
-# Iterate over observation IDs
-for PICKED_OBS_ID in $OBS_ID; do
-
-if [ ! -z ${OBS_ID+x} ]
-then
-  QUERY_FOR_OBS=$QUERY"&&Data.ObservationSequence.ObservationId==$OBS_ID"
+if [ -z ${OBS_ID+x} ]; then
+  OBS_ID=all
 fi
-
-echo "Query: $QUERY"
 
 BASEDIR=$(dirname $(realpath "$0"))
 
-# Get the DpdVisStackedFrame product and fits files
-CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisStackedFrame --query "'$QUERY'"'
-echo "Command: $CMD"
-eval $CMD
+# Iterate over observation IDs
+for PICKED_OBS_ID in $OBS_ID; do
 
-# Get the DpdVisCalibratedFrame product and fits files
-CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY'"'
-echo "Command: $CMD"
-eval $CMD
+  if [ $OBS_ID != all ]; then
+    QUERY_FOR_OBS=$QUERY"&&Data.ObservationSequence.ObservationId==$OBS_ID"
+  else
+    QUERY_FOR_OBS=$QUERY
+  fi
+
+  echo "Query: $QUERY_FOR_OBS"
+
+  # Get the DpdVisStackedFrame product and fits files
+  CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisStackedFrame --query "'$QUERY'"'
+  echo "Command: $CMD"
+  eval $CMD
+
+  # Get the DpdVisCalibratedFrame product and fits files
+  CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY'"'
+  echo "Command: $CMD"
+  eval $CMD
 
 done
