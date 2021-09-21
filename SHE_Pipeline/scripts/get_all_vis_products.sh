@@ -5,9 +5,12 @@ DATASETRELEASE=SC8_MAIN_V0
 
 QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.DataSetRelease=$DATASETRELEASE"
 
+# Iterate over observation IDs
+for PICKED_OBS_ID in $OBS_ID; do
+
 if [ ! -z ${OBS_ID+x} ]
 then
-  QUERY=$QUERY"&&Data.ObservationSequence.ObservationId==$OBS_ID"
+  QUERY_FOR_OBS=$QUERY"&&Data.ObservationSequence.ObservationId==$OBS_ID"
 fi
 
 echo "Query: $QUERY"
@@ -23,3 +26,5 @@ eval $CMD
 CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY'"'
 echo "Command: $CMD"
 eval $CMD
+
+done
