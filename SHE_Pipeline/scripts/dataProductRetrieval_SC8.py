@@ -21,7 +21,7 @@ except:
 
 try:
     sslcontext = ssl._create_unverified_context()
-except: 
+except:
     sslcontext = None
 
 
@@ -30,9 +30,9 @@ def check_content_length(rec):
         return True
     elif 'content-length' in rec:
         return True
-    elif 'Content-Length' in rec: 
+    elif 'Content-Length' in rec:
         return True
-    return False 
+    return False
 
 
 def get_content_length(rec):
@@ -70,8 +70,11 @@ class HTTPSConnectionV3(HTTPSConnection):
 
 
 BASE_EAS_URL="https://eas-dps-cus.test.euclid.astro.rug.nl/NewEuclidXML?class_name="
+#BASE_EAS_URL="https://eas-dps-rest-ops.esac.esa.int/NewEuclidXML?class_name="
 BASE_DSS_URL="https://dss-mdb.euclid.astro.rug.nl/"
+#BASE_DSS_URL="https://euclid-dss.roe.ac.uk/"
 BASE_DSS_HOST="dss-mdb.euclid.astro.rug.nl"
+#BASE_DSS_HOST="euclid-dss.roe.ac.uk"
 BASE_DSS_PORT=443
 buffer_size=16*1024
 
@@ -148,9 +151,9 @@ def downloadDssFile(base_url, fname, username= None, password = None):
   if sslcontext:
       conn = HTTPSConnection(BASE_DSS_HOST, BASE_DSS_PORT, context=sslcontext)
   else:
-      conn = HTTPSConnection(BASE_DSS_HOST, BASE_DSS_PORT)      
+      conn = HTTPSConnection(BASE_DSS_HOST, BASE_DSS_PORT)
   conn.request('GET', '/'+fname, headers=headers)
-  response = conn.getresponse()        
+  response = conn.getresponse()
   recvheader = {}
   for k, v in dict(response.getheaders()).items():
       recvheader[k.lower()] = v
@@ -166,7 +169,7 @@ def downloadDssFile(base_url, fname, username= None, password = None):
                       dl = 0.0
                       dlc = 0.0
                       data = response.read(buffer_size)
-                      while data: 
+                      while data:
                           dlc = len(data)
                           dl = dl + dlc
                           f.write(data)
@@ -219,7 +222,7 @@ def saveMetaAndData(products, username=None, password=None):
         print("File %s already exists locally. Skipping its download" % (f))
       else:
         print("Start retrieving of " + f + " at " +str(datetime.datetime.now())+" :")
-        downloadDssFile(BASE_DSS_URL, f, username, password)    
+        downloadDssFile(BASE_DSS_URL, f, username, password)
         print("Finished retrieving of " + f + " at " +str(datetime.datetime.now()))
 
 
