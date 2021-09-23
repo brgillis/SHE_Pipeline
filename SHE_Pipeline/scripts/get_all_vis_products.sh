@@ -23,7 +23,7 @@ else:
   exit 1
 fi
 
-DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/dataProductRetrieval_SC8.py
+DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/$DATAPROD_RETRIEVAL_SCRIPT
 
 # Iterate over observation IDs
 for PICKED_OBS_ID in $OBS_ID; do

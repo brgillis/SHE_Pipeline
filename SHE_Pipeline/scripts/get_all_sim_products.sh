@@ -1,6 +1,20 @@
 #/bin/bash
 
-BASEDIR=$(dirname $(realpath "$0"))
+DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
+
+# Check some common locations
+if [ -f "$(dirname $(realpath "$0"))/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$(dirname $(realpath "$0"))
+elif [ -f "$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts
+elif [ -f "$HOME/bin/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/bin
+else:
+  echo Could not find retrieval script.
+  exit 1
+fi
+
+DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/$DATAPROD_RETRIEVAL_SCRIPT
 
 for i in {0..100000}
 do
@@ -10,7 +24,7 @@ do
     fi
 	QUERY='Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId=='$i'&&Header.ManualValidationStatus.ManualValidationStatus!="INVALID"&&Header.PipelineDefinitionId=="SIM-VIS"'
 	echo "Query: $QUERY"
-	python $BASEDIR/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"
+	python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"
 done
 
 
