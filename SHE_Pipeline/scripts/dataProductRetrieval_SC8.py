@@ -71,10 +71,10 @@ class HTTPSConnectionV3(HTTPSConnection):
 
 BASE_EAS_URL="https://eas-dps-cus.test.euclid.astro.rug.nl/NewEuclidXML?class_name="
 #BASE_EAS_URL="https://eas-dps-rest-ops.esac.esa.int/NewEuclidXML?class_name="
-BASE_DSS_URL="https://dss-mdb.euclid.astro.rug.nl/"
-#BASE_DSS_URL="https://euclid-dss.roe.ac.uk/"
-BASE_DSS_HOST="dss-mdb.euclid.astro.rug.nl"
-#BASE_DSS_HOST="euclid-dss.roe.ac.uk"
+#BASE_DSS_URL="https://dss-mdb.euclid.astro.rug.nl/"
+BASE_DSS_URL="https://euclid-dss.roe.ac.uk/"
+#BASE_DSS_HOST="dss-mdb.euclid.astro.rug.nl"
+BASE_DSS_HOST="euclid-dss.roe.ac.uk"
 BASE_DSS_PORT=443
 buffer_size=16*1024
 
@@ -142,7 +142,7 @@ def getMetadataXml(base_url, product_type, product_query, project):
   return ret_p
 
 
-def downloadDssFile(base_url, fname, username= None, password = None):
+def downloadDssFile(base_url, fname, username= None, password = None, datadir='data'):
   headers = {}
   if username and password:
       headers['Authorization'] = 'Basic %s' % (base64.b64encode(b"%s:%s" % (username.encode('utf-8'), password.encode('utf-8'))).decode('utf-8'))
@@ -158,11 +158,13 @@ def downloadDssFile(base_url, fname, username= None, password = None):
   for k, v in dict(response.getheaders()).items():
       recvheader[k.lower()] = v
 #  response = requests.get(fileurl, auth=(username, password))
+  if not os.path.isdir(datadir):
+      os.makedirs(datadir)
   if response.status == 200:
       if check_content_length(recvheader):
           try:
               total_length = get_content_length(recvheader)
-              with open(fname, "wb") as f:
+              with open(os.path.join(datadir, fname), "wb") as f:
                   if total_length is None:
                       f.write(response.content)
                   else:
@@ -203,7 +205,7 @@ def downloadDssFile(base_url, fname, username= None, password = None):
   del conn
 
 
-def saveMetaAndData(products, username=None, password=None):
+def saveMetaAndData(products, username=None, password=None, datadir='data'):
   for p in products:
     #findProductId = etree.XPath("//ProductId")
     #findFiles = etree.XPath("//FileName")
@@ -222,7 +224,7 @@ def saveMetaAndData(products, username=None, password=None):
         print("File %s already exists locally. Skipping its download" % (f))
       else:
         print("Start retrieving of " + f + " at " +str(datetime.datetime.now())+" :")
-        downloadDssFile(BASE_DSS_URL, f, username, password)
+        downloadDssFile(BASE_DSS_URL, f, username, password, datadir=datadir)
         print("Finished retrieving of " + f + " at " +str(datetime.datetime.now()))
 
 
