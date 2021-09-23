@@ -9,7 +9,21 @@ if [ -z ${OBS_ID+x} ]; then
   OBS_ID=all
 fi
 
-BASEDIR=$(dirname $(realpath "$0"))
+DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
+
+# Check some common locations
+if [ -f "$(dirname $(realpath "$0"))/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$(dirname $(realpath "$0"))
+elif [ -f "$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts
+elif [ -f "$HOME/bin/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/bin
+else:
+  echo Could not find retrieval script.
+  exit 1
+fi
+
+DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/dataProductRetrieval_SC8.py
 
 # Iterate over observation IDs
 for PICKED_OBS_ID in $OBS_ID; do
@@ -25,14 +39,14 @@ for PICKED_OBS_ID in $OBS_ID; do
   echo "Query: $QUERY_FOR_STACK"
 
   # Get the DpdVisStackedFrame product and fits files
-  CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisStackedFrame --query "'$QUERY_FOR_STACK'"'
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisStackedFrame --query "'$QUERY_FOR_STACK'"'
   echo "Command: $CMD"
   eval $CMD
 
   echo "Query: $QUERY_FOR_CALIB"
 
   # Get the DpdVisCalibratedFrame product and fits files
-  CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY_FOR_CALIB'"'
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdVisCalibratedFrame --query "'$QUERY_FOR_CALIB'"'
   echo "Command: $CMD"
   eval $CMD
 

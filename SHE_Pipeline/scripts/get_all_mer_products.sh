@@ -9,7 +9,21 @@ if [ -z ${TILE_ID+x} ]; then
   TILE_ID=all
 fi
 
-BASEDIR=$(dirname $(realpath "$0"))
+DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
+
+# Check some common locations
+if [ -f "$(dirname $(realpath "$0"))/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$(dirname $(realpath "$0"))
+elif [ -f "$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts
+elif [ -f "$HOME/bin/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/bin
+else:
+  echo Could not find retrieval script.
+  exit 1
+fi
+
+DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/dataProductRetrieval_SC8.py
 
 # Iterate over tile IDs
 for PICKED_TILE_ID in $TILE_ID; do
@@ -23,12 +37,12 @@ for PICKED_TILE_ID in $TILE_ID; do
   echo "Query: $QUERY_FOR_TILE"
 
   # Get the DpdMerFinalCatalog product and fits files
-  CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerFinalCatalog --query "'$QUERY_FOR_TILE'"'
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerFinalCatalog --query "'$QUERY_FOR_TILE'"'
   echo "Command: $CMD"
   eval $CMD
 
   # Get the DpdMerSegmentationMap product and fits files
-  CMD='python '$BASEDIR'/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerSegmentationMap --query "'$QUERY_FOR_TILE'"'
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerSegmentationMap --query "'$QUERY_FOR_TILE'"'
   echo "Command: $CMD"
   eval $CMD
 
