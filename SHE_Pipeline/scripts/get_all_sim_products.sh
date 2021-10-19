@@ -1,5 +1,14 @@
 #/bin/bash
 
+DATASETRELEASE=SC8_MAIN_V0
+# OBS_ID=10351 # When called at command-line, preface with OBS_ID=... to just query for a specific observation
+
+QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.PipelineDefinitionId=='SIM-VIS'&&Header.DataSetRelease=$DATASETRELEASE"
+
+if [ -z ${OBS_ID+x} ]; then
+  OBS_ID=all
+fi
+
 DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
 
 # Check some common locations
@@ -16,24 +25,18 @@ fi
 
 DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/$DATAPROD_RETRIEVAL_SCRIPT
 
-for i in {0..100000}
-do
-	grep \<ObservationId\>$i\</ObservationId\> *.xml > /dev/null
-	if [ $? -eq 1 ]; then
-		continue
-    fi
-	QUERY='Header.DataSetRelease=SC8_MAIN_V0&&Data.EuclidPointingId=='$i'&&Header.ManualValidationStatus.ManualValidationStatus!="INVALID"&&Header.PipelineDefinitionId=="SIM-VIS"'
-	echo "Query: $QUERY"
-	python "$DATAPROD_RETRIEVAL_SCRIPT" --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "$QUERY"
+# Iterate over observation IDs
+for PICKED_OBS_ID in $OBS_ID; do
+
+  if [ $OBS_ID != all ]; then
+    QUERY=$QUERY"&&Data.EuclidPointingId==$PICKED_OBS_ID"
+  fi
+
+  echo "Query: $QUERY_FOR_STACK"
+
+  # Get the DpdTrueUniverseOutput product and fits files
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdTrueUniverseOutput --query "'$QUERY'"'
+  echo "Command: $CMD"
+  eval $CMD
+
 done
-
-
-# python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdTrueUniverseOutput --query "Header.DataSetRelease=SC8_PF_VIS_79171_R19"
-
-# python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdGalaxyCatalogProduct --query "Header.DataSetRelease=1.10.18_SC8_MAIN_STD"
-
-# python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdGalaxyCatalogProduct --query "Header.DataSetRelease=1.10.19_SC8_MAIN_QSO"
-
-# python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdGalaxyCatalogProduct --query "Header.DataSetRelease=1.10.15_SC8_MAIN_HIGHZ"
-
-# python $HOME/bin/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdStarsCatalogProduct --query "Header.DataSetRelease=v13_SC8_MAIN"
