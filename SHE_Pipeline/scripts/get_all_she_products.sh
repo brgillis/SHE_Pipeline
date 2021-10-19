@@ -1,9 +1,5 @@
 #/bin/bash
 
-BASEDIR=$(dirname $(realpath "$0"))
-
-python $BASEDIR/dataProductRetrieval_SC8.py --username `cat $HOME/.username.txt` --password `cat $HOME/.password.txt` --project TEST --data_product DpdSheValidatedMeasurements --query "Header.DataSetRelease=SC8_MAIN_V0"
-
 DATASETRELEASE=SC8_MAIN_V0
 # OBS_ID=10351 # When called at command-line, preface with OBS_ID=... to just query for a specific observation
 
