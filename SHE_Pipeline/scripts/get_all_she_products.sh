@@ -35,14 +35,14 @@ for PICKED_OBS_ID in $OBS_ID; do
   echo "Query: $QUERY_FOR_STACK"
 
   # Get the DpdSheValidatedMeasurements product and fits files
-  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdSheValidatedMeasurements --query "'QUERY'"'
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdSheValidatedMeasurements --query "'$QUERY'"'
   echo "Command: $CMD"
   eval $CMD
 
   echo "Query: $QUERY_FOR_CALIB"
 
   # Get the DpdSheLensMcChains product and fits files
-  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdSheLensMcChains --query "'QUERY'"'
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdSheLensMcChains --query "'$QUERY'"'
   echo "Command: $CMD"
   eval $CMD
 
