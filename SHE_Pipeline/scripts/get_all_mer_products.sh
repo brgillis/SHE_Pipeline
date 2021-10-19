@@ -5,19 +5,45 @@ DATASETRELEASE=SC8_MAIN_V0
 
 QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.DataSetRelease=$DATASETRELEASE"
 
-if [ ! -z ${TILE_ID+x} ]
-then
-  QUERY=$QUERY"&&Data.TileIndex==TILE_ID"
+if [ -z ${TILE_ID+x} ]; then
+  TILE_ID=all
 fi
 
-echo "Query: $QUERY"
+DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
 
-# Get the DpdMerFinalCatalog product and fits files
-CMD='python '$HOME'/bin/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerFinalCatalog --query "'$QUERY'"'
-echo "Command: $CMD"
-eval $CMD
+# Check some common locations
+if [ -f "$(dirname $(realpath "$0"))/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$(dirname $(realpath "$0"))
+elif [ -f "$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts
+elif [ -f "$HOME/bin/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/bin
+else:
+  echo Could not find retrieval script.
+  exit 1
+fi
 
-# Get the DpdMerSegmentationMap product and fits files
-CMD='python '$HOME'/bin/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerSegmentationMap --query "'$QUERY'"'
-echo "Command: $CMD"
-eval $CMD
+DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/$DATAPROD_RETRIEVAL_SCRIPT
+
+# Iterate over tile IDs
+for PICKED_TILE_ID in $TILE_ID; do
+
+  if [ $PICKED_TILE_ID != all ]; then
+    QUERY_FOR_TILE=$QUERY"&&Data.TileIndex==$PICKED_TILE_ID"
+  else
+    QUERY_FOR_TILE=$QUERY
+  fi
+
+  echo "Query: $QUERY_FOR_TILE"
+
+  # Get the DpdMerFinalCatalog product and fits files
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerFinalCatalog --query "'$QUERY_FOR_TILE'"'
+  echo "Command: $CMD"
+  eval $CMD
+
+  # Get the DpdMerSegmentationMap product and fits files
+  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerSegmentationMap --query "'$QUERY_FOR_TILE'"'
+  echo "Command: $CMD"
+  eval $CMD
+
+done
