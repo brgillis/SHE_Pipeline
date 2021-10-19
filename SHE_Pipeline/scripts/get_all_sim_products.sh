@@ -32,7 +32,7 @@ for PICKED_OBS_ID in $OBS_ID; do
     QUERY=$QUERY"&&Data.EuclidPointingId==$PICKED_OBS_ID"
   fi
 
-  echo "Query: $QUERY_FOR_STACK"
+  echo "Query: $QUERY"
 
   # Get the DpdTrueUniverseOutput product and fits files
   CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdTrueUniverseOutput --query "'$QUERY'"'
