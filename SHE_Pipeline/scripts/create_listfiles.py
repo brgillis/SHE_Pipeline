@@ -3,10 +3,10 @@
 """ @file create_listfiles.py
 
     Created 15 July 2019
-    
+
     Script to search through the current directory for MER and VIS products, and create listfiles for running of
     Analysis and Reconciliation pipelines for all observation IDs and Tile IDs.
-    
+
     Must be run with E-Run.
 """
 
@@ -25,12 +25,11 @@ __updated__ = "2021-07-02"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+import os
 from collections import namedtuple
 from enum import Enum
-import os
 
-from SHE_PPT import products
-from SHE_PPT.file_io import read_xml_product, write_listfile, find_aux_file
+from SHE_PPT.file_io import read_xml_product, write_listfile
 from SHE_PPT.logging import getLogger
 from SHE_PPT.products.mer_final_catalog import dpdMerFinalCatalog
 from SHE_PPT.products.mer_segmentation_map import dpdMerSegmentationMap
@@ -45,7 +44,6 @@ from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
 from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
 from SHE_PPT.utility import get_nested_attr
 
-
 logger = getLogger(__name__)
 
 ROOT_DIR = "."
@@ -54,7 +52,7 @@ ANALYSIS_ISF_HEAD = "analysis_"
 ANALYSIS_ISF_TAIL = "_isf.txt"
 
 AFTER_REMAP_TAG = "after_remap_"
-TU_MATCH_TAG = "with_tu_match_"
+VALIDATION_TAG = "with_validation_"
 
 ANALYSIS_VALIDATION_ISF_HEAD = "analysis_validation_"
 ANALYSIS_VALIDATION_ISF_TAIL = "_isf.txt"
@@ -89,32 +87,32 @@ RECONCILIATION_PRODUCT_KEYS = (ProdKeys.MFC, ProdKeys.SVM, ProdKeys.SLMC,)
 
 # Which pipelines a given product is used for
 # 1 = only for that variant, -1 = only not that variant, 0 = both variants
-ONLY_FOR_AFTER_REMAP = {ProdKeys.MFC: 0,
-                        ProdKeys.MSEG: -1,
+ONLY_FOR_AFTER_REMAP = {ProdKeys.MFC  : 0,
+                        ProdKeys.MSEG : -1,
                         ProdKeys.SESEG: 1,
                         ProdKeys.SSSEG: 1,
-                        ProdKeys.VCF: 0,
-                        ProdKeys.VSF: 0,
-                        ProdKeys.TUO: 0,
+                        ProdKeys.VCF  : 0,
+                        ProdKeys.VSF  : 0,
+                        ProdKeys.TUO  : 0,
                         }
-ONLY_FOR_TU_MATCH = {ProdKeys.MFC: 0,
-                     ProdKeys.MSEG: 0,
-                     ProdKeys.SESEG: 0,
-                     ProdKeys.SSSEG: 0,
-                     ProdKeys.VCF: 0,
-                     ProdKeys.VSF: 0,
-                     ProdKeys.TUO: 1,
-                     }
+ONLY_FOR_VALIDATION = {ProdKeys.MFC  : 0,
+                       ProdKeys.MSEG : 0,
+                       ProdKeys.SESEG: 0,
+                       ProdKeys.SSSEG: 0,
+                       ProdKeys.VCF  : 0,
+                       ProdKeys.VSF  : 0,
+                       ProdKeys.TUO  : 1,
+                       }
 
 # ISF ports and common filenames
 
-ANALYSIS_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
-                      ProdKeys.MSEG: "mer_segmentation_map_listfile",
+ANALYSIS_ISF_PORTS = {ProdKeys.MFC  : "mer_final_catalog_listfile",
+                      ProdKeys.MSEG : "mer_segmentation_map_listfile",
                       ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_listfile",
                       ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map",
-                      ProdKeys.VCF: "vis_calibrated_frame_listfile",
-                      ProdKeys.VSF: "vis_stacked_frame",
-                      ProdKeys.TUO: "tu_output_product",
+                      ProdKeys.VCF  : "vis_calibrated_frame_listfile",
+                      ProdKeys.VSF  : "vis_stacked_frame",
+                      ProdKeys.TUO  : "tu_output_product",
                       }
 
 FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
@@ -125,66 +123,64 @@ FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
                                 "regauss_training_data = test_regauss_training.xml",
                                 "spe_output_cat = None"]
 
-ANALYSIS_VALIDATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog_listfile",
-                                 ProdKeys.VCF: "vis_calibrated_frame_listfile",
-                                 ProdKeys.SVM: "she_validated_measurements",
+ANALYSIS_VALIDATION_ISF_PORTS = {ProdKeys.MFC : "mer_final_catalog_listfile",
+                                 ProdKeys.VCF : "vis_calibrated_frame_listfile",
+                                 ProdKeys.SVM : "she_validated_measurements",
                                  ProdKeys.SLMC: "she_lensmc_chains",
-                                 ProdKeys.TUO: "tu_output_product",
+                                 ProdKeys.TUO : "tu_output_product",
                                  }
 
-RECONCILIATION_ISF_PORTS = {ProdKeys.MFC: "mer_final_catalog",
-                            ProdKeys.SVM: "she_validated_measurements_listfile",
+RECONCILIATION_ISF_PORTS = {ProdKeys.MFC : "mer_final_catalog",
+                            ProdKeys.SVM : "she_validated_measurements_listfile",
                             ProdKeys.SLMC: "she_lensmc_chains_listfile",
                             }
 
 # Product types
 
-PRODUCT_TYPES = {ProdKeys.MFC: dpdMerFinalCatalog,
-                 ProdKeys.MSEG: dpdMerSegmentationMap,
+PRODUCT_TYPES = {ProdKeys.MFC  : dpdMerFinalCatalog,
+                 ProdKeys.MSEG : dpdMerSegmentationMap,
                  ProdKeys.SESEG: dpdSheExposureReprojectedSegmentationMap,
                  ProdKeys.SSSEG: dpdSheStackReprojectedSegmentationMap,
-                 ProdKeys.SVM: dpdSheValidatedMeasurements,
-                 ProdKeys.SLMC: dpdSheLensMcChains,
-                 ProdKeys.VCF: dpdVisCalibratedFrame,
-                 ProdKeys.VSF: dpdVisStackedFrame,
-                 ProdKeys.TUG: dpdGalaxyCatalogProduct,
-                 ProdKeys.TUS: dpdStarsCatalogProduct,
-                 ProdKeys.TUO: dpdTrueUniverseOutput,
+                 ProdKeys.SVM  : dpdSheValidatedMeasurements,
+                 ProdKeys.SLMC : dpdSheLensMcChains,
+                 ProdKeys.VCF  : dpdVisCalibratedFrame,
+                 ProdKeys.VSF  : dpdVisStackedFrame,
+                 ProdKeys.TUG  : dpdGalaxyCatalogProduct,
+                 ProdKeys.TUS  : dpdStarsCatalogProduct,
+                 ProdKeys.TUO  : dpdTrueUniverseOutput,
                  }
-
 
 # Desired filename info
 
-FILENAME_HEADS = {ProdKeys.MFC: "mer_final_catalog_obs_",
-                  ProdKeys.MSEG: "mer_segmentation_map_obs_",
+FILENAME_HEADS = {ProdKeys.MFC  : "mer_final_catalog_obs_",
+                  ProdKeys.MSEG : "mer_segmentation_map_obs_",
                   ProdKeys.SESEG: "she_exposure_reprojected_segmentation_map_obs_",
                   ProdKeys.SSSEG: "she_stack_reprojected_segmentation_map_obs_",
-                  ProdKeys.SVM: {"Analysis": "she_validated_measurements_obs_",
-                                 "Reconciliation": "she_validated_measurements_tile_"},
-                  ProdKeys.SLMC: {"Analysis": "she_lensmc_chains_obs_",
-                                  "Reconciliation": "she_lensmc_chains_tile_"},
-                  ProdKeys.VCF: "vis_calibrated_frame_obs_",
-                  ProdKeys.VSF: None,
-                  ProdKeys.TUG: "galcats",
-                  ProdKeys.TUS: "starcats",
-                  ProdKeys.TUO: "tu_output",
+                  ProdKeys.SVM  : {"Analysis"      : "she_validated_measurements_obs_",
+                                   "Reconciliation": "she_validated_measurements_tile_"},
+                  ProdKeys.SLMC : {"Analysis"      : "she_lensmc_chains_obs_",
+                                   "Reconciliation": "she_lensmc_chains_tile_"},
+                  ProdKeys.VCF  : "vis_calibrated_frame_obs_",
+                  ProdKeys.VSF  : None,
+                  ProdKeys.TUG  : "galcats",
+                  ProdKeys.TUS  : "starcats",
+                  ProdKeys.TUO  : "tu_output",
                   }
 
-FILENAME_TAILS = {ProdKeys.MFC: "_listfile.json",
-                  ProdKeys.MSEG: "_listfile.json",
+FILENAME_TAILS = {ProdKeys.MFC  : "_listfile.json",
+                  ProdKeys.MSEG : "_listfile.json",
                   ProdKeys.SESEG: "_listfile.json",
                   ProdKeys.SSSEG: "_product.xml",
-                  ProdKeys.SVM: {"Analysis": "_product.xml",
-                                 "Reconciliation": "_listfile.json"},
-                  ProdKeys.SLMC: {"Analysis": "_product.xml",
-                                  "Reconciliation": "_listfile.json"},
-                  ProdKeys.VCF: "_listfile.json",
-                  ProdKeys.VSF: None,
-                  ProdKeys.TUG: ".json",
-                  ProdKeys.TUS: ".json",
-                  ProdKeys.TUO: "_product.xml",
+                  ProdKeys.SVM  : {"Analysis"      : "_product.xml",
+                                   "Reconciliation": "_listfile.json"},
+                  ProdKeys.SLMC : {"Analysis"      : "_product.xml",
+                                   "Reconciliation": "_listfile.json"},
+                  ProdKeys.VCF  : "_listfile.json",
+                  ProdKeys.VSF  : None,
+                  ProdKeys.TUG  : ".json",
+                  ProdKeys.TUS  : ".json",
+                  ProdKeys.TUO  : "_product.xml",
                   }
-
 
 # A namedtuple type for all data of each product type
 ProductTypeData = namedtuple("ProductTypeData", ["type",
@@ -217,7 +213,7 @@ for filename in all_filenames:
         continue
 
     try:
-        product = read_xml_product(filename, workdir=ROOT_DIR)
+        product = read_xml_product(filename, workdir = ROOT_DIR)
     except Exception:
         raise ValueError("Can't interpret file " + filename)
 
@@ -311,7 +307,6 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
 
 logger.info(f"Identified the following Tile IDs: {tile_id_set}")
 
-
 if len(observation_id_set) == 0:
     logger.error("No observation IDs found.")
     exit()
@@ -322,7 +317,6 @@ if len(tile_id_set) == 0:
 
 analysis_filename_dict = {}
 reconciliation_filename_dict = {}
-
 
 # Write Analysis listfiles for the galaxy and star catalogues
 if ProdKeys.TUG in ANALYSIS_PRODUCT_KEYS and ProdKeys.TUS in ANALYSIS_PRODUCT_KEYS:
@@ -374,7 +368,7 @@ for obs_id in observation_id_set:
             continue
 
         obs_fileprod_list = product_type_data.obs_id_dict[obs_id]
-        obs_fileprod_list.sort(key=lambda fp: get_nested_attr(fp.product, sort_by))
+        obs_fileprod_list.sort(key = lambda fp: get_nested_attr(fp.product, sort_by))
 
         obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
 
@@ -399,14 +393,16 @@ for obs_id in observation_id_set:
     else:
         logger.error("Validated Shear Measurements product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SVM] = (product_type_data_dict[ProdKeys.SVM].filename_head["Analysis"] +
-                                                str(obs_id) + product_type_data_dict[ProdKeys.SVM].filename_tail["Analysis"])
+                                                str(obs_id) + product_type_data_dict[ProdKeys.SVM].filename_tail[
+                                                    "Analysis"])
 
     if obs_id in product_type_data_dict[ProdKeys.SLMC].obs_id_dict:
         analysis_filename_dict[ProdKeys.SLMC] = product_type_data_dict[ProdKeys.SLMC].obs_id_dict[obs_id][0].filename
     else:
         logger.error("LensMC Chains product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SLMC] = (product_type_data_dict[ProdKeys.SLMC].filename_head["Analysis"] +
-                                                 str(obs_id) + product_type_data_dict[ProdKeys.SLMC].filename_tail["Analysis"])
+                                                 str(obs_id) + product_type_data_dict[ProdKeys.SLMC].filename_tail[
+                                                     "Analysis"])
 
     if obs_id in product_type_data_dict[ProdKeys.TUO].obs_id_dict:
         analysis_filename_dict[ProdKeys.TUO] = product_type_data_dict[ProdKeys.TUO].obs_id_dict[obs_id][0].filename
@@ -417,14 +413,14 @@ for obs_id in observation_id_set:
 
     # Write the ISF for this observation for each variant
     for after_remap in (False, True):
-        for with_tu_match in (False, True):
+        for with_validation in (False, True):
 
             # Get the filename for this specific variant
             isf_filename = ANALYSIS_ISF_HEAD
             if after_remap:
                 isf_filename += AFTER_REMAP_TAG
-            if with_tu_match:
-                isf_filename += TU_MATCH_TAG
+            if with_validation:
+                isf_filename += VALIDATION_TAG
             isf_filename += str(obs_id) + ANALYSIS_ISF_TAIL
 
             # Write the ISF
@@ -434,7 +430,7 @@ for obs_id in observation_id_set:
                     # Determine whether to write this key or not from the variant
                     met_criteria = True
                     for criteria, variant in ((ONLY_FOR_AFTER_REMAP[prod_key], after_remap),
-                                              (ONLY_FOR_TU_MATCH[prod_key], with_tu_match)):
+                                              (ONLY_FOR_VALIDATION[prod_key], with_validation)):
                         if (criteria == 1 and not variant) or (criteria == -1 and variant):
                             met_criteria = False
                     if met_criteria:
@@ -466,7 +462,6 @@ for obs_id in observation_id_set:
             fo.write(f"{ANALYSIS_VALIDATION_ISF_PORTS[prod_key]} = {analysis_filename_dict[prod_key]}\n")
 
     logger.info(f"Finished writing Analysis Validation ISF for observation ID {obs_id}.")
-
 
 logger.info("Finished writing Analysis Validation ISFs.")
 
@@ -500,7 +495,7 @@ for tile_id in tile_id_set:
         reconciliation_filename_dict[prod_key] = filename
 
         obs_fileprod_list = product_type_data.tile_id_dict[tile_id]
-        obs_fileprod_list.sort(key=lambda fp: get_nested_attr(fp.product, sort_by))
+        obs_fileprod_list.sort(key = lambda fp: get_nested_attr(fp.product, sort_by))
 
         obs_filename_list = [obs_fileprod.filename for obs_fileprod in obs_fileprod_list]
 

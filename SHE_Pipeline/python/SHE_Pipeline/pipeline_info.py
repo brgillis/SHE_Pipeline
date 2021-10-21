@@ -23,8 +23,8 @@ __updated__ = "2021-07-20"
 import os
 
 from SHE_PPT.file_io import find_aux_file
-from SHE_PPT.pipeline_utility import (AnalysisConfigKeys, CalibrationConfigKeys,
-                                      ReconciliationConfigKeys, ValidationConfigKeys, ScalingExperimentsConfigKeys)
+from SHE_PPT.pipeline_utility import (AnalysisConfigKeys, CalibrationConfigKeys, ReconciliationConfigKeys,
+                                      ScalingExperimentsConfigKeys, ValidationConfigKeys, )
 
 common_auxdir = "SHE_Pipeline"
 
@@ -39,7 +39,8 @@ isf_tail = "_isf.txt"
 
 class PipelineInfo(object):
 
-    def __init__(self, lowercase_name, uppercase_name, config_keys, auxdir=None, package_def=None, optional_ports=None):
+    def __init__(self, lowercase_name, uppercase_name, config_keys, auxdir = None, package_def = None,
+                 optional_ports = None):
 
         self.lowercase_name = lowercase_name
         self.uppercase_name = uppercase_name
@@ -114,60 +115,59 @@ analysis_optional_ports = ("phz_output_cat",
                            "momentsml_training_data",
                            "pipeline_config")
 
-pipeline_info_dict["analysis"] = PipelineInfo(lowercase_name="analysis",
-                                              uppercase_name="Shear_Analysis",
-                                              config_keys=AnalysisConfigKeys,
-                                              optional_ports=analysis_optional_ports)
+pipeline_info_dict["analysis"] = PipelineInfo(lowercase_name = "analysis",
+                                              uppercase_name = "Shear_Analysis",
+                                              config_keys = AnalysisConfigKeys,
+                                              optional_ports = analysis_optional_ports)
 
-pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name="analysis_after_remap",
-                                                          uppercase_name="Shear_Analysis_After_Remap",
-                                                          config_keys=AnalysisConfigKeys,
-                                                          auxdir="Shear_Analysis",
-                                                          package_def="Shear_Analysis",
-                                                          optional_ports=analysis_optional_ports)
+pipeline_info_dict["analysis_after_remap"] = PipelineInfo(lowercase_name = "analysis_after_remap",
+                                                          uppercase_name = "Shear_Analysis_After_Remap",
+                                                          config_keys = AnalysisConfigKeys,
+                                                          auxdir = "Shear_Analysis",
+                                                          package_def = "Shear_Analysis",
+                                                          optional_ports = analysis_optional_ports)
 
-pipeline_info_dict["analysis_with_tu_match"] = PipelineInfo(lowercase_name="analysis_with_tu_match",
-                                                            uppercase_name="Shear_Analysis_With_TU_Match",
-                                                            config_keys=AnalysisConfigKeys,
-                                                            auxdir="Shear_Analysis",
-                                                            package_def="Shear_Analysis",
-                                                            optional_ports=analysis_optional_ports)
+pipeline_info_dict["analysis_with_validation"] = PipelineInfo(lowercase_name = "analysis_with_validation",
+                                                              uppercase_name = "Shear_Analysis_With_Validation",
+                                                              config_keys = AnalysisConfigKeys,
+                                                              auxdir = "Shear_Analysis",
+                                                              package_def = "Shear_Analysis",
+                                                              optional_ports = analysis_optional_ports)
 
-pipeline_info_dict["analysis_after_remap_with_tu_match"] = PipelineInfo(lowercase_name="analysis_after_remap_with_tu_match",
-                                                                        uppercase_name="Shear_Analysis_After_Remap_With_TU_Match",
-                                                                        config_keys=AnalysisConfigKeys,
-                                                                        auxdir="Shear_Analysis",
-                                                                        package_def="Shear_Analysis",
-                                                                        optional_ports=analysis_optional_ports)
+pipeline_info_dict["analysis_after_remap_with_validation"] = PipelineInfo(
+    lowercase_name = "analysis_after_remap_with_validation",
+    uppercase_name = "Shear_Analysis_After_Remap_With_Validation",
+    config_keys = AnalysisConfigKeys,
+    auxdir = "Shear_Analysis",
+    package_def = "Shear_Analysis",
+    optional_ports = analysis_optional_ports)
 
 # Shear Calibration pipelines
 
-pipeline_info_dict["calibration"] = PipelineInfo(lowercase_name="calibration",
-                                                 uppercase_name="Shear_Calibration",
-                                                 config_keys=CalibrationConfigKeys)
+pipeline_info_dict["calibration"] = PipelineInfo(lowercase_name = "calibration",
+                                                 uppercase_name = "Shear_Calibration",
+                                                 config_keys = CalibrationConfigKeys)
 
-pipeline_info_dict["bias_measurement"] = PipelineInfo(lowercase_name="bias_measurement",
-                                                      uppercase_name="Bias_Measurement",
-                                                      config_keys=CalibrationConfigKeys,
-                                                      auxdir="Shear_Calibration",
-                                                      package_def="Shear_Calibration")
+pipeline_info_dict["bias_measurement"] = PipelineInfo(lowercase_name = "bias_measurement",
+                                                      uppercase_name = "Bias_Measurement",
+                                                      config_keys = CalibrationConfigKeys,
+                                                      auxdir = "Shear_Calibration",
+                                                      package_def = "Shear_Calibration")
 
 # Shear Reconciliation pipeline
 
-pipeline_info_dict["reconciliation"] = PipelineInfo(lowercase_name="reconciliation",
-                                                    uppercase_name="Shear_Reconciliation",
-                                                    config_keys=ReconciliationConfigKeys)
+pipeline_info_dict["reconciliation"] = PipelineInfo(lowercase_name = "reconciliation",
+                                                    uppercase_name = "Shear_Reconciliation",
+                                                    config_keys = ReconciliationConfigKeys)
 
 # Validation pipelines
 
-pipeline_info_dict["global_validation"] = PipelineInfo(lowercase_name="global_validation",
-                                                       uppercase_name="Global_Validation",
-                                                       config_keys=ValidationConfigKeys)
-
+pipeline_info_dict["global_validation"] = PipelineInfo(lowercase_name = "global_validation",
+                                                       uppercase_name = "Global_Validation",
+                                                       config_keys = ValidationConfigKeys)
 
 # Scaling Experiments pipeline
 
-pipeline_info_dict["scaling_experiments"] = PipelineInfo(lowercase_name="scaling_experiments",
-                                                       uppercase_name="Scaling_Experiments",
-                                                       config_keys=ScalingExperimentsConfigKeys)
-
+pipeline_info_dict["scaling_experiments"] = PipelineInfo(lowercase_name = "scaling_experiments",
+                                                         uppercase_name = "Scaling_Experiments",
+                                                         config_keys = ScalingExperimentsConfigKeys)
