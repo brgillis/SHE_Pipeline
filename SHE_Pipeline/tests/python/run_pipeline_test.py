@@ -1,7 +1,7 @@
 """ @file run_pipeline_test.py
 
     Created 23 July 2020
-    
+
     Tests of running the pipelines.
 """
 
@@ -26,11 +26,13 @@ import os
 import pytest
 
 from ElementsServices.DataSync import DataSync
+from SHE_PPT.constants.test_data import MDB_PRODUCT_FILENAME, SYNC_CONF, SYNC_LOCATION
 from SHE_Pipeline.pipeline_info import pipeline_info_dict
 from SHE_Pipeline.run_pipeline import run_pipeline_from_args
 
-
 test_data_location = "/tmp"
+
+LOCAL_TEST_DATA_PATH = "SHE_Pipeline_8_2/test_workdir"
 
 
 class MockArgs(object):
@@ -39,17 +41,17 @@ class MockArgs(object):
                  pipeline,
                  workdir,
                  logdir,
-                 isf=None,
-                 isf_args=None,
-                 config=None,
-                 config_args=None,
-                 serverurl=None,
-                 server_config=None,
-                 use_debug_server_config=False,
-                 cluster=False,
-                 dry_run=False,
-                 skip_file_setup=False,
-                 plan_args=None,
+                 isf = None,
+                 isf_args = None,
+                 config = None,
+                 config_args = None,
+                 serverurl = None,
+                 server_config = None,
+                 use_debug_server_config = False,
+                 cluster = False,
+                 dry_run = False,
+                 skip_file_setup = False,
+                 plan_args = None,
                  ):
 
         self.pipeline = pipeline
@@ -80,14 +82,14 @@ class MockArgs(object):
 
 class TestRunPipeline():
 
-    @pytest.fixture(autouse=True)
+    @pytest.fixture(autouse = True)
     def setup(self):
 
         # Download the mock workdir files from WebDAV
 
-        sync = DataSync("testdata/sync.conf", "testdata/test_workdir.txt")
+        sync = DataSync(SYNC_CONF, f"{SYNC_LOCATION}/test_workdir.txt")
         sync.download()
-        qualified_data_images_filename = sync.absolutePath("SHE_Pipeline_8_1/test_workdir/sample_mdb-SC8.xml")
+        qualified_data_images_filename = sync.absolutePath(f"{LOCAL_TEST_DATA_PATH}/{MDB_PRODUCT_FILENAME}")
 
         assert os.path.isfile(qualified_data_images_filename), f"Cannot find file: {qualified_data_images_filename}"
 
@@ -106,10 +108,10 @@ class TestRunPipeline():
             else:
                 skip_file_setup = True
 
-            test_args = MockArgs(pipeline=pipeline,
-                                 workdir=self.workdir,
-                                 logdir=self.logdir,
-                                 dry_run=True,
-                                 skip_file_setup=skip_file_setup)
+            test_args = MockArgs(pipeline = pipeline,
+                                 workdir = self.workdir,
+                                 logdir = self.logdir,
+                                 dry_run = True,
+                                 skip_file_setup = skip_file_setup)
 
             run_pipeline_from_args(test_args)
