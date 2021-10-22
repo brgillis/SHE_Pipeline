@@ -34,6 +34,10 @@ from SHE_PPT.mdb import Mdb, mdb_keys
 from SHE_PPT.pipeline_utility import _check_key_is_valid, read_config, write_config
 from .pipeline_info import pipeline_info_dict
 
+EXT_XML = ".xml"
+
+EXT_JSON = ".json"
+
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
@@ -165,7 +169,7 @@ def check_args(args):
         try:
             os.mkdir(args.workdir)
         except Exception as e:
-            logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
+            logger.error(f"Workdir ({args.workdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(args.workdir, 0o777)
@@ -177,7 +181,7 @@ def check_args(args):
         try:
             os.mkdir(cache_dir)
         except Exception as e:
-            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            logger.error(f"Cache directory ({cache_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(cache_dir, 0o777)
@@ -189,7 +193,7 @@ def check_args(args):
         try:
             os.mkdir(data_dir)
         except Exception as e:
-            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            logger.error(f"Data directory ({data_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(data_dir, 0o777)
@@ -201,7 +205,7 @@ def check_args(args):
         try:
             os.mkdir(qualified_logdir)
         except Exception as e:
-            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            logger.error(f"logdir ({qualified_logdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(qualified_logdir, 0o777)
@@ -209,7 +213,7 @@ def check_args(args):
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
-    if len(args.plan_args) > 0 and not args.pipeline == "bias_measurement":
+    if len(args.plan_args) > 0 and not args.pipeline in {"bias_measurement", "calibration"}:
         raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
@@ -449,19 +453,19 @@ def create_isf(args,
                 # Now, go through each data file of the product and symlink those from the workdir too
 
                 # Skip (but warn) if it's not an XML data product
-                if qualified_filename[-4:] == ".xml":
+                if qualified_filename[-4:] == EXT_XML:
                     try:
                         p = read_xml_product(qualified_filename)
                         data_filenames = p.get_all_filenames()
                     except (SAXParseException, UnpicklingError) as _:
                         logger.error("Cannot read file " + qualified_filename + ".")
                         raise
-                elif qualified_filename[-5:] == ".json":
+                elif qualified_filename[-5:] == EXT_JSON:
                     subfilenames = read_listfile(qualified_filename)
                     for subfilename in subfilenames:
                         qualified_subfilename = find_file(subfilename, path = search_path)
                         _, ext = os.path.splitext(qualified_subfilename)
-                        if ext in (".xml", ".XML"):
+                        if ext.lower() == EXT_XML:
                             try:
                                 p = read_xml_product(qualified_subfilename)
                                 data_filenames += p.get_all_filenames()
@@ -528,7 +532,7 @@ def create_isf(args,
                                              args_to_set[port_name] == ""):
 
             # If the port is present, ensure it's provided as a listfile
-            if args_to_set[port_name][-5:] == ".json":
+            if args_to_set[port_name][-5:] == EXT_JSON:
                 # Already a listfile, so skip
                 continue
             else:
@@ -540,7 +544,7 @@ def create_isf(args,
 
         # If we get to this branch, we need to create a new listfile and set it as the input to the port
         listfile_name = get_allowed_filename(port_name.upper().replace("_", "-"), str(os.getpid()),
-                                             extension = ".json", version = SHE_Pipeline.__version__)
+                                             extension = EXT_JSON, version = SHE_Pipeline.__version__)
 
         write_listfile(os.path.join(args.workdir, listfile_name), file_list)
 
@@ -628,6 +632,6 @@ def run_pipeline_from_args(args):
         # Cleanup the ISF on non-exit exceptions
         try:
             os.remove(qualified_isf_filename)
-        except Exception as _:
+        except Exception as e:
             logger.warn("Failsafe exception block triggered with exception: " + str(e))
         raise
