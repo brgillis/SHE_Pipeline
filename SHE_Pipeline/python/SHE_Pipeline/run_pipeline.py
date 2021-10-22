@@ -36,6 +36,10 @@ from SHE_PPT.pipeline_utility import _check_key_is_valid, read_config, write_con
 from SHE_PPT.products.she_simulation_plan import create_dpd_she_simulation_plan
 from .pipeline_info import pipeline_info_dict
 
+EXT_XML = ".xml"
+
+EXT_JSON = ".json"
+
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
@@ -167,7 +171,7 @@ def check_args(args):
         try:
             os.mkdir(args.workdir)
         except Exception as e:
-            logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
+            logger.error(f"Workdir ({args.workdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(args.workdir, 0o777)
@@ -179,7 +183,7 @@ def check_args(args):
         try:
             os.mkdir(cache_dir)
         except Exception as e:
-            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            logger.error(f"Cache directory ({cache_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(cache_dir, 0o777)
@@ -191,7 +195,7 @@ def check_args(args):
         try:
             os.mkdir(data_dir)
         except Exception as e:
-            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            logger.error(f"Data directory ({data_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(data_dir, 0o777)
@@ -203,7 +207,7 @@ def check_args(args):
         try:
             os.mkdir(qualified_logdir)
         except Exception as e:
-            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            logger.error(f"logdir ({qualified_logdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(qualified_logdir, 0o777)
@@ -211,7 +215,7 @@ def check_args(args):
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
-    if len(args.plan_args) > 0 and not args.pipeline == "bias_measurement":
+    if len(args.plan_args) > 0 and not args.pipeline in {"bias_measurement", "calibration"}:
         raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
@@ -228,19 +232,22 @@ def create_plan(args, return_table = False):
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()),
                                              extension = ".fits", version = SHE_Pipeline.__version__)
     qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
+    new_plan_product_filename = get_allowed_filename("P-SIM-PLAN", str(os.getpid()),
+                                                     extension = ".xml", version = SHE_Pipeline.__version__)
+    qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
 
     # Check if the plan is in the ISF args first
-    plan_filename = None
+    old_plan_filename = None
     if len(args.isf_args) > 0:
         arg_i = 0
         while arg_i < len(args.isf_args):
             if args.isf_args[arg_i] == "simulation_plan":
-                plan_filename = args.isf_args[arg_i + 1]
+                old_plan_filename = args.isf_args[arg_i + 1]
                 # And replace it here with the new name
-                args.isf_args[arg_i + 1] = new_plan_filename
+                args.isf_args[arg_i + 1] = new_plan_product_filename
                 break
             arg_i += 1
-    if plan_filename is None:
+    if old_plan_filename is None:
         # Check for it in the base ISF
         base_isf = find_file(args.isf, path = args.workdir)
 
@@ -250,16 +257,16 @@ def create_plan(args, return_table = False):
                 split_line = line.strip().split('=')
                 # Add any new args here to the list of args we want to set
                 if split_line[0].strip() == "simulation_plan":
-                    plan_filename = split_line[1].strip()
+                    old_plan_filename = split_line[1].strip()
                     # And add it to the end of the isf args
                     args.isf_args.append("simulation_plan")
-                    args.isf_args.append(new_plan_filename)
+                    args.isf_args.append(new_plan_product_filename)
 
-    if plan_filename is None:
+    if old_plan_filename is None:
         # Couldn't find it
         raise IOError("Cannot determine simulation_plan filename.")
 
-    qualified_plan_filename = find_file(plan_filename, path = args.workdir)
+    qualified_plan_filename = find_file(old_plan_filename, path = args.workdir)
 
     # Set up the args we'll be replacing
 
@@ -293,9 +300,6 @@ def create_plan(args, return_table = False):
 
     # Write a data product pointing to the simulation plan table
     simulation_plan_product = create_dpd_she_simulation_plan(new_plan_filename)
-    new_plan_product_filename = get_allowed_filename("P-SIM-PLAN", str(os.getpid()),
-                                                     extension = ".xml", version = SHE_Pipeline.__version__)
-    qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
     write_xml_product(simulation_plan_product, qualified_new_plan_product_filename)
 
     if return_table:
@@ -458,19 +462,19 @@ def create_isf(args,
                 # Now, go through each data file of the product and symlink those from the workdir too
 
                 # Skip (but warn) if it's not an XML data product
-                if qualified_filename[-4:] == ".xml":
+                if qualified_filename[-4:] == EXT_XML:
                     try:
                         p = read_xml_product(qualified_filename)
                         data_filenames = p.get_all_filenames()
                     except (SAXParseException, UnpicklingError) as _:
                         logger.error("Cannot read file " + qualified_filename + ".")
                         raise
-                elif qualified_filename[-5:] == ".json":
+                elif qualified_filename[-5:] == EXT_JSON:
                     subfilenames = read_listfile(qualified_filename)
                     for subfilename in subfilenames:
                         qualified_subfilename = find_file(subfilename, path = search_path)
                         _, ext = os.path.splitext(qualified_subfilename)
-                        if ext in (".xml", ".XML"):
+                        if ext.lower() == EXT_XML:
                             try:
                                 p = read_xml_product(qualified_subfilename)
                                 data_filenames += p.get_all_filenames()
@@ -537,7 +541,7 @@ def create_isf(args,
                                              args_to_set[port_name] == ""):
 
             # If the port is present, ensure it's provided as a listfile
-            if args_to_set[port_name][-5:] == ".json":
+            if args_to_set[port_name][-5:] == EXT_JSON:
                 # Already a listfile, so skip
                 continue
             else:
@@ -549,7 +553,7 @@ def create_isf(args,
 
         # If we get to this branch, we need to create a new listfile and set it as the input to the port
         listfile_name = get_allowed_filename(port_name.upper().replace("_", "-"), str(os.getpid()),
-                                             extension = ".json", version = SHE_Pipeline.__version__)
+                                             extension = EXT_JSON, version = SHE_Pipeline.__version__)
 
         write_listfile(os.path.join(args.workdir, listfile_name), file_list)
 
