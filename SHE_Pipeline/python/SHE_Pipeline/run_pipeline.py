@@ -232,6 +232,9 @@ def create_plan(args, return_table = False):
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()),
                                              extension = ".fits", version = SHE_Pipeline.__version__)
     qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
+    new_plan_product_filename = get_allowed_filename("P-SIM-PLAN", str(os.getpid()),
+                                                     extension = ".xml", version = SHE_Pipeline.__version__)
+    qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
 
     # Check if the plan is in the ISF args first
     plan_filename = None
@@ -241,7 +244,7 @@ def create_plan(args, return_table = False):
             if args.isf_args[arg_i] == "simulation_plan":
                 plan_filename = args.isf_args[arg_i + 1]
                 # And replace it here with the new name
-                args.isf_args[arg_i + 1] = new_plan_filename
+                args.isf_args[arg_i + 1] = new_plan_product_filename
                 break
             arg_i += 1
     if plan_filename is None:
@@ -297,9 +300,6 @@ def create_plan(args, return_table = False):
 
     # Write a data product pointing to the simulation plan table
     simulation_plan_product = create_dpd_she_simulation_plan(new_plan_filename)
-    new_plan_product_filename = get_allowed_filename("P-SIM-PLAN", str(os.getpid()),
-                                                     extension = ".xml", version = SHE_Pipeline.__version__)
-    qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
     write_xml_product(simulation_plan_product, qualified_new_plan_product_filename)
 
     if return_table:
