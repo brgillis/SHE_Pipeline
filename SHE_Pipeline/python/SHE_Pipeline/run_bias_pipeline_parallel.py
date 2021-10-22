@@ -24,9 +24,8 @@ import math
 import multiprocessing
 import os
 from collections import namedtuple
-
-import _pickle
-import xml.sax._exceptions
+from pickle import UnpicklingError
+from xml.sax import SAXParseException
 
 import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
 import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
@@ -50,6 +49,10 @@ from .constants import ERun_CTE, ERun_GST
 from .pipeline_info import pipeline_info_dict
 from .pipeline_utilities import get_relpath
 
+MSG_EXEC_FINISHED_SUCCESS = "Finished command execution successfully."
+
+MSG_EXEC_FAILED = "Execution failed with error: "
+
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
@@ -67,8 +70,6 @@ def she_prepare_configs(simulation_plan, config_template,
     Creates *cache.bin files
     """
 
-    logger = getLogger(__name__)
-
     gst_prep_conf.write_configs_from_plan(
         plan_filename = get_relpath(simulation_plan, workdir),
         template_filename = get_relpath(config_template, workdir),
@@ -84,7 +85,6 @@ def she_simulate_images(config_files, pipeline_config, data_images,
     """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
     catalogues etc.
     """
-    logger = getLogger(__name__)
 
     SHE_GST_cIceBRGpy.set_workdir(workdir)
     # @TODO: Replace with function call, see issue 11
@@ -112,9 +112,9 @@ def she_simulate_images(config_files, pipeline_config, data_images,
     try:
         run_from_args(generate_images, gen_gi_args)
     except Exception as e:
-        logger.error("Execution failed with error: " + str(e))
+        logger.error(MSG_EXEC_FAILED + str(e))
         raise
-    logger.info("Finished command execution successfully.")
+    logger.info(MSG_EXEC_FINISHED_SUCCESS)
 
 
 def she_estimate_shear(data_images, stacked_image,
@@ -132,8 +132,6 @@ def she_estimate_shear(data_images, stacked_image,
     # It is in the pipeline config file...
     # Do checks for consistency (earlier)
     """
-
-    logger = getLogger(__name__)
 
     # @TODO: Replace with function call, see issue 11
 
@@ -193,7 +191,6 @@ def she_measure_statistics(details_table, shear_estimates,
     """ Runs the SHE_CTE_MeasureStatistics method on shear
     estimates to get shear bias statistics.
     """
-    logger = getLogger(__name__)
 
     argv = ("--details_table %s "
             "--shear_estimates %s --pipeline_config %s "
@@ -206,11 +203,11 @@ def she_measure_statistics(details_table, shear_estimates,
                get_relpath(she_bias_statistics, workdir),
                workdir, workdir, logdir)).split()
 
-    measstats_args = pu.setup_function_args(argv, meas_stats,
-                                            ERun_CTE + "SHE_CTE_MeasureStatistics")
+    measure_stats_args = pu.setup_function_args(argv, meas_stats,
+                                                ERun_CTE + "SHE_CTE_MeasureStatistics")
 
     try:
-        measure_statistics_from_args(measstats_args)
+        measure_statistics_from_args(measure_stats_args)
 
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
@@ -226,8 +223,6 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
     """ Runs the SHE_CTE_CleanupBiasMeasurement code on she_bias_statistics.
     Returns she_bias_measurements
     """
-    logger = getLogger(__name__)
-    # @TODO: Replace with function call, see issue 11
 
     argv = ("--simulation_config %s "
             "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
@@ -264,9 +259,7 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
     """ Runs the SHE_CTE_MeasureBias on a list of she_bias_measurements from
     all simulation runs.
     """
-    # @TODO: Replace with function call, see issue 11
 
-    logger = getLogger(__name__)
     argv = ("--she_bias_statistics %s "
             "--pipeline_config %s --she_bias_measurements %s --workdir %s "
             "--log-file %s/%s/she_measure_bias.out"
@@ -275,9 +268,9 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
                get_relpath(shear_bias_measurement_final, workdir),
                workdir, workdir, logdir)).split()
 
-    measbias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
+    measure_bias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
     try:
-        measure_bias_from_args(measbias_args)
+        measure_bias_from_args(measure_bias_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -297,13 +290,11 @@ def check_args(args):
     @rType  list(namedtuple)
     """
 
-    logger = getLogger(__name__)
-
     logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
 
     pipeline = 'bias_measurement'
 
-    if not pipeline in pipeline_info_dict:
+    if pipeline not in pipeline_info_dict:
         err_string = ("Unknown pipeline specified to be run: " + pipeline + ". Allowed pipelines are: ")
         for allowed_pipeline in pipeline_info_dict:
             err_string += "\n  " + allowed_pipeline
@@ -369,8 +360,7 @@ def check_args(args):
     qualified_logdir = os.path.join(args.workdir, args.logdir)
 
     if args.number_threads == 0:
-        # @TODO: change to multiprocessing.cpu_count()?
-        args.number_threads = str(multiprocessing.cpu_count() - 1)
+        args.number_threads = str(max((multiprocessing.cpu_count() - 1, 1)))
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
 
@@ -516,8 +506,6 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                                            "ksb_training_data lensmc_training_data momentsml_training_data "
                                            "regauss_training_data pipeline_config mdb")
 
-    logger = getLogger(__name__)
-
     # Find the base ISF we'll be creating a modified copy of
     # @TODO: include batch_no in name
     base_isf = find_file(args.isf, path = args.workdir)
@@ -530,12 +518,11 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     # Set up the args we'll be replacing or setting
 
-    args_to_set = {}
-    args_to_set["workdir"] = workdir.workdir
-    args_to_set["logdir"] = workdir.logdir
-    args_to_set["pkgRepository"] = rp.get_pipeline_dir()
-    args_to_set["pipelineDir"] = rp.get_pipeline_dir()
-    args_to_set["pipeline_config"] = config_filename
+    args_to_set = {"workdir"        : workdir.workdir,
+                   "logdir"         : workdir.logdir,
+                   "pkgRepository"  : rp.get_pipeline_dir(),
+                   "pipelineDir"    : rp.get_pipeline_dir(),
+                   "pipeline_config": config_filename}
 
     arg_i = 0
     while arg_i < len(args.isf_args):
@@ -604,13 +591,13 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
         # Now, go through each data file of the product and symlink those from the workdir too
 
+        data_filenames = []
         # Download MDB files if needed
         if input_port_name == "mdb":
             if filename[:4] == "WEB/":
                 qualified_filename = find_file(filename)
                 mdb_dict = Mdb(qualified_filename).get_all()
                 web_mdb_path = os.path.split(filename)[0]
-                data_filenames = []
                 for key in (mdb_keys.vis_gain_coeffs, mdb_keys.vis_readout_noise_table):
                     for data_filename in mdb_dict[key]['Value']:
                         web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
@@ -621,18 +608,17 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             try:
                 p = read_xml_product(qualified_filename)
                 data_filenames = p.get_all_filenames()
-            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
+            except (SAXParseException, UnpicklingError, UnicodeDecodeError) as _:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
         elif qualified_filename[-5:] == ".json":
             subfilenames = read_listfile(qualified_filename)
-            data_filenames = []
             for subfilename in subfilenames:
                 qualified_subfilename = find_file(subfilename, path = search_path)
                 try:
                     p = read_xml_product(qualified_subfilename)
                     data_filenames += p.get_all_filenames()
-                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
+                except (SAXParseException, UnpicklingError, UnicodeDecodeError) as _:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
         else:
@@ -717,8 +703,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     """
     # several commands...
     # @FIXME: check None types.
-
-    logger = getLogger(__name__)
 
     workdir = workdirTuple.workdir
 
