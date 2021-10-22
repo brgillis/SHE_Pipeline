@@ -28,10 +28,12 @@ from xml.sax import SAXParseException
 from astropy.table import Table
 
 import SHE_Pipeline
-from SHE_PPT.file_io import (find_file, get_allowed_filename, read_listfile, read_xml_product, write_listfile)
+from SHE_PPT.file_io import (find_file, get_allowed_filename, read_listfile, read_xml_product, write_listfile,
+                             write_xml_product, )
 from SHE_PPT.logging import getLogger
 from SHE_PPT.mdb import Mdb, mdb_keys
 from SHE_PPT.pipeline_utility import _check_key_is_valid, read_config, write_config
+from SHE_PPT.products.she_simulation_plan import create_dpd_she_simulation_plan
 from .pipeline_info import pipeline_info_dict
 
 EXT_XML = ".xml"
@@ -293,8 +295,15 @@ def create_plan(args, return_table = False):
     # Write out the new plan
     simulation_plan_table.write(qualified_new_plan_filename, format = "fits")
 
+    # Write a data product pointing to the simulation plan table
+    simulation_plan_product = create_dpd_she_simulation_plan(new_plan_filename)
+    new_plan_product_filename = get_allowed_filename("P-SIM-PLAN", str(os.getpid()),
+                                                     extension = ".xml", version = SHE_Pipeline.__version__)
+    qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
+    write_xml_product(simulation_plan_product, qualified_new_plan_product_filename)
+
     if return_table:
-        return simulation_plan_table, qualified_new_plan_filename
+        return simulation_plan_table, qualified_new_plan_product_filename
     else:
         return
 
