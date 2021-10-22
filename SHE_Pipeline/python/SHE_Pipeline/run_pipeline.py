@@ -628,6 +628,6 @@ def run_pipeline_from_args(args):
         # Cleanup the ISF on non-exit exceptions
         try:
             os.remove(qualified_isf_filename)
-        except Exception as _:
+        except Exception as e:
             logger.warn("Failsafe exception block triggered with exception: " + str(e))
         raise
