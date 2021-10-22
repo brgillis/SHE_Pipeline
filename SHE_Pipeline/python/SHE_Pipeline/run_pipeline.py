@@ -237,17 +237,17 @@ def create_plan(args, return_table = False):
     qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
 
     # Check if the plan is in the ISF args first
-    plan_filename = None
+    old_plan_filename = None
     if len(args.isf_args) > 0:
         arg_i = 0
         while arg_i < len(args.isf_args):
             if args.isf_args[arg_i] == "simulation_plan":
-                plan_filename = args.isf_args[arg_i + 1]
+                old_plan_filename = args.isf_args[arg_i + 1]
                 # And replace it here with the new name
                 args.isf_args[arg_i + 1] = new_plan_product_filename
                 break
             arg_i += 1
-    if plan_filename is None:
+    if old_plan_filename is None:
         # Check for it in the base ISF
         base_isf = find_file(args.isf, path = args.workdir)
 
@@ -257,16 +257,16 @@ def create_plan(args, return_table = False):
                 split_line = line.strip().split('=')
                 # Add any new args here to the list of args we want to set
                 if split_line[0].strip() == "simulation_plan":
-                    plan_filename = split_line[1].strip()
+                    old_plan_filename = split_line[1].strip()
                     # And add it to the end of the isf args
                     args.isf_args.append("simulation_plan")
-                    args.isf_args.append(new_plan_filename)
+                    args.isf_args.append(new_plan_product_filename)
 
-    if plan_filename is None:
+    if old_plan_filename is None:
         # Couldn't find it
         raise IOError("Cannot determine simulation_plan filename.")
 
-    qualified_plan_filename = find_file(plan_filename, path = args.workdir)
+    qualified_plan_filename = find_file(old_plan_filename, path = args.workdir)
 
     # Set up the args we'll be replacing
 
