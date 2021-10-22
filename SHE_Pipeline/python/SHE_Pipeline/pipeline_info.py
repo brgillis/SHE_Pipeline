@@ -23,8 +23,7 @@ __updated__ = "2021-07-20"
 import os
 
 from SHE_PPT.file_io import find_aux_file
-from SHE_PPT.pipeline_utility import (AnalysisConfigKeys, CalibrationConfigKeys, ReconciliationConfigKeys,
-                                      ScalingExperimentsConfigKeys, ValidationConfigKeys, )
+from SHE_PPT.pipeline_utility import (AnalysisConfigKeys, CalibrationConfigKeys, ScalingExperimentsConfigKeys, )
 
 common_auxdir = "SHE_Pipeline"
 
@@ -148,11 +147,11 @@ pipeline_info_dict["calibration"] = PipelineInfo(lowercase_name = "calibration",
                                                  uppercase_name = "Shear_Calibration",
                                                  config_keys = CalibrationConfigKeys)
 
-pipeline_info_dict["bias_measurement"] = PipelineInfo(lowercase_name = "bias_measurement",
-                                                      uppercase_name = "Bias_Measurement",
-                                                      config_keys = CalibrationConfigKeys,
-                                                      auxdir = "Shear_Calibration",
-                                                      package_def = "Shear_Calibration")
+pipeline_info_dict["calibration_residuals"] = PipelineInfo(lowercase_name = "calibration_residuals",
+                                                           uppercase_name = "Shear_Calibration",
+                                                           config_keys = CalibrationConfigKeys,
+                                                           auxdir = "Shear_Calibration",
+                                                           package_def = "Shear_Calibration")
 
 # Shear Reconciliation pipeline
 
