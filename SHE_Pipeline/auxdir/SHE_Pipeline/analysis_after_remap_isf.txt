@@ -5,7 +5,6 @@ vis_calibrated_frame_listfile = vis_calibrated_frame_obs_31283_listfile.json
 vis_stacked_frame = DpdVisStackedFrame__EUC_VIS_SDCFRPROD_ProcessField_4.3.3_VIS_SC8_GSIR_VIS_SWF1_R3_0_31283_CG20201228-00-dpdstacked_frame-0.xml
 mdb = sample_mdb-SC8.xml
 phz_output_cat = None
-psf_field_params = None
 ksb_training_data = test_ksb_training.xml
 lensmc_training_data = test_lensmc_training.xml
 momentsml_training_data = None

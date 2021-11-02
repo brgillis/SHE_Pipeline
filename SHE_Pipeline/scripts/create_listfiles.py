@@ -116,7 +116,6 @@ ANALYSIS_ISF_PORTS = {ProdKeys.MFC  : "mer_final_catalog_listfile",
                       }
 
 FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
-                                "psf_field_params = None",
                                 "phz_output_cat = None",
                                 "ksb_training_data = test_ksb_training.xml",
                                 "lensmc_training_data = test_lensmc_training.xml",
