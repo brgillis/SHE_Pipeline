@@ -2,7 +2,7 @@
 
 DATASETRELEASE=SC8_MAIN_V0
 # TILE_ID=90346 # When called at command-line, preface with TILE_ID=... to just query for a specific tile
-TILE_ID = 25463
+TILE_ID=25463
 QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.DataSetRelease=$DATASETRELEASE"
 
 if [ ! -z ${TILE_ID+x} ]
