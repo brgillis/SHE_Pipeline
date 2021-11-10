@@ -6,9 +6,9 @@ Main Programs Available
 
     ``Describe here each executable Elements program provided by this project.``
 
--  `SHE_MyProject_GenCatPic <SHE_MyProject_GenCatPic>`_ : downloads
+-  `SHE_MyProject_GenCatPic <SHE_MyProject_GenCatPic_>`_ : downloads
    the picture of a cat
--  `SHE_MyProject_ShowCatPic <SHE_MyProject_ShowCatPic>`_ : shows
+-  `SHE_MyProject_ShowCatPic <SHE_MyProject_ShowCatPic_>`_ : shows
    the user the picture of a cat
 
 Running the software

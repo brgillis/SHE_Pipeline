@@ -1,9 +1,5 @@
-===============================
-SHE_IAL_Pipelines documentation
-===============================
-
 .. toctree::
-    :maxdepth: 5
+    :maxdepth: 3
 
     overview
     dependencies
