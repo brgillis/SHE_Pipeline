@@ -39,10 +39,9 @@ The ``scripts`` directory of the ``SHE_Pipeline`` module contains utility script
 Relevant Documents
 ------------------
 
-    ``Boilerplate section which links any Euclid related documents that are relevant for the project``
+    ``TO-DO: Get links for these documents from Keith.``
 
 -  `RSD <link%20here>`__
 -  `SDD <link%20here>`__
 -  `VP/STS <link%20here>`__
 -  `STP/STR <link%20here>`__
--  Any other relevant documents
