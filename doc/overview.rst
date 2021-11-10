@@ -1,21 +1,15 @@
 Overview
 ========
 
-    ``This, is an example of a header README.md, the aim is to briefly describe with a few sentences what the repository does.``
-    ``This is heavily based on what Lee did for PK-WL before he left and it was very efficient for other devs to pick up from where he left``
-
-This very simple repository aims to create a template for documentation
-(README & DocStrings) for Euclid-SGS Projects.
+This repository contains pipeline control and helper code for all OU-SHE pipelines.
 
 Software identification
 -----------------------
 
-    ``Software profile should be one of "develop", "release-candidate", "release"``
-
 -  Processing Element Name: PF-SHE
--  Project Name: SHE\_MyProject
+-  Project Name: SHE\_IAL\_Pipelines
 -  Profile: develop
--  Version: 0.5 (08/11/2021)
+-  Version: 8.2 (10/11/2021)
 
 Contributors
 ------------
@@ -23,30 +17,24 @@ Contributors
 Active Contributors
 ~~~~~~~~~~~~~~~~~~~
 
-    ``Here we add names of developers who need to be informed once a merge request (MR) or pull request (PR) is made``
-
--  Arthur Loureiro (arthur.loureiro@ucl.ac.uk)
 -  Bryan Gillis (b.gillis@roe.ac.uk)
--  Keith Noddle (keith.noddle@ed.ac.uk)
+-  Nick Cross (njc@roe.ac.uk)
+-  Gordon Gibb (Gordon.Gibb@ed.ac.uk)
 
 Other Contributors
 ~~~~~~~~~~~~~~~~~~
 
-    ``Add names of past or inactive contributors that do not need to be informed of MR or PR``
-
--  Left Forindustry (email@email.com)
--  Ina Happierplace (ina.h@gmail.com)
 
 Purpose
 -------
 
-    ``Describe here in more detail what are the goals of this repository as well as the expected outputs``
+This repository contains pipeline control code for all OU-SHE pipelines, helper programs to aid in triggering pipeline runs, and utility scripts.
 
-This repository contains a template documentation, produces no outputs
-but the following items are here as an example: 1. An ``.xml`` file
-which contains bias measurements 2. Several ``.fits`` files with image
-simulations used to estimate biases 3. A picture of a cat for internet
-memes
+Pipeline control code is contained in the ``auxdir`` of the ``SHE_Pipeline`` module, to be compliant with the deployment standards for pipelines. The control code is split into subfolders for each pipeline (some of which contain multiple pipeline scripts to allow for variant versions). This includes Package Definitions, Pipeline Definitions, Pipeline Scripts, and python modules which contain reusable pipeline blocks.
+
+The ``SHE_Pipeline`` module defines executable programs to aid in triggering pipeline runs, most notably ``SHE_Pipeline_Run``, which can be used to trigger any known SHE pipeline.
+
+The ``scripts`` directory of the ``SHE_Pipeline`` module contains utility scripts to aid in pipeline development and running.
 
 Relevant Documents
 ------------------
