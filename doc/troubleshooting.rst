@@ -33,6 +33,27 @@ To test whether or not this issue has been introduced by your provided input, at
 
 If you get an error message about input ports not matching up when default input is used, then please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue. You can attempt to rectify this in the meantime by copying the default ISF from the auxdir to your workdir, and updating it so that the ports in it match those in the Pipeline Script.
 
+A task within the pipeline failed
+---------------------------------
+
+If a task fails, the pipeline run will end as a failure. It will provide the location of the log file for the task which triggered the failure (Note: In the case of multiple tasks failing, only the first failure will be provided. Fixing it might uncover other failures in some cases, and does not necessarily mean that the fix caused other failures which show up afterwards). Open this log file with your text editor of choice to see the output from this task and the error message.
+
+**The error message indicates a failure with arguments passed to the task**
+
+In this case, the problem is most likely due to the task definition in the pipeline's Package Definition not matching the allowed argument for the task. Try running the task with the ``--help`` argument to see a list of allowed arguments, and compare this to the arguments defined in the Package Definition. If you find any discrepencies in deployed code, please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue. If the issue is due to your own modifications, then you will need to update either the Package Definition or task so that they match.
+
+**The error message indicates some other failure**
+
+Please consult the troubleshooting section of the project containing the task which failed for guidance on resolving this problem. If the task did not fail immediately on setup, the log file will include near the top an execution command which can be used to re-trigger this task for testing purposes.
+
+The pipeline runner raised an error later on in execution
+---------------------------------------------------------
+
+In rare circumstances, the pipeline runner itself may raise an error at some point during execution. If this happens, most of the time it will be due to some issue with the pipeline server. If this appears to be the case, consult with the person who manages the server for help resolving the issue.
+
+Outside of server issues, one possible reason for an error later on in execution is if a file output from a task is not the expected type, and the pipeline later relies on this file. For instance, this can occur if one step of the pipeline is meant to create a listfile which will be used as a parallel split point, but instead of creating a listfile, the task instead creates an ``.xml`` data product, this will cause an error within the pipeline runner code. The nature of the error should help make clear where the issue is, and what file might be problematic. If you find such an issue in deployed code, please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue, and do the same for the project containing the executable which produces the problematic file.
+
+
 
 A test failed when I ran "make test"
 ------------------------------------
