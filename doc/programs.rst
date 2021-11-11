@@ -1,17 +1,20 @@
 Programs
 ========
 
+
 Main Programs Available
 -----------------------
 
 -  `SHE_Pipeline_Run <SHE_Pipeline_Run_>`_ : Triggers a run of a desired SHE pipeline
 -  `SHE_Pipeline_RunBiasParallel <SHE_Pipeline_RunBiasParallel_>`_ : Executes the SHE Shear Calibration pipeline locally, without use of the IAL pipeline runner
 
+
 Running the software
 --------------------
 
+
 ``SHE_Pipeline_Run``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
     ``(Optional) a more careful description of what the program does``
     
@@ -26,6 +29,7 @@ To run the ``SHE_Pipeline_Run`` program with Elements use the following command:
 
 with the following options:
 
+
 **Common Elements Arguments**
 >\ ``This boilerplate section describes the standard arguments which are common to all Elements executables.``
 
@@ -38,6 +42,7 @@ with the following options:
 +------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
 | --log-level ``<filename>``   | Minimum severity level at which to print logging information. Valid values are DEBUG, INFO, WARNING, and ERROR. Note that this will only contain logs directly from the run of this executable. The log level of executables called during pipeline execut will be set based on the configuration of the pipeline server (normally INFO).                                                                                                                                                                      | no             | INFO          |
 +------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
+
 
 **Input Arguments**
 
@@ -65,6 +70,7 @@ The following arguments expect a filename to be provided. This filename should b
 
 N/A - The names of output files from the pipeline run are determined from the names of the output ports in the Pipeline Script.
 
+
 **Options**
 
 +--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
@@ -83,9 +89,11 @@ N/A - The names of output files from the pipeline run are determined from the na
 
     ``Any required files should be explicity explained in the Inputs section below``
 
+
 **Inputs**
 
 >\ ``Describe in detail what inputs are necessary for running this processing element as well as where they are expected to come from``
+
 
 ``psf_list``
 ............
@@ -106,6 +114,7 @@ executable, most expediently through running the
 pipeline, which calls that program and passes the generated PSFs to an
 execution of this program. As this is an intermediate product, it is not
 stored in the EAS.
+
 
 ``pipeline_config``
 ...................
@@ -159,9 +168,11 @@ arguments will take precedence.
    ``--config_args ...`` to it (see documentation of that executable for
    further information).
 
+
 **Outputs**
 
 >\ ``Describe in detail what output filenames are necessary for running this program, and what they should be expected to look like. The DPDD description of any data product should contain all information necessary to understand it. If anything is non-standard about the generated output, or you want to give some quick details, do so here.``
+
 
 ``cat_pic``
 ...........
@@ -178,6 +189,7 @@ the attribute Data.DataContainer.FileName. This filename is generated to
 be fully-compliant with Euclid file naming standards. You can easily get
 this filename from the product with a command such as
 ``grep \.png cat_pic.xml``.
+
 
 **Example**
 
@@ -202,7 +214,7 @@ of this program will be stored near the top of the log file for its
 original execution, which can be found in the folder
 "she\_gen\_cat\_pic" within the workdir after execution.
 
-``SHE_MyProject_ShowCatPic``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``SHE_Pipeline_RunBiasParallel``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ``Same structure as before: how to run the code on Elements, what are the options for the command line with descriptions and what each external file and a simple example for the user to run``
+    ``TODO - fill in doc``
