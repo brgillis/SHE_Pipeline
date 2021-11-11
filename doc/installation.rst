@@ -1,8 +1,6 @@
 Installation
 ============
 
-    ``Boilerplate section which explains how to install any Elements program. Only the repository location should be changed here for each project.``
-
 All Euclid projects will be deployed via cvmfs. If this is installed and
 set up, this project will be pre-installed and no further work will be
 necessary. In case cvmfs isn't installed, or you wish to install an
@@ -12,8 +10,8 @@ process:
 .. code:: bash
 
     cd ${HOME}/Work/Projects
-    git clone https://gitlab.euclid-sgs.uk/pf-she/she_myproject.git
-    cd she_myproject
+    git clone https://gitlab.euclid-sgs.uk/PF-SHE/SHE_IAL_Pipelines.git
+    cd SHE_IAL_Pipelines
     git checkout <desired branch or tag>
     make
     make test
