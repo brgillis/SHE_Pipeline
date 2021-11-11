@@ -4,33 +4,25 @@ Programs
 Main Programs Available
 -----------------------
 
-    ``Describe here each executable Elements program provided by this project.``
-
--  `SHE_MyProject_GenCatPic <SHE_MyProject_GenCatPic_>`_ : downloads
-   the picture of a cat
--  `SHE_MyProject_ShowCatPic <SHE_MyProject_ShowCatPic_>`_ : shows
-   the user the picture of a cat
+-  `SHE_Pipeline_Run <SHE_Pipeline_Run_>`_ : Triggers a run of a desired SHE pipeline
+-  `SHE_Pipeline_RunBiasParallel <SHE_Pipeline_RunBiasParallel_>`_ : Executes the SHE Shear Calibration pipeline locally, without use of the IAL pipeline runner
 
 Running the software
 --------------------
 
-    ``for each of the codes described previously, the aim here is to describe each option, input, and output of the program as well as how to run it using Elements.``
-
-``SHE_MyProject_GenCatPic``
+``SHE_Pipeline_Run``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     ``(Optional) a more careful description of what the program does``
-
-    ``Describe how one can call the program with Elements, include any necessary options with optional ones in [square brackets]. These arguments are to later be described in detail in the applicable arguments section below``
+    
 
 **Running the Program on EDEN/LODEEN**
 
-To run the SHE\_MyProject\_GenCatPic processing element on Elements use
-the following command:
+To run the ``SHE_Pipeline_Run`` program with Elements use the following command:
 
 .. code:: bash
 
-    E-Run SHE_MyProject 0.1 SHE_MyProject_GenCatPic --workdir <dir> --psf_list <filename> --aux_data <filename> [--log-file <filename>] [--log-level <value>] [--pipeline_config <filename>] [--aux_data <filename>] [--cat_pic <filename>] [--use_dog] [--set_tie <value>]
+    E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline <pipeline> --workdir <workdir> [--cluster] [--server_url <serverurl>] [--server_config <server_config>] [--isf <isf>] [--isf_args <isf_args>] [--config <config>] [--config_args <config_args>] [--plan_args <plan_args>] [--log-file <filename>] [--log-level <value>]
 
 with the following options:
 
@@ -42,32 +34,34 @@ with the following options:
 +==============================+============================================================================================================================================================================================================================================================================================================================================================================================================+================+===============+
 | --workdir ``<path>``         | Name of the working directory, where input data is stored and output data will be created.                                                                                                                                                                                                                                                                                                                 | yes            | N/A           |
 +------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| --log-file ``<filename>``    | Name of a filename to store logging data in, relative to the workdir. If not provided, logging data will only be output to the terminal. When run via the pipeline runner, this will be set to a file in the directory ``<workdir>/logs/<task_name>/`` with a name based off of the command used to call this executable, such as "E\_Run\_SHE\_MyProject\_0.1\_SHE\_MyProject\_GenCatPic\_retry\_0.out"   | no             | None          |
+| --log-file ``<filename>``    | Name of a filename to store logging data in, relative to the workdir. If not provided, logging data will only be output to the terminal. Note that this will only contain logs directly from the run of this executable. Logs of executables called during the pipeline execution will be stored in the "logs" directory of the workdir.   | no             | None          |
 +------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| --log-level ``<filename>``   | Minimum severity level at which to print logging information. Valid values are DEBUG, INFO, WARNING, and ERROR. When run via the pipeline runner, this will be set based on the configuration of the pipeline server (normally INFO).                                                                                                                                                                      | no             | INFO          |
+| --log-level ``<filename>``   | Minimum severity level at which to print logging information. Valid values are DEBUG, INFO, WARNING, and ERROR. Note that this will only contain logs directly from the run of this executable. The log level of executables called during pipeline execut will be set based on the configuration of the pipeline server (normally INFO).                                                                                                                                                                      | no             | INFO          |
 +------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
 
 **Input Arguments**
->\ ``Describe each of the input arguments which can be used when running the code, specifying the filenames of input data relative to the workdir.``
+
+The following arguments expect a filename to be provided. This filename should be either:
+
+#. Relative to the workdir or current directory
+#. Fully-qualified
+#. Prefixed with one of the following special prefixes to indicate where it can be found:
+   * "AUX/" - Search for the file within the path defined by the environmental variable "ELEMENTS_AUX_PATH", which is the combination of the "auxdir" folders of all projects used within the pipeline.
+   * "CONF/" - Search for the file within the path defined by the environmental variable "ELEMENTS_CONF_PATH", which is the combination of the "conf" folders of all projects used within the pipeline.
+   * "WEB/" - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: SDC-UK_webdav), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
 
 +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
 | **Argument**                        | **Description**                                                                                                                                                    | **Required**   | **Default**                                        |
 +=====================================+====================================================================================================================================================================+================+====================================================+
-| --psf\_list ``<filename>``          | ``.json`` listfile (Cardinality 1-4) listing data products for PSF ``.fits`` files.                                                                                | yes            | N/A                                                |
+| --isf ``<filename>``          | ``.txt`` file listing filenames to be provided to input ports of the pipeline. This file should have one port per line, with format ``<port_name>=<filename>``, e.g. ``my_input_port=MyInputFilename.xml``. If the ``--isf_args`` argument is used, any values for input ports passed to that will override values in this file. | no            | None (all input ports will take default values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline, unless overridden through use of the ``isf_args`` argument.)) |
 +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
-| --pipeline\_config ``<filename>``   | ``.xml`` data product or pointing to configuration file (described below), or .json listfile (Cardinality 0-1) either pointing to such a data product, or empty.   | no             | None (equivalent to providing an empty listfile)   |
+| --_config ``<filename>``   | ``.txt`` file containing configuration options to be used for one or more task within the pipeline, ``.xml`` data product or pointing to such a text file, or .json listfile (Cardinality 0-1) either pointing to such a data product or empty. The text file should contain one option per line, in the format ``<option>=<value>``, e.g. ``SHE_Pipeline_profile=True``. If the ``--config_args`` argument is used, any values for options passed to that will override values in this file.   | no             | None (equivalent to providing an empty listfile, which results in default values being used for all options)   |
 +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
-| --aux\_data ``<filename>``          | ``.xml`` data product describing the auxiliary information necessary for execution.                                                                                | yes            | N/A                                                |
-+-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
+
 
 **Output Arguments**
->\ ``Describe each of the output arguments which can be used when running the code, specifying the desired filenames of output data relative to the workdir, which will be created by the program upon successful execution.``
 
-+-----------------------------+---------------------------------------------------------------------------------------------------------+----------------+----------------+
-| **Argument**                | **Description**                                                                                         | **Required**   | **Default**    |
-+=============================+=========================================================================================================+================+================+
-| --cat\_pic ``<filename>``   | Desired filename for ``.xml`` data product pointing to a ``.png`` image of the generated cat picture.   | no             | cat\_pic.xml   |
-+-----------------------------+---------------------------------------------------------------------------------------------------------+----------------+----------------+
+N/A - The names of output files from the pipeline run are determined from the names of the output ports in the Pipeline Script.
 
 **Options**
 >\ ``Describe any arguments which can be provided to the executable when run directly (not through the pipeline runner, which disallows such arguments).``
