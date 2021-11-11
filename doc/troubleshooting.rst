@@ -1,15 +1,38 @@
 Troubleshooting
 ===============
 
-    ``If any problems are anticipated, add a section here for them to help users resolve them on their own before they need to appeal to a developer for help.``
+An error occurred after submitting a run to the pipeline server, and the run was never submitted
+------------------------------------------------------------------------------------------------
 
-The cat in the generated picture appears to be wearing both a standard tie and a bowtie
----------------------------------------------------------------------------------------
+There are a few reasons that this might occur. First, check that you have the correct URL and port for the server. If you haven't configured it yourself, the manage of the machine that it's hosted on should be able to help you here.
 
-    ``For known problems which can occur if the user makes a common error, explain how it can be resolved.``
+Next, check that the version of the IAL pipeline runner used to submit the run is the same as the version running the pipeline server. As the pipeline servers are managed separately from this code, it is possible for the version of the servers to be updated before this project is updated to match. Within this project, the version of the pipeline runner used can be found in the file ``SHE_Pipeline/python/SHE_Pipeline/run_pipeline.py`` at line 47, which states:
 
-This is a known bug which occurs if the user requests
-``--use_tie=bowtie``. The correct argument is ``--use_tie=bow``.
+``pipeline_runner_version = "2.2.7"``
+
+If you've configured the pipeline server yourself, check that this matches. Otherwise, check with the person managing the server to get the version. If this doesn't match the version of the server, update the code locally to match and re-install. Then, please open an issue on this project's GitLab repository or e-mail the active developers to inform them that this needs to be updated.
+
+Finally, an error might occur due to an issue with the command submitting the pipeline run to the server. Normally the command which is generated and used should always be valid, but it is possible that an unanticipated edge case might occur, or that an update to the IAL pipeline runner version will make previously-valid syntax no longer valid. In either of thse cases, an error message should make clear that something is wrong with the command. Please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue, and include a full log of your attempted execution, starting from the command you called to trigger the executable and ending with the final error message.
+
+In the meantime, see if the error message is clear enough about the source of the error that you can fix it yourself. Copy-and-paste the submission command and replace all the arguments with ``--help`` to see information on the expected syntax, and see if you can determine from this and the error message what the issue is. If you can figure it out, call the fixed command to submit the pipeline run.
+
+The run was submitted to the pipeline server, but an error occurred before any tasks started
+--------------------------------------------------------------------------------------------
+
+When a run is submitted to the pipeline server, the first step it performs is parsing the Pipeline Script and Package Definition to determine internally how to run the pipeline. After this, it matches the provided input files to the input ports of the pipeline. An error at this stage of execution indicates either that there is some problem with  the Pipeline Script and/or Package Definition for the pipeline you are trying to execute, or that there is a mismatch between the provided inputs and the input ports of the pipeline. If the error message refers to input ports, the latter issue is most likely, otherwise the former is most likely.
+
+**Issue with pipeline structure**
+
+If you've modified either the Pipeline Script or Package Definition yourself, first attempt reverting to the deployed version of the code and testing if the error persists. If it does not, then the error was most likely introduced by your changes. You will need to consider your changes and the error messages to determine how to fix the issue.
+
+If the error is present on a deployed version of the code, please open an issue on this project's GitLab repository or e-mail the active developers to inform them that this needs to be updated. You might be able to fix this yourself by inspecting the error message and seeing what the problem is. Commonly this occurs when a call to a task isn't updated at the same time as that task's definition, resulting in the ports no longer matching up, and can be fixed by updating the call to the task.
+
+**Issue with input**
+
+To test whether or not this issue has been introduced by your provided input, attempt to call the pipeline with default input files (that is, call the helper script without either the ``--isf`` or ``--isf_args`` options), rename (or copy or symlink) your input files to the default filenames (which can be found in the \<pipeline\_name\>_isf.txt file in ``SHE_Pipeline/auxdir/SHE_Pipeline``), and see if this succeeds or not. If this succeeds, then this means that one of the input ports you specified in either your ISF or to the ``--isf_args`` argument is invalid. Compare to the input ports defined for the pipeline in its pipeline script, and check for any differences, such as from typos or spelling mistakes.
+
+If you get an error message about input ports not matching up when default input is used, then please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue. You can attempt to rectify this in the meantime by copying the default ISF from the auxdir to your workdir, and updating it so that the ports in it match those in the Pipeline Script.
+
 
 A test failed when I ran "make test"
 ------------------------------------
