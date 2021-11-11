@@ -2,6 +2,22 @@ Troubleshooting
 ===============
 
 
+The pipeline doesn't seem to be running my installed code from other projects
+-----------------------------------------------------------------------------
+
+Pipelines run through a pipeline server will normally only run code deployed through cvmfs. This is due to the server running tasks as a specialized user, and this user won't have your environment (and thus installed projects) set up. If you wish to test locally-installed code from other projects, you can do this by running the pipeline locally through use of the ``--use_debug_server_config`` argument.
+
+If you wish to run locally-installed code with a pipeline run through a pipeline server, this will require a specialized setup which you will have to arrange with the person who manages the pipeline server. This can most easily be done by installing the code you wish to run as the user which the pipeline server uses to run jobs, but this change will affect all users who use the pipeline server, not just you. The impact of this can be mitigated by changing the versions of involved projects to an undeployed release version.
+
+
+The pipeline raises an error that it is unable to write to my workdir
+---------------------------------------------------------------------
+
+The CentOS7 operating system has a known bug where group permissions for file access are not respected. When a pipeline is run through a pipeline server, the server runs as a specialized user. This user is normally in the same user group as anyone who might run pipelines, but this bug will mean that this will not properly enable write permission to the necessary files. Unfortunately, this bug cannot be fixed without updating the operating system, and so a workaround is necessary.
+
+This workaround can be triggered by adding the ``--cluster`` argument to your execution command. This will cause the ``SHE_Pipeline_Run`` program to make the workdir and all files in it globally readable and writable, which will enable the server's user to write to it. Unfortunately, this bug leads to another ill effect after this workaround is used: Any files created by the server's user in execution of the pipeline will not be writable by you, meaning they can't be deleted. You will need to request from the person who manages the system permission to log in as the server's user to delete these files.
+
+
 An error occurred after submitting a run to the pipeline server, and the run was never submitted
 ------------------------------------------------------------------------------------------------
 
