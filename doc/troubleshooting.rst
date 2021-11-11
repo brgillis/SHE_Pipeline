@@ -1,9 +1,12 @@
 Troubleshooting
 ===============
 
+``SHE_Pipeline_Run`` and ``SHE_Pipeline_RunBiasParallel``
+---------------------------------------------------------
+
 
 The pipeline doesn't seem to be running my installed code from other projects
------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pipelines run through a pipeline server will normally only run code deployed through cvmfs. This is due to the server running tasks as a specialized user, and this user won't have your environment (and thus installed projects) set up. If you wish to test locally-installed code from other projects, you can do this by running the pipeline locally through use of the ``--use_debug_server_config`` argument.
 
@@ -11,7 +14,7 @@ If you wish to run locally-installed code with a pipeline run through a pipeline
 
 
 The pipeline raises an error that it is unable to write to my workdir
----------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The CentOS7 operating system has a known bug where group permissions for file access are not respected. When a pipeline is run through a pipeline server, the server runs as a specialized user. This user is normally in the same user group as anyone who might run pipelines, but this bug will mean that this will not properly enable write permission to the necessary files. Unfortunately, this bug cannot be fixed without updating the operating system, and so a workaround is necessary.
 
@@ -19,7 +22,7 @@ This workaround can be triggered by adding the ``--cluster`` argument to your ex
 
 
 An error occurred after submitting a run to the pipeline server, and the run was never submitted
-------------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are a few reasons that this might occur. First, check that you have the correct URL and port for the server. If you haven't configured it yourself, the manage of the machine that it's hosted on should be able to help you here.
 
@@ -35,7 +38,7 @@ In the meantime, see if the error message is clear enough about the source of th
 
 
 The run was submitted to the pipeline server, but an error occurred before any tasks started
---------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a run is submitted to the pipeline server, the first step it performs is parsing the Pipeline Script and Package Definition to determine internally how to run the pipeline. After this, it matches the provided input files to the input ports of the pipeline. An error at this stage of execution indicates either that there is some problem with  the Pipeline Script and/or Package Definition for the pipeline you are trying to execute, or that there is a mismatch between the provided inputs and the input ports of the pipeline. If the error message refers to input ports, the latter issue is most likely, otherwise the former is most likely.
 
@@ -53,7 +56,7 @@ If you get an error message about input ports not matching up when default input
 
 
 A task within the pipeline failed
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If a task fails, the pipeline run will end as a failure. It will provide the location of the log file for the task which triggered the failure (Note: In the case of multiple tasks failing, only the first failure will be provided. Fixing it might uncover other failures in some cases, and does not necessarily mean that the fix caused other failures which show up afterwards). Open this log file with your text editor of choice to see the output from this task and the error message.
 
@@ -67,15 +70,18 @@ Please consult the troubleshooting section of the project containing the task wh
 
 
 The pipeline runner raised an error later on in execution
----------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In rare circumstances, the pipeline runner itself may raise an error at some point during execution. If this happens, most of the time it will be due to some issue with the pipeline server. If this appears to be the case, consult with the person who manages the server for help resolving the issue.
 
 Outside of server issues, one possible reason for an error later on in execution is if a file output from a task is not the expected type, and the pipeline later relies on this file. For instance, this can occur if one step of the pipeline is meant to create a listfile which will be used as a parallel split point, but instead of creating a listfile, the task instead creates an ``.xml`` data product, this will cause an error within the pipeline runner code. The nature of the error should help make clear where the issue is, and what file might be problematic. If you find such an issue in deployed code, please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue, and do the same for the project containing the executable which produces the problematic file.
 
+General
+-------
+
 
 A test failed when I ran "make test"
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Ensure you have the most up-to-date version of the project and all
 its dependencies**
@@ -105,7 +111,7 @@ code, and the executable code will still function.
 
 
 An exception was raised which isn't covered here
-------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Check for an issue with the input**
 
