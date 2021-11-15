@@ -16,8 +16,6 @@ Running the software
 ``SHE_Pipeline_Run``
 ~~~~~~~~~~~~~~~~~~~~
 
-    ``(Optional) a more careful description of what the program does``
-
 
 **Running the Program on EDEN/LODEEN**
 
@@ -31,7 +29,6 @@ with the following options:
 
 
 **Common Elements Arguments**
->\ ``This boilerplate section describes the standard arguments which are common to all Elements executables.``
 
 +------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
 | **Argument**                 | **Description**                                                                                                                                                                                                                                                                                                                                                                                            | **Required**   | **Default**   |
@@ -53,6 +50,7 @@ The following arguments expect a filename to be provided. This filename should b
 #. Relative to the workdir or current directory
 #. Fully-qualified
 #. Prefixed with one of the following special prefixes to indicate where it can be found:
+
    * "AUX/" - Search for the file within the path defined by the environmental variable "ELEMENTS_AUX_PATH", which is the combination of the "auxdir" folders of all projects used within the pipeline.
    * "CONF/" - Search for the file within the path defined by the environmental variable "ELEMENTS_CONF_PATH", which is the combination of the "conf" folders of all projects used within the pipeline.
    * "WEB/" - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: SDC-UK_webdav), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
@@ -88,8 +86,6 @@ N/A - The names of output files from the pipeline run are determined from the na
 +--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
 | ``--plan_args <option_1> <value_1> [<option_2> <value_2> ...]``    | Can only be used when the Calibration pipeline is triggered. A list of paired items, where the first item of each pair is the name of an option in the simulation plan, and the second is the value for it, e.g. `` --plan_args MSEED_MIN 1 MSEED_MAX 16 NSEED_MIN 1 NSEED_MAX 16 NUM_GALAXIES 16.``. Using this argument will result in a new simulation plan file being created and used with these values overriding those in the file provided to the ``simulation_plan`` input port. | no | None (The file provided to the ``simulation_plan`` input port will be used unmodified.) |
 +--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-
-    ``Any required files should be explicity explained in the Inputs section below``
 
 
 **Inputs**
@@ -134,7 +130,7 @@ A call to SHE_Pipeline_run will thus look like:
 
 Here, ``<isf>`` is the filename of the non-default ISF to use for input ports, and can be either absolute or relative to the work directory. ``<isf_args>`` is a list of paired items, where the first item of each pair is the name of the input port, and the second is the filename for it, e.g. ``--isf_args ksb_training_data my_ksb_training_data.xml lensmc_training_data my_lensmc_training_data.xml``.
 
-This program also allows for special keywords to be used in filenames within either the supplied ISF or provided ``--isf_args``: AUX/, CONF/, and WEB/, or for the filenames to be fully-qualified, relative to the current directory, or relative to the workdir, as `detailed above <filename_keywords_>` .
+This program also allows for special keywords to be used in filenames within either the supplied ISF or provided ``--isf_args``: AUX/, CONF/, and WEB/, or for the filenames to be fully-qualified, relative to the current directory, or relative to the workdir, as `detailed above <filename_keywords_>`_.
 
 The program will take any data product filenames provided as input, search for them, and symlink them to the work directory prior to starting the pipeline. For each data product specified as input, it will also attempt to locate any data containers (i.e. the files which contain the actual data) it points to. It searches in the same directory as the data product, the "data" subdirectory of the directory where the product is, its parent directory, and the "data" subdirectory of the parent directory, and then the above locations to try to find it. To ensure these files are found, the best practice is to always store them in the same directories as their corresponding products.
 
@@ -237,18 +233,18 @@ By design, this program shares a common interface with ``SHE_Pipeline_Run`` as m
 
 The following lists the command-line arguments that are used for ``SHE_Pipeline_Run``, but not ``SHE_Pipeline_RunBiasParallel``, along with reasoning for their removal.
 
-+----------------------+---------------+
-| **Removed Argument** | **Reasoning** |
-+======================+===============+
-| ``--pipeline``       | This program is designed only for the Calibration pipeline, and cannot run other pipelines. This would be equivalent to specifying ``--pipeline calibration``. |
-+----------------------+---------------+
++----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| **Removed Argument**                                     | **Reasoning**                                                                                                                                                            |
++==========================================================+==========================================================================================================================================================================+
+| ``--pipeline``                                           | This program is designed only for the Calibration pipeline, and cannot run other pipelines. This would be equivalent to specifying ``--pipeline calibration``.           |
++----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``--cluster``, ``--server_url``, and ``--server_config`` | This program always runs the pipeline locally, and not through a pipeline server. As such, these arguments, which relate to running on a server, are not relevant to it. |
-+----------------------+---------------+
++----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
 **Example**
 
-See the `section for examples <she_pipeline_run_example_>` of the ``SHE_Pipeline_Run`` program for set-up instructions of an example run. Rather than using the command presented there, this program can be used instead through a command such as:
+See the `section for examples <she_pipeline_run_example_>`_ of the ``SHE_Pipeline_Run`` program for set-up instructions of an example run. Rather than using the command presented there, this program can be used instead through a command such as:
 
 .. code:: bash
 
