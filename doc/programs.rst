@@ -129,8 +129,7 @@ N/A - The names of output files from the pipeline run are determined from the na
 **Inputs**
 
 
-``isf``
-............
+``isf``:
 
 **Description:** The primary input to any Euclid pipeline is a "data" file. To avoid ambiguity with other uses of "data," we'll be using the old name for it: an Interface Specification File (ISF) here. The file which is provided to the IAL pipeline runner is a text file which lists options for the pipeline run, plus the names of input ports to the pipeline and the files they correspond to, e.g.:
 
@@ -176,8 +175,7 @@ Once the program has found and sorted all input files, it will create an ISF to 
 
 **Source:** A default ISF for each pipeline may be copied from the folder SHE\_Pipeline/auxdir/SHE\_Pipeline of this project and modified as desired.
 
-``config``
-..........
+``config``:
 
 **Description:**  The Euclid IAL pipeline runner only allows filenames to be passed as input arguments to tasks within each pipeline. This means that other types of arguments (e.g. ``--num_threads 4``) can't be passed directly to tasks. Instead, these arguments must be stored in a file, and this file's filename passed to the task. The name of a file to use for this can be provided with the ``--config`` argument. This should be one of the following:
 
@@ -207,8 +205,7 @@ See the documentation for specific programs for details on what configuration op
 #. Retrieved from the EAS, querying for a desired product of type DpdSheAnalysisConfig.
 #. Specified in full through the use of the ``--config_args`` argument
 
-``server_config``
-.................
+``server_config``:
 
 This file determines the setup for a pipeline server used for local runs. This is a text file in a standard configuration format, with one option per line, and each line having the format ``<option>=<value>``, e.g.:
 
