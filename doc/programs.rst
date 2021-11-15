@@ -30,15 +30,26 @@ with the following options:
 
 **Common Elements Arguments**
 
-+------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| **Argument**                 | **Description**                                                                                                                                                                                                                                                                                                                                                                                            | **Required**   | **Default**   |
-+==============================+============================================================================================================================================================================================================================================================================================================================================================================================================+================+===============+
-| --workdir ``<path>``         | Name of the working directory, where input data is stored and output data will be created.                                                                                                                                                                                                                                                                                                                 | yes            | N/A           |
-+------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| --log-file ``<filename>``    | Name of a filename to store logging data in, relative to the workdir. If not provided, logging data will only be output to the terminal. Note that this will only contain logs directly from the run of this executable. Logs of executables called during the pipeline execution will be stored in the "logs" directory of the workdir.   | no             | None          |
-+------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| --log-level ``<filename>``   | Minimum severity level at which to print logging information. Valid values are DEBUG, INFO, WARNING, and ERROR. Note that this will only contain logs directly from the run of this executable. The log level of executables called during pipeline execut will be set based on the configuration of the pipeline server (normally INFO).                                                                                                                                                                      | no             | INFO          |
-+------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
+.. list-table::
+   :widths: 15 50 10 25
+   :header-rows: 1
+
+   * - Argument
+     - Description
+     - Required
+     - Default
+   * - --workdir ``<path>``
+     - Name of the working directory, where input data is stored and output data will be created.
+     - yes
+     - N/A
+   * - --log-file ``<filename>``
+     - Name of a filename to store logging data in, relative to the workdir. If not provided, logging data will only be output to the terminal. Note that this will only contain logs directly from the run of this executable. Logs of executables called during the pipeline execution will be stored in the "logs" directory of the workdir.
+     - no
+     - None
+   * - --log-level ``<level>``
+     - Minimum severity level at which to print logging information. Valid values are DEBUG, INFO, WARNING, and ERROR. Note that this will only contain logs directly from the run of this executable. The log level of executables called during pipeline execut will be set based on the configuration of the pipeline server (normally INFO).
+     - no
+     - INFO
 
 
 **Input Arguments**
@@ -55,15 +66,26 @@ The following arguments expect a filename to be provided. This filename should b
    * "CONF/" - Search for the file within the path defined by the environmental variable "ELEMENTS_CONF_PATH", which is the combination of the "conf" folders of all projects used within the pipeline.
    * "WEB/" - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: SDC-UK_webdav), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
 
-+-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
-| **Argument**                        | **Description**                                                                                                                                                    | **Required**   | **Default**                                        |
-+=====================================+====================================================================================================================================================================+================+====================================================+
-| ``--isf <filename>``          | ``.txt`` file listing filenames to be provided to input ports of the pipeline. This file should have one port per line, with format ``<port_name>=<filename>``, e.g. ``my_input_port=MyInputFilename.xml``. If the ``--isf_args`` argument is used, any values for input ports passed to that will override values in this file. | no            | None (all input ports will take default values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline, unless overridden through use of the ``isf_args`` argument.)) |
-+-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
-| ``--config <filename>``   | ``.txt`` file containing configuration options to be used for one or more task within the pipeline, ``.xml`` data product or pointing to such a text file, or .json listfile (Cardinality 0-1) either pointing to such a data product or empty. The text file should contain one option per line, in the format ``<option>=<value>``, e.g. ``SHE_Pipeline_profile=True``. If the ``--config_args`` argument is used, any values for options passed to that will override values in this file.   | no             | None (equivalent to providing an empty listfile, which results in default values being used for all options)   |
-+-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
-| ``--server_config <filename>``   | ``.conf`` file containing the configuration of a pipeline server to use for this run. This should not be supplied in conjunction with ``--server_url``, as that will submit a run to a running pipeline server, which will already have its own configuration set up. | no | Not used, unless ``--use_debug_server_config`` is supplied, in which case SHE\_Pipeline/auxdir/SHE\_Pipeline/debug\_server\_config.txt will be used. |
-+-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+----------------------------------------------------+
+.. list-table::
+   :widths: 15 50 10 25
+   :header-rows: 1
+
+   * - Argument
+     - Description
+     - Required
+     - Default
+   * - ``--isf <filename>``
+     - ``.txt`` file listing filenames to be provided to input ports of the pipeline. This file should have one port per line, with format ``<port_name>=<filename>``, e.g. ``my_input_port=MyInputFilename.xml``. If the ``--isf_args`` argument is used, any values for input ports passed to that will override values in this file.
+     - no
+     - None (all input ports will take default values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline, unless overridden through use of the ``isf_args`` argument.))
+   * - ``--config <filename>``
+     - ``.txt`` file containing configuration options to be used for one or more task within the pipeline, ``.xml`` data product or pointing to such a text file, or .json listfile (Cardinality 0-1) either pointing to such a data product or empty. The text file should contain one option per line, in the format ``<option>=<value>``, e.g. ``SHE_Pipeline_profile=True``. If the ``--config_args`` argument is used, any values for options passed to that will override values in this file.
+     - no
+     - None (equivalent to providing an empty listfile, which results in default values being used for all options)
+   * - ``--server_config <filename>``
+     - ``.conf`` file containing the configuration of a pipeline server to use for this run. This should not be supplied in conjunction with ``--server_url``, as that will submit a run to a running pipeline server, which will already have its own configuration set up.
+     - no
+     - Not used, unless ``--use_debug_server_config`` is supplied, in which case SHE\_Pipeline/auxdir/SHE\_Pipeline/debug\_server\_config.txt will be used.
 
 
 **Output Arguments**
@@ -73,19 +95,35 @@ N/A - The names of output files from the pipeline run are determined from the na
 
 **Options**
 
-+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| **Option**                    | **Description**                                                                                                                                     | **Required**   | **Default**   |
-+================================+=====================================================================================================================================================+================+===============+
-| ``--cluster`` (``store true``)    | If set, will enable a workaround for a bug present on some clusters, which otherwise would result in the pipeline server's user running the pipeline not having necessary write access to files in the workdir. | no             | False         |
-+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| ``--server_url <server_url>``    | The URL of the pipeline server to submit this run to. Not used if the argument ``--use_debug_server_config`` is provided, which triggers a local run. | no | ``http://ial:50000`` |
-+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| ``--isf_args <port_1> <file_1> [<port_2> <file_2> ...]``    | A list of paired items, where the first item of each pair is the name of the input port, and the second is the filename for it, e.g. ``--isf_args ksb_training_data my_ksb_training_data.xml lensmc_training_data my_lensmc_training_data.xml``. Using this argument will result in a new ISF file being created and used with these values overriding those in the file provided with the ``--isf`` argument and/or the default ISF for this pipeline. | no | None (if the ``--isf`` file is provided, will use input ports from that. Any input ports unspecified by that will use default filenam values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline) |
-+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| ``--config_args <option_1> <value_1> [<option_2> <value_2> ...]``    | A list of paired items, where the first item of each pair is the name of the configuration option, and the second is the value for it, e.g. ``--config_args SHE_CTE_ObjectIdSplit_batch_size 10 SHE_CTE_ObjectIdSplit_max_batches 2``. Using this argument will result in a new ISF file being created and used with these values overriding those in the file provided with the ``--config`` argument. | no | None (if the ``--config`` file is provided, will use options from that. Otherwise, configuration options will take default values defined by the executables to which they are relevant.) |
-+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| ``--plan_args <option_1> <value_1> [<option_2> <value_2> ...]``    | Can only be used when the Calibration pipeline is triggered. A list of paired items, where the first item of each pair is the name of an option in the simulation plan, and the second is the value for it, e.g. `` --plan_args MSEED_MIN 1 MSEED_MAX 16 NSEED_MIN 1 NSEED_MAX 16 NUM_GALAXIES 16.``. Using this argument will result in a new simulation plan file being created and used with these values overriding those in the file provided to the ``simulation_plan`` input port. | no | None (The file provided to the ``simulation_plan`` input port will be used unmodified.) |
-+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
+
+.. list-table::
+   :widths: 15 50 10 25
+   :header-rows: 1
+
+   * - Argument
+     - Description
+     - Required
+     - Default
+   * - ``--cluster`` (``store true``)
+     - If set, will enable a workaround for a bug present on some clusters, which otherwise would result in the pipeline server's user running the pipeline not having necessary write access to files in the workdir.
+     - no
+     - False
+   * - ``--server_url <server_url>``
+     - The URL of the pipeline server to submit this run to. Not used if the argument ``--use_debug_server_config`` is provided, which triggers a local run.
+     - no
+     - ``http://ial:50000``
+   * - ``--isf_args <port_1> <file_1> [<port_2> <file_2> ...]``
+     - A list of paired items, where the first item of each pair is the name of the input port, and the second is the filename for it, e.g. ``--isf_args ksb_training_data my_ksb_training_data.xml lensmc_training_data my_lensmc_training_data.xml``. Using this argument will result in a new ISF file being created and used with these values overriding those in the file provided with the ``--isf`` argument and/or the default ISF for this pipeline.
+     - no
+     - None (if the ``--isf`` file is provided, will use input ports from that. Any input ports unspecified by that will use default filenam values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline)
+   * - ``--config_args <option_1> <value_1> [<option_2> <value_2> ...]``
+     - A list of paired items, where the first item of each pair is the name of the configuration option, and the second is the value for it, e.g. ``--config_args SHE_CTE_ObjectIdSplit_batch_size 10 SHE_CTE_ObjectIdSplit_max_batches 2``. Using this argument will result in a new ISF file being created and used with these values overriding those in the file provided with the ``--config`` argument.
+     - no
+     - None (if the ``--config`` file is provided, will use options from that. Otherwise, configuration options will take default values defined by the executables to which they are relevant.)
+   * - ``--plan_args <option_1> <value_1> [<option_2> <value_2> ...]``
+     - Can only be used when the Calibration pipeline is triggered. A list of paired items, where the first item of each pair is the name of an option in the simulation plan, and the second is the value for it, e.g. ``--plan_args MSEED_MIN 1 MSEED_MAX 16 NSEED_MIN 1 NSEED_MAX 16 NUM_GALAXIES 16``. Using this argument will result in a new simulation plan file being created and used with these values overriding those in the file provided to the ``simulation_plan`` input port.
+     - no
+     - None (The file provided to the ``simulation_plan`` input port will be used unmodified.)
 
 
 **Inputs**
@@ -233,13 +271,17 @@ By design, this program shares a common interface with ``SHE_Pipeline_Run`` as m
 
 The following lists the command-line arguments that are used for ``SHE_Pipeline_Run``, but not ``SHE_Pipeline_RunBiasParallel``, along with reasoning for their removal.
 
-+----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **Removed Argument**                                     | **Reasoning**                                                                                                                                                            |
-+==========================================================+==========================================================================================================================================================================+
-| ``--pipeline``                                           | This program is designed only for the Calibration pipeline, and cannot run other pipelines. This would be equivalent to specifying ``--pipeline calibration``.           |
-+----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--cluster``, ``--server_url``, and ``--server_config`` | This program always runs the pipeline locally, and not through a pipeline server. As such, these arguments, which relate to running on a server, are not relevant to it. |
-+----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
+
+   * - Removed Argument
+     - Reasoning
+   * - ``--pipeline``
+     - This program is designed only for the Calibration pipeline, and cannot run other pipelines. This would be equivalent to specifying ``--pipeline calibration``.
+   * - ``--cluster``, ``--server_url``, and ``--server_config``
+     - This program always runs the pipeline locally, and not through a pipeline server. As such, these arguments, which relate to running on a server, are not relevant to it.
 
 
 **Example**
