@@ -1,6 +1,6 @@
 .. toctree::
     :maxdepth: 3
-    
+
 
 Troubleshooting
 ===============
@@ -80,6 +80,16 @@ The pipeline runner raised an error later on in execution
 In rare circumstances, the pipeline runner itself may raise an error at some point during execution. If this happens, most of the time it will be due to some issue with the pipeline server. If this appears to be the case, consult with the person who manages the server for help resolving the issue.
 
 Outside of server issues, one possible reason for an error later on in execution is if a file output from a task is not the expected type, and the pipeline later relies on this file. For instance, this can occur if one step of the pipeline is meant to create a listfile which will be used as a parallel split point, but instead of creating a listfile, the task instead creates an ``.xml`` data product, this will cause an error within the pipeline runner code. The nature of the error should help make clear where the issue is, and what file might be problematic. If you find such an issue in deployed code, please open an issue on this project's GitLab repository or e-mail the active developers to inform them of this issue, and do the same for the project containing the executable which produces the problematic file.
+
+
+The pipeline runner is running but never successfully starts any jobs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to submit a job, a "pilot" must be available which has enough available resources (cores, memory, etc.) to run it. "Pilots" can be thought of as reserved blocks of resources on a single node. If no pilot is available with enough resources, the pipeline runner will wait until one is available. What might happen is that if a job requires more resources than any potential pilot has available, the runner will wait indefinitely.
+
+Check the resources of the jobs in the pipeline (particularly the job that is waiting to be submitted, if you can identify it), and compare these against the pilots available on the server you're submitting to. If running locally, these will be in the server config you're using. If submitting to a server, either check with the person who manages it and ask them, or see if this information is available on the webpage for monitoring the server. You can then adjust your resource requests to match what's available.
+
+If running locally, one related problem which might occur is if the size of the pilot requested is larger than the resources available on your system. You can find the listed resources in the server config you're using - either the file you provided, or else SHE\_Pipeline/auxdir/SHE\_Pipeline/debug\_server\_config.txt if you used the ``--use_debug_server_config`` option. You will need to modify this (or create a copy, modify the copy, and use that) so that the requested resources do not exceed those available on your system.
 
 General
 -------
