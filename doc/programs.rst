@@ -17,7 +17,7 @@ Running the software
 ~~~~~~~~~~~~~~~~~~~~
 
     ``(Optional) a more careful description of what the program does``
-    
+
 
 **Running the Program on EDEN/LODEEN**
 
@@ -76,7 +76,7 @@ N/A - The names of output files from the pipeline run are determined from the na
 **Options**
 
 +--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
-| **Options**                    | **Description**                                                                                                                                     | **Required**   | **Default**   |
+| **Option**                    | **Description**                                                                                                                                     | **Required**   | **Default**   |
 +================================+=====================================================================================================================================================+================+===============+
 | ``--cluster`` (``store true``)    | If set, will enable a workaround for a bug present on some clusters, which otherwise would result in the pipeline server's user running the pipeline not having necessary write access to files in the workdir. | no             | False         |
 +--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------+---------------+
@@ -134,7 +134,7 @@ A call to SHE_Pipeline_run will thus look like:
 
 Here, ``<isf>`` is the filename of the non-default ISF to use for input ports, and can be either absolute or relative to the work directory. ``<isf_args>`` is a list of paired items, where the first item of each pair is the name of the input port, and the second is the filename for it, e.g. ``--isf_args ksb_training_data my_ksb_training_data.xml lensmc_training_data my_lensmc_training_data.xml``.
 
-This program also allows for special keywords to be used in filenames within either the supplied ISF or provided ``--isf_args``: AUX/, CONF/, and WEB/, or for the filenames to be fully-qualified, relative to the current directory, or relative to the workdir, as `detailed above <filename_keywords_>` . 
+This program also allows for special keywords to be used in filenames within either the supplied ISF or provided ``--isf_args``: AUX/, CONF/, and WEB/, or for the filenames to be fully-qualified, relative to the current directory, or relative to the workdir, as `detailed above <filename_keywords_>` .
 
 The program will take any data product filenames provided as input, search for them, and symlink them to the work directory prior to starting the pipeline. For each data product specified as input, it will also attempt to locate any data containers (i.e. the files which contain the actual data) it points to. It searches in the same directory as the data product, the "data" subdirectory of the directory where the product is, its parent directory, and the "data" subdirectory of the parent directory, and then the above locations to try to find it. To ensure these files are found, the best practice is to always store them in the same directories as their corresponding products.
 
@@ -197,13 +197,59 @@ This file determines the setup for a pipeline server used for local runs. This i
 Outputs are determined by which pipeline is run. See documentation of the individual pipelines and their executables for information on output files.
 
 
+.. _she_pipeline_run_example:
+
 **Example**
 
-   ``TODO - Add example for run of Calibration Pipeline``
+In this section, we will provide some examples of using this program to trigger a local run of the SHE Shear Calibration pipeline. Examples of runs of other pipelines can be found in their respective documentation.
 
-See documentation of individual pipelines for more example runs.
+First, it is necessary to set up the input data for the pipeline run. This can be done expediently by recursively symlinking the contents of the directory containing example input data for the SHE Shear Calibration pipeline provided on SDC-UK's WebDAV server. Assuming that this project is installed at $HOME/Work/Projects/SHE_IAL_Pipelines, the WebDAV server is mounted at /mnt/webdav, and the pipeline workdir will be $HOME/test_workdir, this can be done through:
+
+.. code:: bash
+
+   $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/clone_workdir.sh /mnt/webdav/PF-SHE/example_data/Shear_Cal_template_workdir/ $HOME/test_workdir
+
+This uses the ``clone_workdir.sh`` script, which symbolically links the contents of a template work directory and its sub-directories.
+
+An example pipeline run can then be triggered through calling:
+
+.. code:: bash
+
+   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline calibration --workdir $HOME/test_workdir --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
+
+This call uses default values for all input ports, which match the filenames provided in the template workdir, and default values for all pipeline configuration options. It overrides the default simulation plan with the arguments provided in the command-line, which tells the pipeline to run two batches of simulations, each simulating two galaxies. See documentation for the SHE Shear Calibration pipeline for further details on how the simulation plan and arguments for it functions.
+
+This same pipeline run can also be triggered through the following command, which explicitly states the names of input files and pipeline configuration options:
+
+.. code:: bash
+
+   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline calibration --workdir $HOME/test_workdir --isf_args config_template AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf ksb_training_data test_ksb_training.xml lensmc_training_data test_lensmc_training.xml momentsml_training_data None regauss_training_data=test_regauss_training.xml mdb sample_mdb-SC8.xml --config_args SHE_CTE_CleanupBiasMeasurement_cleanup True SHE_CTE_EstimateShear_methods "KSB LensMC MomentsML REGAUSS" SHE_CTE_MeasureBias_webdav_archive False SHE_CTE_MeasureStatistics_webdav_archive False --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
 
 ``SHE_Pipeline_RunBiasParallel``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ``TODO - fill in doc``
+The ``SHE_Pipeline_RunBiasParallel`` is a replacement for the ``SHE_Pipeline_Run`` program, designed to run the SHE Shear Calibration pipeline directly, without reliance on the IAL pipeline runner. This was found to be necessary within the Shear Sensitivity Testing programme due to the IAL pipeline runner facing load limits.
+
+By design, this program shares a common interface with ``SHE_Pipeline_Run`` as much as possible, and so this section will only detail the ways in which this program differs.
+
+
+**Removed command-line arguments**
+
+The following lists the command-line arguments that are used for ``SHE_Pipeline_Run``, but not ``SHE_Pipeline_RunBiasParallel``, along with reasoning for their removal.
+
++----------------------+---------------+
+| **Removed Argument** | **Reasoning** |
++======================+===============+
+| ``--pipeline``       | This program is designed only for the Calibration pipeline, and cannot run other pipelines. This would be equivalent to specifying ``--pipeline calibration``. |
++----------------------+---------------+
+| ``--cluster``, ``--server_url``, and ``--server_config`` | This program always runs the pipeline locally, and not through a pipeline server. As such, these arguments, which relate to running on a server, are not relevant to it. |
++----------------------+---------------+
+
+
+**Example**
+
+See the `section for examples <she_pipeline_run_example_>` of the ``SHE_Pipeline_Run`` program for set-up instructions of an example run. Rather than using the command presented there, this program can be used instead through a command such as:
+
+.. code:: bash
+
+   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_RunBiasParallel --workdir $HOME/test_workdir --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
