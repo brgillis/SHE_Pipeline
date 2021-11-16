@@ -4,6 +4,7 @@
     overview
     dependencies
     installation
+    running_pipelines
     programs
     scripts
     pipelines
