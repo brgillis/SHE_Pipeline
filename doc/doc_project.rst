@@ -1,3 +1,6 @@
+SHE_IAL_Pipelines Documentation
+===============================
+
 .. toctree::
     :maxdepth: 3
 

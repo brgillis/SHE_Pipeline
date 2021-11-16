@@ -1,9 +1,7 @@
-.. toctree::
-    :maxdepth: 3
-
-
 Troubleshooting
 ===============
+
+.. contents::
 
 
 ``SHE_Pipeline_Run`` and ``SHE_Pipeline_RunBiasParallel``

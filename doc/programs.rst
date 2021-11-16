@@ -1,6 +1,7 @@
 Programs
 ========
 
+.. contents::
 
 Main Programs Available
 -----------------------

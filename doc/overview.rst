@@ -1,6 +1,8 @@
 Overview
 ========
 
+.. contents::
+
 This repository contains pipeline control and helper code for all OU-SHE pipelines.
 
 Software identification

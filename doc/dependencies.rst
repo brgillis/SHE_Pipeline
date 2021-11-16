@@ -1,6 +1,8 @@
 Dependencies
 ============
 
+.. contents::
+
 Internal Euclid Dependencies
 ----------------------------
 

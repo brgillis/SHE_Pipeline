@@ -1,6 +1,8 @@
 Scripts
 =======
 
+.. contents::
+
 In addition to Elements programs, this project contains various scripts which serve useful functions related to running pipelines. This page documents the most important scripts for this purpose. Be aware that these scripts are generally "rougher" than the distributed programs - they aren't coded to as high a standard, have inconsistent interfaces with each other, may produce spurious error messages, and aren't included in the automated testing process.
 
 Main Scripts Available
