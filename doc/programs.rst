@@ -176,6 +176,8 @@ Once the program has found and sorted all input files, it will create an ISF to 
 
 **Source:** A default ISF for each pipeline may be copied from the folder SHE\_Pipeline/auxdir/SHE\_Pipeline of this project and modified as desired.
 
+.. _she_pipeline_run_config:
+
 ``config``:
 
 **Description:**  The Euclid IAL pipeline runner only allows filenames to be passed as input arguments to tasks within each pipeline. This means that other types of arguments (e.g. ``--num_threads 4``) can't be passed directly to tasks. Instead, these arguments must be stored in a file, and this file's filename passed to the task. The name of a file to use for this can be provided with the ``--config`` argument. This should be one of the following:
