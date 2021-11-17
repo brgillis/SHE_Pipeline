@@ -69,7 +69,8 @@ class HTTPSConnectionV3(HTTPSConnection):
 #            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_SSLv2)
 
 
-BASE_EAS_URL="https://eas-dps-cus.test.euclid.astro.rug.nl/NewEuclidXML?class_name="
+#BASE_EAS_URL="https://eas-dps-cus.test.euclid.astro.rug.nl/NewEuclidXML?class_name="
+BASE_EAS_URL="https://eas-dps-cus-ops.esac.esa.int/NewEuclidXML?class_name="
 #BASE_EAS_URL="https://eas-dps-rest-ops.esac.esa.int/NewEuclidXML?class_name="
 #BASE_DSS_URL="https://dss-mdb.euclid.astro.rug.nl/"
 BASE_DSS_URL="https://euclid-dss.roe.ac.uk/"
