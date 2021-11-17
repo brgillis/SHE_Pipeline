@@ -89,9 +89,9 @@ Check the resources of the jobs in the pipeline (particularly the job that is wa
 
 If running locally, one related problem which might occur is if the size of the pilot requested is larger than the resources available on your system. You can find the listed resources in the server config you're using - either the file you provided, or else SHE\_Pipeline/auxdir/SHE\_Pipeline/debug\_server\_config.txt if you used the ``--use_debug_server_config`` option. You will need to modify this (or create a copy, modify the copy, and use that) so that the requested resources do not exceed those available on your system.
 
+
 General
 -------
-
 
 A test failed when I ran "make test"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
