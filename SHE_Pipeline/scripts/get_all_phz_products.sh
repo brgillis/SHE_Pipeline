@@ -7,7 +7,7 @@ QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header
 
 if [ ! -z ${TILE_ID+x} ]
 then
-  QUERY=$QUERY"&&Data.TileIndex==TILE_ID"
+  QUERY=$QUERY"&&Data.TileIndex==$TILE_ID"
 fi
 
 echo "Query: $QUERY"
