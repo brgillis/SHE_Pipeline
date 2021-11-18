@@ -20,29 +20,34 @@ __updated__ = "2021-08-19"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import _pickle
 import os
-import xml.sax._exceptions
+import subprocess as sbp
+from pickle import UnpicklingError
+from xml.sax import SAXParseException
 
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, get_allowed_filename, read_xml_product,
-                             read_listfile, write_listfile)
-from SHE_PPT.logging import getLogger
-from SHE_PPT.mdb import mdb_keys, Mdb
-from SHE_PPT.pipeline_utility import write_config, read_config, _check_key_is_valid
 from astropy.table import Table
 
 import SHE_Pipeline
-import subprocess as sbp
-
+from SHE_PPT.file_io import (find_file, get_allowed_filename, read_listfile, read_xml_product, write_listfile,
+                             write_xml_product, )
+from SHE_PPT.logging import getLogger
+from SHE_PPT.mdb import Mdb, mdb_keys
+from SHE_PPT.pipeline_utility import _check_key_is_valid, read_config, write_config
+from SHE_PPT.products.she_simulation_plan import create_dpd_she_simulation_plan
 from .pipeline_info import pipeline_info_dict
 
+EXT_XML = ".xml"
+
+EXT_JSON = ".json"
 
 default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
-default_server_config = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/2.2.5/ppo/lodeen-ial.properties"
+pipeline_runner_version = "2.2.7"
+
+default_server_config = f"/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/" \
+                        f"{pipeline_runner_version}/ppo/lodeen-ial.properties"
 debug_server_config = "AUX/SHE_Pipeline/debug_server_config.txt"
 
 default_serverurl = "http://ial:50000"
@@ -54,7 +59,8 @@ non_filename_args = ("workdir", "logdir", "pkgRepository", "pipelineDir", "pipel
 
 known_output_filenames = {"bias_measurement": "she_measure_bias/she_bias_measurements.xml"}
 
-pipeline_runner_path = "/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/2.2.5"
+pipeline_runner_path = (f"/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/"
+                        f"{pipeline_runner_version}")
 pipeline_runner_exec = f"{pipeline_runner_path}/bin/python {pipeline_runner_path}/bin/pipeline_runner.py"
 
 submit_command = "submit"
@@ -97,7 +103,7 @@ def check_args(args):
     # Is a pipeline specified at all?
     if args.pipeline is None:
         raise IOError("Pipeline must be specified at command-line, e.g with --pipeline bias_measurement")
-    elif not args.pipeline in pipeline_info_dict:
+    elif args.pipeline not in pipeline_info_dict:
         err_string = ("Unknown pipeline specified to be run: " + args.pipeline + ". Allowed pipelines are: ")
         for allowed_pipeline in pipeline_info_dict:
             err_string += "\n  " + allowed_pipeline
@@ -121,12 +127,7 @@ def check_args(args):
 
     # If no config is specified, use the default for this pipeline
     if args.config is None:
-        try:
-            args.config = chosen_pipeline_info.qualified_config
-        except Exception:
-            logger.warning("No config file specified, and cannot find one in default location (" +
-                           chosen_pipeline_info.qualified_config + "). Will run with no " +
-                           "configuration parameters set.")
+        args.config = chosen_pipeline_info.qualified_config
 
     # Check that we have an even number of ISF arguments
     if args.isf_args is None:
@@ -170,7 +171,7 @@ def check_args(args):
         try:
             os.mkdir(args.workdir)
         except Exception as e:
-            logger.error("Workdir (" + args.workdir + ") does not exist and cannot be created.")
+            logger.error(f"Workdir ({args.workdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(args.workdir, 0o777)
@@ -182,7 +183,7 @@ def check_args(args):
         try:
             os.mkdir(cache_dir)
         except Exception as e:
-            logger.error("Cache directory (" + cache_dir + ") does not exist and cannot be created.")
+            logger.error(f"Cache directory ({cache_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(cache_dir, 0o777)
@@ -194,7 +195,7 @@ def check_args(args):
         try:
             os.mkdir(data_dir)
         except Exception as e:
-            logger.error("Data directory (" + data_dir + ") does not exist and cannot be created.")
+            logger.error(f"Data directory ({data_dir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(data_dir, 0o777)
@@ -206,7 +207,7 @@ def check_args(args):
         try:
             os.mkdir(qualified_logdir)
         except Exception as e:
-            logger.error("logdir (" + qualified_logdir + ") does not exist and cannot be created.")
+            logger.error(f"logdir ({qualified_logdir}) does not exist and cannot be created.")
             raise e
     if args.cluster:
         os.chmod(qualified_logdir, 0o777)
@@ -214,7 +215,7 @@ def check_args(args):
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
-    if len(args.plan_args) > 0 and not args.pipeline == "bias_measurement":
+    if len(args.plan_args) > 0 and not args.pipeline in {"bias_measurement", "calibration"}:
         raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
@@ -222,30 +223,33 @@ def check_args(args):
     return chosen_pipeline_info
 
 
-def create_plan(args, retTable=False):
+def create_plan(args, return_table = False):
     """Function to create a new simulation plan for this run.
     """
 
     # Find the base plan we'll be creating a modified copy of
 
     new_plan_filename = get_allowed_filename("SIM-PLAN", str(os.getpid()),
-                                             extension=".fits", version=SHE_Pipeline.__version__)
+                                             extension = ".fits", version = SHE_Pipeline.__version__)
     qualified_new_plan_filename = os.path.join(args.workdir, new_plan_filename)
+    new_plan_product_filename = get_allowed_filename("P-SIM-PLAN", str(os.getpid()),
+                                                     extension = ".xml", version = SHE_Pipeline.__version__)
+    qualified_new_plan_product_filename = os.path.join(args.workdir, new_plan_product_filename)
 
     # Check if the plan is in the ISF args first
-    plan_filename = None
+    old_plan_filename = None
     if len(args.isf_args) > 0:
         arg_i = 0
         while arg_i < len(args.isf_args):
             if args.isf_args[arg_i] == "simulation_plan":
-                plan_filename = args.isf_args[arg_i + 1]
+                old_plan_filename = args.isf_args[arg_i + 1]
                 # And replace it here with the new name
-                args.isf_args[arg_i + 1] = new_plan_filename
+                args.isf_args[arg_i + 1] = new_plan_product_filename
                 break
             arg_i += 1
-    if plan_filename is None:
+    if old_plan_filename is None:
         # Check for it in the base ISF
-        base_isf = find_file(args.isf, path=args.workdir)
+        base_isf = find_file(args.isf, path = args.workdir)
 
         with open(base_isf, 'r') as fi:
             # Check each line to see if it's the simulation plan
@@ -253,16 +257,16 @@ def create_plan(args, retTable=False):
                 split_line = line.strip().split('=')
                 # Add any new args here to the list of args we want to set
                 if split_line[0].strip() == "simulation_plan":
-                    plan_filename = split_line[1].strip()
+                    old_plan_filename = split_line[1].strip()
                     # And add it to the end of the isf args
                     args.isf_args.append("simulation_plan")
-                    args.isf_args.append(new_plan_filename)
+                    args.isf_args.append(new_plan_product_filename)
 
-    if plan_filename is None:
+    if old_plan_filename is None:
         # Couldn't find it
         raise IOError("Cannot determine simulation_plan filename.")
 
-    qualified_plan_filename = find_file(plan_filename, path=args.workdir)
+    qualified_plan_filename = find_file(old_plan_filename, path = args.workdir)
 
     # Set up the args we'll be replacing
 
@@ -276,11 +280,11 @@ def create_plan(args, retTable=False):
     # Read in the plan table
     simulation_plan_table = None
     try:
-        simulation_plan_table = Table.read(qualified_plan_filename, format="fits")
+        simulation_plan_table = Table.read(qualified_plan_filename, format = "fits")
     except Exception as _:
         # Not a known table format, maybe an ascii table?
         try:
-            simulation_plan_table = Table.read(qualified_plan_filename, format="ascii")
+            simulation_plan_table = Table.read(qualified_plan_filename, format = "ascii")
         except IOError as _:
             pass
     # If it's still none, we couldn't identify it, so raise the initial exception
@@ -292,10 +296,14 @@ def create_plan(args, retTable=False):
         simulation_plan_table[key] = args_to_set[key]
 
     # Write out the new plan
-    simulation_plan_table.write(qualified_new_plan_filename, format="fits")
+    simulation_plan_table.write(qualified_new_plan_filename, format = "fits")
 
-    if retTable:
-        return simulation_plan_table, qualified_new_plan_filename
+    # Write a data product pointing to the simulation plan table
+    simulation_plan_product = create_dpd_she_simulation_plan(new_plan_filename)
+    write_xml_product(simulation_plan_product, qualified_new_plan_product_filename)
+
+    if return_table:
+        return simulation_plan_table, qualified_new_plan_product_filename
     else:
         return
 
@@ -305,11 +313,11 @@ def create_config(args, config_keys):
     """
 
     # Find and read in the base config we'll be creating a modified copy of
-    args_to_set = read_config(args.config, workdir=args.workdir, config_keys=config_keys)
+    args_to_set = read_config(args.config, workdir = args.workdir, config_keys = config_keys)
 
     # Set up the filename for the new config file
     new_config_filename = get_allowed_filename(
-        "PIPELINE-CFG", str(os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
+        "PIPELINE-CFG", str(os.getpid()), extension = ".txt", version = SHE_Pipeline.__version__)
 
     arg_i = 0
     while arg_i < len(args.config_args):
@@ -321,10 +329,10 @@ def create_config(args, config_keys):
         arg_i += 2
 
     # Write out the new config
-    write_config(config_dict=args_to_set,
-                 config_filename=new_config_filename,
-                 workdir=args.workdir,
-                 config_keys=config_keys)
+    write_config(config_dict = args_to_set,
+                 config_filename = new_config_filename,
+                 workdir = args.workdir,
+                 config_keys = config_keys)
 
     return new_config_filename
 
@@ -337,16 +345,15 @@ def create_isf(args,
     """
 
     # Find the base ISF we'll be creating a modified copy of
-    base_isf = find_file(args.isf, path=args.workdir)
+    base_isf = find_file(args.isf, path = args.workdir)
     new_isf_filename = get_allowed_filename("ISF", str(
-        os.getpid()), extension=".txt", version=SHE_Pipeline.__version__)
+        os.getpid()), extension = ".txt", version = SHE_Pipeline.__version__)
     qualified_isf_filename = os.path.join(args.workdir, new_isf_filename)
 
     # Set up the args we'll be replacing or setting
 
-    args_to_set = {}
-    args_to_set["workdir"] = args.workdir
-    args_to_set["logdir"] = args.logdir
+    args_to_set = {"workdir": args.workdir,
+                   "logdir" : args.logdir}
 
     pipeline_dir = os.path.split(chosen_pipeline_info.qualified_pipeline_script)[0]
 
@@ -420,18 +427,21 @@ def create_isf(args,
                             web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
                             find_file(web_data_filename)
                             data_filenames.append("data/" + data_filename)
+                else:
+                    qualified_filename = find_file(filename, path = search_path)
             else:
 
                 # Find the qualified location of the file
                 try:
-                    qualified_filename = find_file(filename, path=search_path)
+                    qualified_filename = find_file(filename, path = search_path)
                 except RuntimeError as _:
                     raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
 
                 # Symlink the filename from the "data" directory within the workdir
                 new_filename = os.path.join("data", os.path.split(filename)[1])
                 try:
-                    if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
+                    if not os.path.abspath(qualified_filename) == os.path.abspath(
+                            os.path.join(args.workdir, new_filename)):
                         os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
                 except FileExistsError as _:
                     try:
@@ -442,7 +452,8 @@ def create_isf(args,
                             pass
                     except Exception as _:
                         pass
-                    if not os.path.abspath(qualified_filename) == os.path.abspath(os.path.join(args.workdir, new_filename)):
+                    if not os.path.abspath(qualified_filename) == os.path.abspath(
+                            os.path.join(args.workdir, new_filename)):
                         os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
 
                 # Update the filename in the args_to_set to the new location
@@ -451,27 +462,30 @@ def create_isf(args,
                 # Now, go through each data file of the product and symlink those from the workdir too
 
                 # Skip (but warn) if it's not an XML data product
-                if qualified_filename[-4:] == ".xml":
+                if qualified_filename[-4:] == EXT_XML:
                     try:
                         p = read_xml_product(qualified_filename)
                         data_filenames = p.get_all_filenames()
-                    except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
+                    except (SAXParseException, UnpicklingError) as _:
                         logger.error("Cannot read file " + qualified_filename + ".")
                         raise
-                elif qualified_filename[-5:] == ".json":
+                elif qualified_filename[-5:] == EXT_JSON:
                     subfilenames = read_listfile(qualified_filename)
                     for subfilename in subfilenames:
-                        qualified_subfilename = find_file(subfilename, path=search_path)
+                        qualified_subfilename = find_file(subfilename, path = search_path)
                         _, ext = os.path.splitext(qualified_subfilename)
-                        if ext in (".xml",".XML"):
+                        if ext.lower() == EXT_XML:
                             try:
                                 p = read_xml_product(qualified_subfilename)
                                 data_filenames += p.get_all_filenames()
-                            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError) as _:
-                                logger.warn("Cannot open subfile %s from %s. "%(qualified_subfilename,qualified_filename))
-                                #raise
+                            except (SAXParseException, UnpicklingError) as _:
+                                logger.warn(
+                                    "Cannot open subfile %s from %s. " % (qualified_subfilename, qualified_filename))
+
+                                # raise
                         else:
-                            logger.warn("Subfile %s from %s is not an XML file",qualified_subfilename,qualified_filename)
+                            logger.warn("Subfile %s from %s is not an XML file", qualified_subfilename,
+                                        qualified_filename)
                 else:
                     logger.warn("Input file " + filename + " is not an XML data product.")
                     continue
@@ -492,18 +506,19 @@ def create_isf(args,
 
                 # Find the qualified location of the data file
                 try:
-                    qualified_data_filename = find_file(data_filename, path=data_search_path)
+                    qualified_data_filename = find_file(data_filename, path = data_search_path)
                 except RuntimeError as _:
                     # Try searching for the file without the "data/" prefix
                     try:
                         qualified_data_filename = find_file(
-                            data_filename.replace("data/", "", 1), path=data_search_path)
+                            data_filename.replace("data/", "", 1), path = data_search_path)
                     except RuntimeError as _:
                         raise RuntimeError("Data file " + data_filename +
                                            " cannot be found in path " + data_search_path)
 
                 # Symlink the data file within the workdir
-                if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(args.workdir, data_filename)):
+                if not os.path.abspath(qualified_data_filename) == os.path.abspath(
+                        os.path.join(args.workdir, data_filename)):
                     if os.path.exists(os.path.join(args.workdir, data_filename)):
                         os.remove(os.path.join(args.workdir, data_filename))
                         try:
@@ -526,7 +541,7 @@ def create_isf(args,
                                              args_to_set[port_name] == ""):
 
             # If the port is present, ensure it's provided as a listfile
-            if args_to_set[port_name][-5:] == ".json":
+            if args_to_set[port_name][-5:] == EXT_JSON:
                 # Already a listfile, so skip
                 continue
             else:
@@ -538,7 +553,7 @@ def create_isf(args,
 
         # If we get to this branch, we need to create a new listfile and set it as the input to the port
         listfile_name = get_allowed_filename(port_name.upper().replace("_", "-"), str(os.getpid()),
-                                             extension=".json", version=SHE_Pipeline.__version__)
+                                             extension = EXT_JSON, version = SHE_Pipeline.__version__)
 
         write_listfile(os.path.join(args.workdir, listfile_name), file_list)
 
@@ -553,7 +568,7 @@ def create_isf(args,
     return qualified_isf_filename
 
 
-def execute_pipeline(pipeline_info, isf, serverurl, server_config, local_run=False, dry_run=False):
+def execute_pipeline(pipeline_info, isf, server_url, server_config, local_run = False, dry_run = False):
     """Sets up and calls a command to execute the pipeline.
     """
 
@@ -566,14 +581,14 @@ def execute_pipeline(pipeline_info, isf, serverurl, server_config, local_run=Fal
     cmd = pipeline_runner_command + ' --pipeline=' + pipeline_info.pipeline_script + ' --data=' + isf
     if server_config is not None:
         cmd += ' --config=' + server_config
-    if serverurl is not None:
-        cmd += ' --serverurl="' + serverurl + '"'
+    if server_url is not None:
+        cmd += ' --serverurl="' + server_url + '"'
 
     if dry_run:
         logger.info("If this were not a dry run, the following command would now be called:\n" + cmd)
     else:
         logger.info("Calling pipeline with command: '" + cmd + "'")
-        sbp.call(cmd, shell=True)
+        sbp.call(cmd, shell = True)
 
 
 def run_pipeline_from_args(args):
@@ -588,10 +603,10 @@ def run_pipeline_from_args(args):
         create_plan(args)
 
     # Create the pipeline_config for this run
-    config_filename = create_config(args, config_keys=chosen_pipeline_info.config_keys)
+    config_filename = create_config(args, config_keys = chosen_pipeline_info.config_keys)
 
     # Create the ISF for this run
-    qualified_isf_filename = create_isf(args, config_filename, chosen_pipeline_info=chosen_pipeline_info)
+    qualified_isf_filename = create_isf(args, config_filename, chosen_pipeline_info = chosen_pipeline_info)
 
     if args.use_debug_server_config:
         server_config = find_file(debug_server_config)
@@ -608,21 +623,21 @@ def run_pipeline_from_args(args):
                 server_config = find_file(debug_server_config)
 
     if local_run:
-        serverurl = None
+        server_url = None
     else:
-        serverurl = args.serverurl
-        if serverurl is None:
-            serverurl = default_serverurl
+        server_url = args.serverurl
+        if server_url is None:
+            server_url = default_serverurl
 
     # Try to call the pipeline
     try:
-        execute_pipeline(pipeline_info=chosen_pipeline_info,
-                         isf=qualified_isf_filename,
-                         serverurl=args.serverurl,
-                         server_config=server_config,
-                         local_run=local_run,
-                         dry_run=args.dry_run)
-    except Exception as e:
+        execute_pipeline(pipeline_info = chosen_pipeline_info,
+                         isf = qualified_isf_filename,
+                         server_url = server_url,
+                         server_config = server_config,
+                         local_run = local_run,
+                         dry_run = args.dry_run)
+    except Exception as _:
         # Cleanup the ISF on non-exit exceptions
         try:
             os.remove(qualified_isf_filename)

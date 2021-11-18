@@ -8,6 +8,4 @@ regauss_training_data=test_regauss_training.xml
 
 pipeline_config=AUX/SHE_Pipeline/bias_measurement_config.txt
 
-bins_description=AUX/SHE_Pipeline/bias_bins.xml
-
 mdb=sample_mdb-SC8.xml

@@ -20,25 +20,12 @@ __updated__ = "2021-08-18"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-import _pickle
-from collections import namedtuple
 import math
 import multiprocessing
 import os
-import xml.sax._exceptions
-
-from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
-from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
-from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
-from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
-from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
-from SHE_PPT import products
-from SHE_PPT.file_io import (find_file, get_allowed_filename,
-                             read_xml_product, read_listfile, write_listfile,
-                             )
-from SHE_PPT.logging import getLogger
-from SHE_PPT.mdb import mdb_keys, Mdb
-from SHE_PPT.pipeline_utility import CalibrationConfigKeys
+from collections import namedtuple
+from pickle import UnpicklingError
+from xml.sax import SAXParseException
 
 import SHE_CTE_BiasMeasurement.MeasureBias as meas_bias
 import SHE_CTE_BiasMeasurement.MeasureStatistics as meas_stats
@@ -48,13 +35,23 @@ import SHE_GST_GalaxyImageGeneration.GenGalaxyImages as gen_galimg
 import SHE_GST_PrepareConfigs.write_configs as gst_prep_conf
 import SHE_GST_cIceBRGpy
 import SHE_Pipeline
-
-from . import pipeline_utilities as pu
-from . import run_pipeline as rp
+from SHE_CTE_BiasMeasurement.measure_bias import measure_bias_from_args
+from SHE_CTE_BiasMeasurement.measure_statistics import measure_statistics_from_args
+from SHE_CTE_ShearEstimation.estimate_shears import estimate_shears_from_args
+from SHE_GST_GalaxyImageGeneration.generate_images import generate_images
+from SHE_GST_GalaxyImageGeneration.run_from_config import run_from_args
+from SHE_PPT.file_io import (find_file, get_allowed_filename, read_listfile, read_xml_product, write_listfile)
+from SHE_PPT.logging import getLogger
+from SHE_PPT.mdb import Mdb, mdb_keys
+from SHE_PPT.pipeline_utility import CalibrationConfigKeys
+from . import pipeline_utilities as pu, run_pipeline as rp
 from .constants import ERun_CTE, ERun_GST
 from .pipeline_info import pipeline_info_dict
 from .pipeline_utilities import get_relpath
 
+MSG_EXEC_FINISHED_SUCCESS = "Finished command execution successfully."
+
+MSG_EXEC_FAILED = "Execution failed with error: "
 
 default_workdir = "/home/user/Work/workspace"
 default_logdir = "logs"
@@ -69,17 +66,15 @@ def she_prepare_configs(simulation_plan, config_template,
                         simulation_configs, workdir):
     """ Runs SHE_GST Prepare configurations
     Sets up simulations using simulation plan and configuration
-    template. 
+    template.
     Creates *cache.bin files
     """
 
-    logger = getLogger(__name__)
-
     gst_prep_conf.write_configs_from_plan(
-        plan_filename=get_relpath(simulation_plan, workdir),
-        template_filename=get_relpath(config_template, workdir),
-        listfile_filename=get_relpath(simulation_configs, workdir),
-        workdir=workdir)
+        plan_filename = get_relpath(simulation_plan, workdir),
+        template_filename = get_relpath(config_template, workdir),
+        listfile_filename = get_relpath(simulation_configs, workdir),
+        workdir = workdir)
     logger.info("Prepared configurations")
 
 
@@ -90,10 +85,9 @@ def she_simulate_images(config_files, pipeline_config, data_images,
     """ Runs SHE_GST_GenGalaxyImages code, creating images, segmentations
     catalogues etc.
     """
-    logger = getLogger(__name__)
 
     SHE_GST_cIceBRGpy.set_workdir(workdir)
-    #@TODO: Replace with function call, see issue 11
+    # @TODO: Replace with function call, see issue 11
     argv = ("--config_files %s "
             "--pipeline_config %s --data_images %s --stacked_data_image %s "
             "--psf_images_and_tables %s --segmentation_images %s "
@@ -118,9 +112,9 @@ def she_simulate_images(config_files, pipeline_config, data_images,
     try:
         run_from_args(generate_images, gen_gi_args)
     except Exception as e:
-        logger.error("Execution failed with error: " + str(e))
+        logger.error(MSG_EXEC_FAILED + str(e))
         raise
-    logger.info("Finished command execution successfully.")
+    logger.info(MSG_EXEC_FINISHED_SUCCESS)
 
 
 def she_estimate_shear(data_images, stacked_image,
@@ -130,8 +124,8 @@ def she_estimate_shear(data_images, stacked_image,
                        lensmc_training_data, momentsml_training_data,
                        regauss_training_data, pipeline_config, mdb,
                        shear_estimates_product, she_lensmc_chains,
-                       workdir, logdir, sim_no):
-    """ Runs the SHE_CTE_EstimateShear method that calculates 
+                       workdir, logdir, sim_number):
+    """ Runs the SHE_CTE_EstimateShear method that calculates
     the shear using 4 methods: KSB, LensMC, MomentsML and REGAUSS
 
     @todo: use defined options for which Methods to use...
@@ -139,9 +133,7 @@ def she_estimate_shear(data_images, stacked_image,
     # Do checks for consistency (earlier)
     """
 
-    logger = getLogger(__name__)
-
-    #@TODO: Replace with function call, see issue 11
+    # @TODO: Replace with function call, see issue 11
 
     # Check to see if training data exists.
     # @TODO: Simplify, avoid repetitions
@@ -196,10 +188,9 @@ def she_estimate_shear(data_images, stacked_image,
 
 def she_measure_statistics(details_table, shear_estimates,
                            pipeline_config, she_bias_statistics, workdir, logdir):
-    """ Runs the SHE_CTE_MeasureStatistics method on shear 
+    """ Runs the SHE_CTE_MeasureStatistics method on shear
     estimates to get shear bias statistics.
     """
-    logger = getLogger(__name__)
 
     argv = ("--details_table %s "
             "--shear_estimates %s --pipeline_config %s "
@@ -214,11 +205,11 @@ def she_measure_statistics(details_table, shear_estimates,
                workdir, workdir, logdir,
                get_relpath(bins_description,workdir))).split()
 
-    measstats_args = pu.setup_function_args(argv, meas_stats,
-                                            ERun_CTE + "SHE_CTE_MeasureStatistics")
+    measure_stats_args = pu.setup_function_args(argv, meas_stats,
+                                                ERun_CTE + "SHE_CTE_MeasureStatistics")
 
     try:
-        measure_statistics_from_args(measstats_args)
+        measure_statistics_from_args(measure_stats_args)
 
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
@@ -230,12 +221,10 @@ def she_cleanup_bias_measurement(simulation_config, data_images,
                                  stacked_data_image, psf_images_and_tables, segmentation_images,
                                  stacked_segmentation_image, detections_tables, details_table,
                                  shear_estimates, shear_bias_statistics_in, pipeline_config,
-                                 she_bias_measurements, workdir, logdir, sim_no):
+                                 she_bias_measurements, workdir, logdir, sim_number):
     """ Runs the SHE_CTE_CleanupBiasMeasurement code on she_bias_statistics.
     Returns she_bias_measurements
     """
-    logger = getLogger(__name__)
-    #@TODO: Replace with function call, see issue 11
 
     argv = ("--simulation_config %s "
             "--data_images %s --stacked_data_image %s --psf_images_and_tables %s "
@@ -272,9 +261,7 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
     """ Runs the SHE_CTE_MeasureBias on a list of she_bias_measurements from
     all simulation runs.
     """
-    #@TODO: Replace with function call, see issue 11
 
-    logger = getLogger(__name__)
     argv = ("--she_bias_statistics %s "
             "--pipeline_config %s --she_bias_measurements %s --workdir %s "
             "--log-file %s/%s/she_measure_bias.out "
@@ -285,9 +272,9 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
                workdir, workdir, logdir,
                get_relpath(bins_description,workdir))).split()
 
-    measbias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
+    measure_bias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
     try:
-        measure_bias_from_args(measbias_args)
+        measure_bias_from_args(measure_bias_args)
     except Exception as e:
         logger.error("Execution failed with error: " + str(e))
         raise
@@ -307,13 +294,11 @@ def check_args(args):
     @rType  list(namedtuple)
     """
 
-    logger = getLogger(__name__)
-
     logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
 
     pipeline = 'bias_measurement'
 
-    if not pipeline in pipeline_info_dict:
+    if pipeline not in pipeline_info_dict:
         err_string = ("Unknown pipeline specified to be run: " + pipeline + ". Allowed pipelines are: ")
         for allowed_pipeline in pipeline_info_dict:
             err_string += "\n  " + allowed_pipeline
@@ -379,8 +364,7 @@ def check_args(args):
     qualified_logdir = os.path.join(args.workdir, args.logdir)
 
     if args.number_threads == 0:
-        # @TODO: change to multiprocessing.cpu_count()?
-        args.number_threads = str(multiprocessing.cpu_count() - 1)
+        args.number_threads = str(max((multiprocessing.cpu_count() - 1, 1)))
     if not args.number_threads.isdigit():
         raise ValueError("Invalid values passed to 'number-threads': Must be an integer.")
 
@@ -446,7 +430,7 @@ def check_args(args):
     if args.cluster:
         os.chmod(qualified_logdir, 0o777)
 
-    # Check that pipeline specific args are only provided for the right pipeline
+    # Check that plan args are formatted properly
     if args.plan_args is None:
         args.plan_args = []
     if not len(args.plan_args) % 2 == 0:
@@ -456,7 +440,6 @@ def check_args(args):
 
 
 def get_dir_struct(args, num_batches):
-
     # @TODO: Be careful, workdir and app_workdir...
     # make sure number threads is valid
     # @FIXME: Check this...
@@ -467,7 +450,7 @@ def get_dir_struct(args, num_batches):
 
 
 def create_batches(args, sim_config_list):
-    """ Uses the simulation configuration list and the 
+    """ Uses the simulation configuration list and the
     workdir (thread) list to split the simulations into
     batches.
 
@@ -476,7 +459,7 @@ def create_batches(args, sim_config_list):
     """
     # Overwrite values as necessary
     # @TODO: Do we do this multiple times and save multiple times - or add multiple lines?
-    batch_tuple = namedtuple("Batch", "batch_no nThreads min_sim_no max_sim_no")
+    batch_tuple = namedtuple("Batch", "batch_number nThreads min_sim_number max_sim_number")
 
     sim_config_list = read_listfile(os.path.join(args.workdir, sim_config_list))
     number_simulations = len(sim_config_list)
@@ -484,34 +467,34 @@ def create_batches(args, sim_config_list):
     number_batches = math.ceil(number_simulations / args.number_threads)
     batch_list = []
 
-    workdir_list = get_dir_struct(args, num_batches=number_batches)
+    workdir_list = get_dir_struct(args, num_batches = number_batches)
 
-    for batch_no in range(number_batches):
+    for batch_number in range(number_batches):
 
         num_threads = args.number_threads
-        min_sim_no = args.number_threads * batch_no
-        max_sim_no = args.number_threads * (batch_no + 1)
-        if max_sim_no > number_simulations:
-            num_threads = number_simulations - min_sim_no
-            max_sim_no = number_simulations
+        min_sim_number = args.number_threads * batch_number
+        max_sim_number = args.number_threads * (batch_number + 1)
+        if max_sim_number > number_simulations:
+            num_threads = number_simulations - min_sim_number
+            max_sim_number = number_simulations
 
-        batch_list.append(batch_tuple(batch_no, num_threads,
-                                      min_sim_no, max_sim_no))
+        batch_list.append(batch_tuple(batch_number, num_threads,
+                                      min_sim_number, max_sim_number))
 
     return batch_list, workdir_list
 
 
-def get_sim_no(thread_no, batch):
-    """ Returns simulation number calculated from thread_no and batch tuple
+def get_sim_number(thread_number, batch):
+    """ Returns simulation number calculated from thread_number and batch tuple
     @return: simulation_number
     @rType:  int
     """
 
-    return batch.min_sim_no + thread_no
+    return batch.min_sim_number + thread_number
 
 
 def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_list,
-                                   simulation_no):
+                                   simulation_number):
     """Function to create a new ISF for this run by adjusting workdir and logdir, and overwriting any
        values passed at the command-line.
 
@@ -530,23 +513,22 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
     logger = getLogger(__name__)
 
     # Find the base ISF we'll be creating a modified copy of
-    # @TODO: include batch_no in name
-    base_isf = find_file(args.isf, path=args.workdir)
+    # @TODO: include batch_number in name
+    base_isf = find_file(args.isf, path = args.workdir)
     new_isf_filename = get_allowed_filename("ISF",
                                             str(os.getpid()),
-                                            extension=".txt",
-                                            version=SHE_Pipeline.__version__)
+                                            extension = ".txt",
+                                            version = SHE_Pipeline.__version__)
     qualified_isf_filename = os.path.join(workdir.workdir,
                                           new_isf_filename)
 
     # Set up the args we'll be replacing or setting
 
-    args_to_set = {}
-    args_to_set["workdir"] = workdir.workdir
-    args_to_set["logdir"] = workdir.logdir
-    args_to_set["pkgRepository"] = rp.get_pipeline_dir()
-    args_to_set["pipelineDir"] = rp.get_pipeline_dir()
-    args_to_set["pipeline_config"] = config_filename
+    args_to_set = {"workdir"        : workdir.workdir,
+                   "logdir"         : workdir.logdir,
+                   "pkgRepository"  : rp.get_pipeline_dir(),
+                   "pipelineDir"    : rp.get_pipeline_dir(),
+                   "pipeline_config": config_filename}
 
     arg_i = 0
     while arg_i < len(args.isf_args):
@@ -564,7 +546,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                 args_to_set[split_line[0]] = split_line[1]
 
     simulation_config = read_listfile(os.path.join(
-        args.workdir, sim_config_list))[simulation_no]
+        args.workdir, sim_config_list))[simulation_number]
     args_to_set['simulation_config'] = simulation_config
 
     # Search path is root workdir
@@ -581,7 +563,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         if filename is None or filename == "None":
             continue
 
-        if 'TEST-%s' % simulation_no in filename:
+        if 'TEST-%s' % simulation_number in filename:
             # File for this simulation
             pass
         elif 'TEST-' in filename:
@@ -589,7 +571,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
         # Find the qualified location of the file
         try:
-            qualified_filename = find_file(filename, path=search_path)
+            qualified_filename = find_file(filename, path = search_path)
         except RuntimeError as _:
             raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
 
@@ -615,13 +597,13 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
         # Now, go through each data file of the product and symlink those from the workdir too
 
+        data_filenames = []
         # Download MDB files if needed
         if input_port_name == "mdb":
             if filename[:4] == "WEB/":
                 qualified_filename = find_file(filename)
                 mdb_dict = Mdb(qualified_filename).get_all()
                 web_mdb_path = os.path.split(filename)[0]
-                data_filenames = []
                 for key in (mdb_keys.vis_gain_coeffs, mdb_keys.vis_readout_noise_table):
                     for data_filename in mdb_dict[key]['Value']:
                         web_data_filename = os.path.join(web_mdb_path, "data", data_filename)
@@ -632,18 +614,17 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             try:
                 p = read_xml_product(qualified_filename)
                 data_filenames = p.get_all_filenames()
-            except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
+            except (SAXParseException, UnpicklingError, UnicodeDecodeError) as _:
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
         elif qualified_filename[-5:] == ".json":
             subfilenames = read_listfile(qualified_filename)
-            data_filenames = []
             for subfilename in subfilenames:
-                qualified_subfilename = find_file(subfilename, path=search_path)
+                qualified_subfilename = find_file(subfilename, path = search_path)
                 try:
                     p = read_xml_product(qualified_subfilename)
                     data_filenames += p.get_all_filenames()
-                except (xml.sax._exceptions.SAXParseException, _pickle.UnpicklingError, UnicodeDecodeError) as _:
+                except (SAXParseException, UnpicklingError, UnicodeDecodeError) as _:
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
         else:
@@ -667,16 +648,17 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
             # Find the qualified location of the data file
             try:
-                qualified_data_filename = find_file(data_filename, path=data_search_path)
+                qualified_data_filename = find_file(data_filename, path = data_search_path)
             except RuntimeError as _:
                 # Try searching for the file without the "data/" prefix
                 try:
-                    qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
+                    qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path = data_search_path)
                 except RuntimeError as _:
                     raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
-            if not os.path.abspath(qualified_data_filename) == os.path.abspath(os.path.join(workdir.workdir, data_filename)):
+            if not os.path.abspath(qualified_data_filename) == os.path.abspath(
+                    os.path.join(workdir.workdir, data_filename)):
                 if os.path.exists(os.path.join(workdir.workdir, data_filename)):
                     os.remove(os.path.join(workdir.workdir, data_filename))
                     try:
@@ -732,8 +714,6 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     # several commands...
     # @FIXME: check None types.
 
-    logger = getLogger(__name__)
-
     workdir = workdirTuple.workdir
 
     data_image_list = os.path.join('data', 'data_images.json')
@@ -747,26 +727,26 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
     she_simulate_images(simulation_config, pipeline_config, data_image_list,
                         stacked_data_image, psf_images_and_tables, segmentation_images,
                         stacked_segmentation_image, detections_tables, details_table,
-                        workdir, logdir, simulation_no)
+                        workdir, logdir, simulation_number)
 
     shear_estimates_product = os.path.join('data', 'shear_estimates_product.xml')
     she_lensmc_chains = os.path.join('data', 'she_lensmc_chains.xml')
 
-    she_estimate_shear(data_images=data_image_list,
-                       stacked_image=stacked_data_image,
-                       psf_images_and_tables=psf_images_and_tables,
-                       segmentation_images=segmentation_images,
-                       stacked_segmentation_image=stacked_segmentation_image,
-                       detections_tables=detections_tables,
-                       ksb_training_data=ksb_training_data,
-                       lensmc_training_data=lensmc_training_data,
-                       momentsml_training_data=momentsml_training_data,
-                       regauss_training_data=regauss_training_data,
-                       pipeline_config=pipeline_config,
-                       mdb=mdb,
-                       shear_estimates_product=shear_estimates_product,
-                       she_lensmc_chains=she_lensmc_chains,
-                       workdir=workdir, logdir=logdir, sim_no=simulation_no)
+    she_estimate_shear(data_images = data_image_list,
+                       stacked_image = stacked_data_image,
+                       psf_images_and_tables = psf_images_and_tables,
+                       segmentation_images = segmentation_images,
+                       stacked_segmentation_image = stacked_segmentation_image,
+                       detections_tables = detections_tables,
+                       ksb_training_data = ksb_training_data,
+                       lensmc_training_data = lensmc_training_data,
+                       momentsml_training_data = momentsml_training_data,
+                       regauss_training_data = regauss_training_data,
+                       pipeline_config = pipeline_config,
+                       mdb = mdb,
+                       shear_estimates_product = shear_estimates_product,
+                       she_lensmc_chains = she_lensmc_chains,
+                       workdir = workdir, logdir = logdir, sim_number = simulation_number)
 
     # Complete after shear only if option set.
     if est_shear_only:
@@ -783,26 +763,26 @@ def she_simulate_and_measure_bias_statistics(simulation_config,
                            workdir=workdir, logdir=logdir, sim_no=simulation_no)
 
     she_bias_measurements = os.path.join('data',
-                                         'shear_bias_measurements_sim%s.xml' % simulation_no)
+                                         'shear_bias_measurements_sim%s.xml' % simulation_number)
 
     # ii=0
     # maxNTries=5
-    #hasRun = False
+    # hasRun = False
     # while not hasRun and ii<maxNTries:
     #    if os.path.exists(she_bias_statistics):
 
-    she_cleanup_bias_measurement(simulation_config=simulation_config,
-                                 data_images=data_image_list, stacked_data_image=stacked_data_image,
-                                 psf_images_and_tables=psf_images_and_tables,
-                                 segmentation_images=segmentation_images,
-                                 stacked_segmentation_image=stacked_segmentation_image,
-                                 detections_tables=detections_tables,
-                                 details_table=details_table,
-                                 shear_estimates=shear_estimates_product,
-                                 shear_bias_statistics_in=she_bias_statistics,
-                                 pipeline_config=pipeline_config,
-                                 she_bias_measurements=she_bias_measurements,
-                                 workdir=workdir, logdir=logdir, sim_no=simulation_no)
+    she_cleanup_bias_measurement(simulation_config = simulation_config,
+                                 data_images = data_image_list, stacked_data_image = stacked_data_image,
+                                 psf_images_and_tables = psf_images_and_tables,
+                                 segmentation_images = segmentation_images,
+                                 stacked_segmentation_image = stacked_segmentation_image,
+                                 detections_tables = detections_tables,
+                                 details_table = details_table,
+                                 shear_estimates = shear_estimates_product,
+                                 shear_bias_statistics_in = she_bias_statistics,
+                                 pipeline_config = pipeline_config,
+                                 she_bias_measurements = she_bias_measurements,
+                                 workdir = workdir, logdir = logdir, sim_number = simulation_number)
 
     logger.info("Completed parallel pipeline stage, she_simulate_and_measure_bias_statistics")
 
@@ -817,13 +797,11 @@ def run_pipeline_from_args(args):
 
     # Check the arguments
     chosen_pipeline_info = check_args(args)  # add argument there..
-    # if len(args.plan_args) > 0:
-    _sim_plan_table, sim_plan_tablename = rp.create_plan(args, retTable=True)
+    _sim_plan_table, sim_plan_tablename = rp.create_plan(args, return_table = True)
 
     # Create the pipeline_config for this run
-    config_filename = rp.create_config(args, config_keys=chosen_pipeline_info.config_keys)
+    config_filename = rp.create_config(args, config_keys = chosen_pipeline_info.config_keys)
     # Create the ISF for this run
-    #qualified_isf_filename = rp.create_isf(args, config_filename)
 
     shear_bias_measurement_listfile = os.path.join(
         args.workdir, 'data', 'shear_bias_measurement_list.json')
@@ -835,7 +813,7 @@ def run_pipeline_from_args(args):
     simulation_configs = os.path.join('data', 'sim_configs.json')
 
     # @FIXME: sim configuration template
-    base_isf = find_file(args.isf, path=args.workdir)
+    base_isf = find_file(args.isf, path = args.workdir)
     # read get
     args_to_set = {}
     with open(base_isf, 'r') as fi:
@@ -869,12 +847,12 @@ def run_pipeline_from_args(args):
     logger.info("Running parallel part of pipeline in %s batches and %s threads"
                 % (len(batches), args.number_threads))
 
-    pool = multiprocessing.Pool(processes=args.number_threads)
+    pool = multiprocessing.Pool(processes = args.number_threads)
 
     simulate_and_measure_args_list = []
 
-    for batch_no in range(len(batches)):
-        batch = batches[batch_no]
+    for batch_number in range(len(batches)):
+        batch = batches[batch_number]
         # Move data to threads
         # insert_data_to_threads(args,batch,workdirList,sim_table)
         # Update_isf_...
@@ -882,15 +860,16 @@ def run_pipeline_from_args(args):
         # Create the pipeline_config for this run
         # @TODO: Do we need multiple versions of this, one for each thread?
 
-        for thread_no in range(batch.nThreads):
-            workdir = workdir_list[thread_no + args.number_threads * batch_no]
+        for thread_number in range(batch.nThreads):
+            workdir = workdir_list[thread_number + args.number_threads * batch_number]
             # logdir?
-            simulation_no = get_sim_no(thread_no, batch)
+            simulation_number = get_sim_number(thread_number, batch)
             # Create the ISF for this run
             # @TODO:  do we need multiple versions of this, one for each thread
             # @FIXME: Don't really need ISF - that is for the pipeline runner..
             simulate_measure_inputs = create_simulate_measure_inputs(args,
-                                                                     config_filename, workdir, simulation_configs, simulation_no)
+                                                                     config_filename, workdir, simulation_configs,
+                                                                     simulation_number)
 
             simulate_and_measure_args_list.append((simulate_measure_inputs.simulation_config,
                                                    simulate_measure_inputs.ksb_training_data,
@@ -910,9 +889,10 @@ def run_pipeline_from_args(args):
     else:
         # Clean up
         logger.info("Cleaning up batch files..")
-        for batch_no in range(len(batches)):
-            merge_outputs(workdir_list, batches[batch_no], shear_bias_measurement_listfile, parent_workdir=args.workdir)
-            pu.cleanup(batches[batch_no], workdir_list)
+        for batch_number in range(len(batches)):
+            merge_outputs(workdir_list, batches[batch_number], shear_bias_measurement_listfile,
+                          parent_workdir = args.workdir)
+            pu.cleanup(batches[batch_number], workdir_list)
 
     if args.est_shear_only:
         logger.info("Pipeline completed!")
@@ -937,7 +917,7 @@ def run_pipeline_from_args(args):
 
 def merge_outputs(workdir_list, batch,
                   shear_bias_measurement_listfile, parent_workdir):
-    """ Merge outputs from different threads at the end of each 
+    """ Merge outputs from different threads at the end of each
     batch. Updates .json file
 
 
@@ -945,23 +925,24 @@ def merge_outputs(workdir_list, batch,
 
     new_list = []
     for workdir in workdir_list:
-        thread_no = int(workdir.workdir.split('thread')[-1].split('_')[0])
-        if thread_no < batch.nThreads:
-            sim_no = get_sim_no(thread_no, batch)
+        thread_number = int(workdir.workdir.split('thread')[-1].split('_')[0])
+        if thread_number < batch.nThreads:
+            sim_number = get_sim_number(thread_number, batch)
             # @TODO: root of this in one place
-            shear_bias_measfile = os.path.join('data', 'shear_bias_measurements_sim%s.xml' % sim_no)
-            qualified_shear_bias_measfile = os.path.join(workdir.workdir, shear_bias_measfile)
-            if os.path.exists(qualified_shear_bias_measfile):
-                new_list.append(qualified_shear_bias_measfile)
+            shear_bias_measurements_file = os.path.join('data', 'shear_bias_measurements_sim%s.xml' % sim_number)
+            qualified_shear_bias_measurements_file = os.path.join(workdir.workdir, shear_bias_measurements_file)
+            if os.path.exists(qualified_shear_bias_measurements_file):
+                new_list.append(qualified_shear_bias_measurements_file)
 
                 # Get all data files this product points to and symlink them to the main data dir
-                p = read_xml_product(shear_bias_measfile, workdir=workdir.workdir)
+                p = read_xml_product(shear_bias_measurements_file, workdir = workdir.workdir)
 
                 data_files = p.get_all_filenames()
 
                 for data_file in data_files:
 
-                    if data_file is None or data_file == "None" or data_file == "data/None" or data_file == "" or data_file == "data/":
+                    if data_file is None or data_file == "None" or data_file == "data/None" or data_file == "" or \
+                            data_file == "data/":
                         continue
 
                     old_qualified_data_file_filename = os.path.join(workdir.workdir, data_file)
