@@ -11,7 +11,7 @@ elements_project(SHE_IAL_Pipelines 8.2 USE SHE_CTE 8.3
                                       	   SHE_MER 8.4
                                       	   SHE_PSFToolkit 8.10
                                       	   SHE_Validation 8.2
-                                      	   ST_PipelineChecker 1.0.1
+                                      	   ST_PipelineChecker 1.1.0
                                       	   )
 
 # Indirect dependencies
