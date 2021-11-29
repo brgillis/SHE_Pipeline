@@ -106,6 +106,10 @@ N/A - The names of output files from the pipeline run are determined from the na
      - Description
      - Required
      - Default
+   * - ``--pipeline <pipeline_name>``)
+     - The name of the pipeline to be run. The following values are allowed: ``analysis`` (`SHE Analysis pipeline <pip_analysis.html>`__), ``reconciliation`` (`SHE Reconciliation pipeline <pip_reconciliation.html>`__), ``calibration`` (`Shear Calibration pipeline <pip_shear_calibration.html>`__), ``validation`` (`SHE Global Validation pipeline <pip_global_validation.html>`__).
+     - yes
+     - N/A
    * - ``--cluster`` (``store true``)
      - If set, will enable a workaround for a bug present on some clusters, which otherwise would result in the pipeline server's user running the pipeline not having necessary write access to files in the workdir.
      - no
