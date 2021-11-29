@@ -43,7 +43,7 @@ Relevant Documents
 
     ``TO-DO: Get links for these documents from Keith.``
 
--  `RSD <link%20here>`__
--  `SDD <link%20here>`__
--  `VP/STS <link%20here>`__
--  `STP/STR <link%20here>`__
+-  `RSD <https://euclid.roe.ac.uk/attachments/download/54815>`__
+-  `SDD <https://euclid.roe.ac.uk/attachments/download/54782/EUCL-IFA-DDD-8-002.pdf>`__
+-  `VP/STS <https://euclid.roe.ac.uk/attachments/download/54785/EUCL-CEA-PL-8-001_v1.44-Euclid-SGS-SHE-Validation_Plan_STS.pdf>`__
+-  `STP/STR <https://euclid.roe.ac.uk/attachments/download/54784/EUCL-IFA-TP-8-002_v1-0-0.pdf>`__
