@@ -92,7 +92,7 @@ The following arguments expect a filename to be provided. This filename should b
 
 **Output Arguments**
 
-N/A - The names of output files from the pipeline run are determined from the names of the output ports in the Pipeline Script.
+N/A - The names of output files from the pipeline run are determined from the names of the output ports in the Pipeline Script. See the `documentation for the respective pipelines <pipelines.html>`__ for information on their outputs.
 
 
 **Options**
