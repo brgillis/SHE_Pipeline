@@ -154,10 +154,10 @@ N/A - The names of output files from the pipeline run are determined from the na
 
 When provided to the IAL pipeline_runner.py script, the ISF is required to have both options for the run and input arguments in it, but the SHE_Pipeline_Run program is more flexible. It fills in the options based on:
 
-* workdir: Provided at command-line
-* logdir: Always "logs"
-* pkgRepository and pipelineDir: Installed location of the auxdir for the pipeline being run
-* edenVersion: Eden-2.1-dev if a develop version of code is being run, Eden-2.1 if a release version of code is being run
+* ``workdir``: Provided at command-line
+* ``logdir``: Always "logs"
+* ``pkgRepository`` and ``pipelineDir``: Installed location of the auxdir for the pipeline being run
+* ``edenVersion``: Eden-2.1-dev if a develop version of code is being run, Eden-2.1 if a release version of code is being run
 
 For the input ports, it takes, in order of descending priority:
 
