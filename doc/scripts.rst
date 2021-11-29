@@ -49,7 +49,7 @@ The following example will clone a template work directory for the SHE Shear Cal
 
    $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/clone_workdir.sh /mnt/webdav/PF-SHE/example_data/Shear_Cal_template_workdir/ $HOME/test_workdir
 
-This requires that this project is installed in the standard location at ``$HOME/Work/Projects/SHE_IAL_Pipelines`` and that the SDC-UK WebDAV server is mounted and readable at the location ``/mnt/webdav/``. Modify these as appropriate for other locations.
+This requires that this project is installed in the standard location at ``$HOME/Work/Projects/SHE_IAL_Pipelines`` and that the SDC-UK WebDAV server is mounted and readable at the location ``/mnt/webdav/`` (see `instructions here <guide_webdav.html>`__). Modify these as appropriate for other locations.
 
 ``create_listfiles.py``
 ~~~~~~~~~~~~~~~~~~~~~~~

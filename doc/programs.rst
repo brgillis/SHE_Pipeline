@@ -66,7 +66,7 @@ The following arguments expect a filename to be provided. This filename should b
 
    * ``AUX/`` - Search for the file within the path defined by the environmental variable ``ELEMENTS_AUX_PATH``, which is the combination of the "auxdir" folders of all projects used within the pipeline.
    * ``CONF/`` - Search for the file within the path defined by the environmental variable ``ELEMENTS_CONF_PATH``, which is the combination of the "conf" folders of all projects used within the pipeline.
-   * ``WEB/`` - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: `SDC-UK_webdav <https://euclid.roe.ac.uk/projects/ousdce/wiki/SDC-UK_webdav>`__), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
+   * ``WEB/`` - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: `SDC-UK_webdav <guide_webdav.html>`__), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
 
 .. list-table::
    :widths: 15 50 10 25
@@ -242,7 +242,7 @@ Outputs are determined by which pipeline is run. See documentation of the indivi
 
 In this section, we will provide some examples of using this program to trigger a local run of the SHE Shear Calibration pipeline. Examples of runs of other pipelines can be found in their respective documentation.
 
-First, it is necessary to set up the input data for the pipeline run. This can be done expediently by recursively symlinking the contents of the directory containing example input data for the SHE Shear Calibration pipeline provided on SDC-UK's WebDAV server. Assuming that this project is installed at $HOME/Work/Projects/SHE_IAL_Pipelines, the WebDAV server is mounted at /mnt/webdav, and the pipeline workdir will be $HOME/test_workdir, this can be done through:
+First, it is necessary to set up the input data for the pipeline run. This can be done expediently by recursively symlinking the contents of the directory containing example input data for the SHE Shear Calibration pipeline provided on SDC-UK's WebDAV server. Assuming that this project is installed at $HOME/Work/Projects/SHE_IAL_Pipelines, the WebDAV server is mounted at /mnt/webdav (if not already mounted, follow the  `instructions here <guide_webdav.html>`__), and the pipeline workdir will be $HOME/test_workdir, this can be done through:
 
 .. code:: bash
 
