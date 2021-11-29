@@ -161,9 +161,9 @@ When provided to the IAL pipeline_runner.py script, the ISF is required to have 
 
 For the input ports, it takes, in order of descending priority:
 
-# Values provided at the command-line with the ``--isf_args`` option
-# Values in an ISF provided at the command-line with the ``--isf`` option
-# Values in the default ISF for the chosen pipeline
+#. Values provided at the command-line with the ``--isf_args`` option
+#. Values in an ISF provided at the command-line with the ``--isf`` option
+#. Values in the default ISF for the chosen pipeline
 
 A call to SHE_Pipeline_run will thus look like:
 
