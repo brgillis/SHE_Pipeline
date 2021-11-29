@@ -11,6 +11,7 @@ Elements, and best viewed in the compiled version. This can be accessed either b
   cd ${HOME}/Work/Projects git clone https://gitlab.euclid-sgs.uk/PF-SHE/SHE_IAL_Pipelines.git
   cd SHE_IAL_Pipelines git checkout <desired branch or tag>
   make
+  make doc
   ```
   This will make the documentation available in the
   directory `${HOME}/Work/Projects/SHE_IAL_Pipelines/build.x86_64-conda_cos6-gcc73-o2g/doc/sphinx/html/`. The
