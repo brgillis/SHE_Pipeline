@@ -210,7 +210,7 @@ See the documentation for specific programs for details on what configuration op
 **Source:** One of the following:
 
 #. May be generated manually, creating the ``.txt`` file with your text editor of choice.
-#. Retrieved from the EAS, querying for a desired product of type DpdSheAnalysisConfig.
+#. `retrieved from the EAS <guide_eas.html>`__, querying for a desired product of type DpdSheAnalysisConfig.
 #. Specified in full through the use of the ``--config_args`` argument
 
 ``server_config``:

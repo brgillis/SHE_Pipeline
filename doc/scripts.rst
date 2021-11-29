@@ -74,7 +74,7 @@ where ``<workdir>>`` is the directory you wish to run this script on. Note that 
 ``get_all_*_products.sh``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These scripts are used to download data products of different types from the Euclid Archive Server (EAS). The products downloaded are:
+These scripts are used to `download data products of different types from the Euclid Archive Server (EAS) <guide_eas.html>`__. The respective products downloaded are:
 
 * ``get_all_mer_products.sh``: ``DpdMerFinalCatalog`` and ``DpdMerSegmentationMap``
 * ``get_all_phz_products.sh``: ``DpdPhzPfOutputCatalog``
