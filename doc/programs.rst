@@ -64,9 +64,9 @@ The following arguments expect a filename to be provided. This filename should b
 #. Fully-qualified
 #. Prefixed with one of the following special prefixes to indicate where it can be found:
 
-   * "AUX/" - Search for the file within the path defined by the environmental variable "ELEMENTS_AUX_PATH", which is the combination of the "auxdir" folders of all projects used within the pipeline.
-   * "CONF/" - Search for the file within the path defined by the environmental variable "ELEMENTS_CONF_PATH", which is the combination of the "conf" folders of all projects used within the pipeline.
-   * "WEB/" - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: SDC-UK_webdav), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
+   * ``AUX/`` - Search for the file within the path defined by the environmental variable ``ELEMENTS_AUX_PATH``, which is the combination of the "auxdir" folders of all projects used within the pipeline.
+   * ``CONF/`` - Search for the file within the path defined by the environmental variable ``ELEMENTS_CONF_PATH``, which is the combination of the "conf" folders of all projects used within the pipeline.
+   * ``WEB/`` - Search for the file on the SDC-UK WebDAV file system (see instructions to mount here: `SDC-UK_webdav <https://euclid.roe.ac.uk/projects/ousdce/wiki/SDC-UK_webdav>`__), relative to the PF-SHE directory on it. This file will be downloaded and the path to the locally downloaded version will be used. Note that pipeline runs on any cluster will not have internet access, so this can only be used for local runs.
 
 .. list-table::
    :widths: 15 50 10 25
