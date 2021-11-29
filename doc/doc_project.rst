@@ -7,8 +7,8 @@ SHE_IAL_Pipelines Documentation
     overview
     dependencies
     installation
-    running_pipelines
     programs
     scripts
     pipelines
+    guides
     troubleshooting
