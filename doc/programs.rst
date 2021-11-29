@@ -79,7 +79,7 @@ The following arguments expect a filename to be provided. This filename should b
    * - ``--isf <filename>``
      - ``.txt`` file listing filenames to be provided to input ports of the pipeline. This file should have one port per line, with format ``<port_name>=<filename>``, e.g. ``my_input_port=MyInputFilename.xml``. If the ``--isf_args`` argument is used, any values for input ports passed to that will override values in this file.
      - no
-     - None (all input ports will take default values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline, unless overridden through use of the ``isf_args`` argument.))
+     - None (all input ports will take default values provided in the \<pipeline\_name\>_isf.txt file in ``SHE_Pipeline/auxdir/SHE_Pipeline``, unless overridden through use of the ``isf_args`` argument.))
    * - ``--config <filename>``
      - ``.txt`` file containing configuration options to be used for one or more task within the pipeline, ``.xml`` data product or pointing to such a text file, or .json listfile (Cardinality 0-1) either pointing to such a data product or empty. The text file should contain one option per line, in the format ``<option>=<value>``, e.g. ``SHE_Pipeline_profile=True``. If the ``--config_args`` argument is used, any values for options passed to that will override values in this file.
      - no
@@ -87,7 +87,7 @@ The following arguments expect a filename to be provided. This filename should b
    * - ``--server_config <filename>``
      - ``.conf`` file containing the configuration of a pipeline server to use for this run. This should not be supplied in conjunction with ``--server_url``, as that will submit a run to a running pipeline server, which will already have its own configuration set up.
      - no
-     - Not used, unless ``--use_debug_server_config`` is supplied, in which case SHE\_Pipeline/auxdir/SHE\_Pipeline/debug\_server\_config.txt will be used.
+     - Not used, unless ``--use_debug_server_config`` is supplied, in which case ``SHE_Pipeline/auxdir/SHE_Pipeline/debug_server_config.txt`` will be used.
 
 
 **Output Arguments**
@@ -121,7 +121,7 @@ N/A - The names of output files from the pipeline run are determined from the na
    * - ``--isf_args <port_1> <file_1> [<port_2> <file_2> ...]``
      - A list of paired items, where the first item of each pair is the name of the input port, and the second is the filename for it, e.g. ``--isf_args ksb_training_data my_ksb_training_data.xml lensmc_training_data my_lensmc_training_data.xml``. Using this argument will result in a new ISF file being created and used with these values overriding those in the file provided with the ``--isf`` argument and/or the default ISF for this pipeline.
      - no
-     - None (if the ``--isf`` file is provided, will use input ports from that. Any input ports unspecified by that will use default filenam values provided in the \<pipeline\_name\>_isf.txt file in SHE\_Pipeline/auxdir/SHE\_Pipeline)
+     - None (if the ``--isf`` file is provided, will use input ports from that. Any input ports unspecified by that will use default filenam values provided in the \<pipeline\_name\>_isf.txt file in ``SHE_Pipeline/auxdir/SHE_Pipeline``)
    * - ``--config_args <option_1> <value_1> [<option_2> <value_2> ...]``
      - A list of paired items, where the first item of each pair is the name of the configuration option, and the second is the value for it, e.g. ``--config_args SHE_CTE_ObjectIdSplit_batch_size 10 SHE_CTE_ObjectIdSplit_max_batches 2``. Using this argument will result in a new ISF file being created and used with these values overriding those in the file provided with the ``--config`` argument.
      - no
@@ -179,7 +179,7 @@ The program will take any data product filenames provided as input, search for t
 
 Once the program has found and sorted all input files, it will create an ISF to pass to the IAL ``pipeline_runner.py`` script with the new (symlinked) locations of all input files.
 
-**Source:** A default ISF for each pipeline may be copied from the folder SHE\_Pipeline/auxdir/SHE\_Pipeline of this project and modified as desired.
+**Source:** A default ISF for each pipeline may be copied from the folder ``SHE_Pipeline/auxdir/SHE_Pipeline`` of this project and modified as desired.
 
 .. _she_pipeline_run_config:
 

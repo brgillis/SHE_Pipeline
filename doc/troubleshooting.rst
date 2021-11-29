@@ -87,7 +87,7 @@ In order to submit a job, a "pilot" must be available which has enough available
 
 Check the resources of the jobs in the pipeline (particularly the job that is waiting to be submitted, if you can identify it), and compare these against the pilots available on the server you're submitting to. If running locally, these will be in the server config you're using. If submitting to a server, either check with the person who manages it and ask them, or see if this information is available on the webpage for monitoring the server. You can then adjust your resource requests to match what's available.
 
-If running locally, one related problem which might occur is if the size of the pilot requested is larger than the resources available on your system. You can find the listed resources in the server config you're using - either the file you provided, or else SHE\_Pipeline/auxdir/SHE\_Pipeline/debug\_server\_config.txt if you used the ``--use_debug_server_config`` option. You will need to modify this (or create a copy, modify the copy, and use that) so that the requested resources do not exceed those available on your system.
+If running locally, one related problem which might occur is if the size of the pilot requested is larger than the resources available on your system. You can find the listed resources in the server config you're using - either the file you provided, or else ``SHE_Pipeline/auxdir/SHE_Pipeline/debug_server_config.txt`` if you used the ``--use_debug_server_config`` option. You will need to modify this (or create a copy, modify the copy, and use that) so that the requested resources do not exceed those available on your system.
 
 
 General
