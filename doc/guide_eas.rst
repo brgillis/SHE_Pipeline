@@ -8,7 +8,7 @@ This guide outlines the fundamentals of how to find products in the EAS and how 
 Identifying Products in the EAS
 -------------------------------
 
-You will first need to know which products you wish to download. Another PF might provide convenient links to their uploaded products, e.g.: https://euclid.roe.ac.uk/projects/vis_pf/wiki/Data_production_-_SC4#SC4-R9, from which you can get the required information. Otherwise, use the web view service https://eas-dps-cus.euclid.astro.rug.nl/DbView to search for the products you want, and then:
+You will first need to know which products you wish to download. Another PF might provide convenient links to their uploaded products, e.g.: `https://euclid.roe.ac.uk/projects/vis_pf/wiki/Data_production_-_SC4#SC4-R9 <https://euclid.roe.ac.uk/projects/vis_pf/wiki/Data_production_-_SC4#SC4-R9>`__, from which you can get the required information. Otherwise, use the web view service https://eas-dps-cus.euclid.astro.rug.nl/DbView to search for the products you want, and then:
 
 * Log in by clicking on the link next to “user” at the top
 * Select the desired project (usually "test" for simulated data used for test runs such as Science Challenges)
