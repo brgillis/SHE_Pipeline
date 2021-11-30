@@ -3,13 +3,13 @@
 Running Pipelines
 =================
 
-This is a truncated guide to running pipelines, giving a general overview of how to run pipelines and why different approaches should be chosen. Full documentation of Euclid pipelines can be found on the `Euclid Redmine <https://euclid.roe.ac.uk/projects/codeen-users/wiki/DevCorner>`__, and documentation for the ``SHE_Pipeline_Run`` helper program can be found `here <programs.html#she-pipeline-run>`__.
+This is a truncated guide to running pipelines, giving a general overview of how to run pipelines and why different approaches should be chosen. Full documentation of Euclid pipelines can be found on the `Euclid Redmine <https://euclid.roe.ac.uk/projects/codeen-users/wiki/DevCorner>`__, and documentation for the ``SHE_Pipeline_Run`` helper program can be found `here <programs.html#she-pipeline-run>`__. If all you wish to know is "How do I perform a test run of one of the pipeline in this project?", then the simple recommendation is to use the `SHE_Pipeline_Run <programs.html#she-pipeline-run>`__ helper program - see its documentation for further instructions.
 
 At the most basic level, all Euclid pipelines are run by the IAL (Interface Abstraction Layer) pipeline runner. A run can be triggered in multiple ways:
 
 #. Calling the IAL pipeline runner's `pipeline_runner.py script <https://euclid.roe.ac.uk/projects/sgsial/wiki/Running_PipelineRunner_from_CVMFS_2_2#Starting-the-Pipeline-Runner-in-Console-Mode>`__ directly to trigger a run (either locally or on a remote pipeline server)
 #. Using the `SHE_Pipeline_Run <programs.html#she-pipeline-run>`__ helper program to trigger a run (either locally or on a remote pipeline server)
-#. Ingesting a Pipeline Processing Order (PPO) into the Euclid Archive Service (EAS) and setting its `ProcessingStatus` attribute to ``ALLOCATED``, which will result in the pipeline being run on a desired server.
+#. Ingesting a Pipeline Processing Order (PPO) into the Euclid Archive Service (EAS) and setting its ``ProcessingStatus`` attribute to ``ALLOCATED``, which will result in the pipeline being run on a desired server.
 #. Triggering the pipeline via the ``COORS`` gui, which will create a PPO, then ingest it as above.
 
 The most important consideration in which method to use to trigger a pipeline is if it's to be run locally or on a remote pipeline server. If it's to be run locally, then this requires the use of one of the former two methods to trigger it (using either the ``pipeline_runner.py`` script or the ``SHE_Pipeline_Run`` program). For deciding between these two methods, the ``SHE_Pipeline_Run`` helper program is recommended, as it greatly reduces the amount of setup needed for each pipeline run. However, this relies on some information about pipelines which is stored in this project, and so it can only be used for pipelines it recognizes. For other pipelines, the ``pipeline_runner.py`` script should be used.
