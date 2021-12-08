@@ -82,9 +82,9 @@ These scripts are used to `download data products of different types from the Eu
 * ``get_all_sim_products.sh``: ``DpdTrueUniverseOutput``
 * ``get_all_vis_products.sh``: ``DpdVisStackedFrame`` and ``DpdVisCalibratedFrame``
 
-Each script downloads products only from the DataSetRelease specified within the script (presently ``SC8_MAIN_V0``). To download products from a different DataSetRelease, it will be necessary to copy the desired script, modify it, and run the copy.
+Each script downloads products only from the ``DataSetRelease`` specified within the script (presently ``SC8_MAIN_V0``). To download products from a different ``DataSetRelease``, it will be necessary to copy the desired script, modify it, and run the copy.
 
-By default, each script downloads all available data for the DataSetRelease. This can be limited to a single Observation (in the case of SHE, SIM, and VIS data) or Tile (in the case of MER and PHZ data) through setting the environment variable ``OBS_ID`` or ``TILE_ID`` respectively when the script is executed.
+By default, each script downloads all available data for the ``DataSetRelease``. This can be limited to a single Observation (in the case of SHE, SIM, and VIS data) or Tile (in the case of MER and PHZ data) through setting the environment variable ``OBS_ID`` or ``TILE_ID`` respectively when the script is executed.
 
 **Running the scripts**
 
@@ -108,11 +108,11 @@ To run one of these scripts to download data to a desired directory, a command s
    cd <workdir>
    [OBS_ID=<obs_id> OR TILE_ID=<tile_id>] $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/<script>
 
-where ``<workdir>`` is the directory you wish to download data to, either ``<obs_id>`` is the ObservationId (in the case of SHE, SIM, and VIS data) you wish to get data for or ``<tile_id>`` is the TileIndex (in the case of MER and PHZ data) you wish to get data for, and ``<script>`` is the filename of the specific script you wish to run.
+where ``<workdir>`` is the directory you wish to download data to, either ``<obs_id>`` is the ``ObservationId`` (in the case of SHE, SIM, and VIS data) you wish to get data for or ``<tile_id>`` is the TileIndex (in the case of MER and PHZ data) you wish to get data for, and ``<script>`` is the filename of the specific script you wish to run.
 
 **Example**
 
-The following example will download SHE data for a single observation (with ObservationId 10351) to a desired directory:
+The following example will download SHE data for a single observation (with ``ObservationId`` 10351) to a desired directory:
 
 .. code:: bash
 

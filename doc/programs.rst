@@ -190,7 +190,7 @@ Once the program has found and sorted all input files, it will create an ISF to 
 #. The word "None" (without quotes), which signals that default values for all configuration parameters shall be used.
 #. The filename of an empty ``.json`` listfile, which similarly indicates the use of all default values.
 #. The filename of a ``.txt`` file in the workdir listing configuration parameters and values for executables in the current pipeline run. This shall have the one or more lines, each with the format ``SHE_MyProject_config_parameter = config_value``.
-#. The filename of a ``.xml`` data product of format DpdSheAnalysisConfig, pointing to a text file as described above. The format of this data product is described in detail in the Euclid DPDD at https://euclid.esac.esa.int/dm/dpdd/latest/shedpd/dpcards/she\_analysisconfig.html.
+#. The filename of a ``.xml`` data product of format ``DpdSheAnalysisConfig``, pointing to a text file as described above. The format of this data product is described in detail in the Euclid DPDD at https://euclid.esac.esa.int/dm/dpdd/latest/shedpd/dpcards/she\_analysisconfig.html.
 #. The filename of a ``.json`` listfile which contains the filename of a ``.xml`` data product as described above.
 
 Any of the latter three options may be used for equivalent functionality.
@@ -210,7 +210,7 @@ See the documentation for specific programs for details on what configuration op
 **Source:** One of the following:
 
 #. May be generated manually, creating the ``.txt`` file with your text editor of choice.
-#. `retrieved from the EAS <guide_eas.html>`__, querying for a desired product of type DpdSheAnalysisConfig.
+#. `retrieved from the EAS <guide_eas.html>`__, querying for a desired product of type ``DpdSheAnalysisConfig``.
 #. Specified in full through the use of the ``--config_args`` argument
 
 ``server_config``:
