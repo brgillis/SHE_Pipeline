@@ -120,5 +120,5 @@ The following example will download SHE data for a single observation (with Obse
    vim $HOME/.password.txt # Enter the password via text editor
    mkdir -p $HOME/test_workdir
    cd $HOME/test_workdir
-   OBS_ID=10351 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_she_data.sh
+   OBS_ID=10351 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_she_products.sh
    shred -u $HOME/.password.txt # Delete the file using ``shred`` to make sure the password is completely deleted
