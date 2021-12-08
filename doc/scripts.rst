@@ -88,7 +88,20 @@ By default, each script downloads all available data for the DataSetRelease. Thi
 
 **Running the scripts**
 
-To run one of these scripts to download data to a desired directory, a command such as the following can be used (assuming that this project is installed in the standard location):
+Before running these scripts, it is necessary to set up two files in your home directory, containing your ESAC username and password:
+
+* ``$HOME/.username.txt``
+* ``$HOME/.password.txt``
+
+The username file can be created with a command such as:
+
+.. code:: bash
+
+   echo <username> > $HOME/.username.txt
+
+For the password file, this is not recommended for security reasons, as doing this will result in your password being stored in plaintext in your bash history. Instead, it is recommended to create this file with your text editor of choice (e.g. ``vim``), and then delete it after use.
+
+To run one of these scripts to download data to a desired directory, a command such as the following can now be used (assuming that this project is installed in the standard location):
 
 .. code:: bash
 
@@ -103,6 +116,9 @@ The following example will download SHE data for a single observation (with Obse
 
 .. code:: bash
 
+   echo <username> > $HOME/.username.txt # Only necessary if not already present
+   vim $HOME/.password.txt # Enter the password via text editor
    mkdir -p $HOME/test_workdir
    cd $HOME/test_workdir
    OBS_ID=10351 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_she_data.sh
+   shred -u $HOME/.password.txt # Delete the file using ``shred`` to make sure the password is completely deleted
