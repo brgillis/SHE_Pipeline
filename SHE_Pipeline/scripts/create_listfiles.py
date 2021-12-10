@@ -209,7 +209,7 @@ all_filenames = os.listdir(ROOT_DIR)
 
 for filename in all_filenames:
 
-    if filename == MDB_FILENAME or filename[-4:] != ".xml":
+    if 'mdb' in filename.lower() or filename[-4:] != ".xml":
         continue
 
     try:
