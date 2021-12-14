@@ -43,6 +43,7 @@ from SHE_PPT.products.tu_star_cat import dpdStarsCatalogProduct
 from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
 from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
 from SHE_PPT.utility import get_nested_attr
+from ST_DM_MDBTools.Mdb import Mdb
 
 logger = getLogger(__name__)
 
@@ -60,7 +61,7 @@ ANALYSIS_VALIDATION_ISF_TAIL = "_isf.txt"
 RECONCILIATION_ISF_HEAD = "reconciliation_"
 RECONCILIATION_ISF_TAIL = "_isf.txt"
 
-MDB_FILENAME = "sample_mdb-SC8.xml"
+mdb_filename = "sample_mdb-SC8.xml"
 
 
 class ProdKeys(Enum):
@@ -115,8 +116,7 @@ ANALYSIS_ISF_PORTS = {ProdKeys.MFC  : "mer_final_catalog_listfile",
                       ProdKeys.TUO  : "tu_output_product",
                       }
 
-FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
-                                "phz_output_cat = None",
+FIXED_ANALYSIS_ISF_FILENAMES = ["phz_output_cat = None",
                                 "ksb_training_data = test_ksb_training.xml",
                                 "lensmc_training_data = test_lensmc_training.xml",
                                 "momentsml_training_data = None",
@@ -209,13 +209,20 @@ all_filenames = os.listdir(ROOT_DIR)
 
 for filename in all_filenames:
 
-    if 'mdb' in filename.lower() or filename[-4:] != ".xml":
+    if filename[-4:] != ".xml":
         continue
 
     try:
         product = read_xml_product(filename, workdir = ROOT_DIR)
     except Exception:
-        raise ValueError("Can't interpret file " + filename)
+
+        # Check if it's in MDB format
+        try:
+            Mdb(os.path.join(ROOT_DIR, filename))
+            mdb_filename = filename
+            logger.info("{filename} seems to be an MDB file.")
+        except Exception:
+            raise ValueError("Can't interpret file " + filename)
 
     identified_product = False
 
@@ -438,6 +445,8 @@ for obs_id in observation_id_set:
                 # Write the fixed product filenames to the ISF
                 for l in FIXED_ANALYSIS_ISF_FILENAMES:
                     fo.write(l + "\n")
+                # Write the MDB port
+                fo.write(f"mdb = {mdb_filename}\n", )
 
     logger.info(f"Finished writing Analysis listfiles and ISF for observation ID {obs_id}.")
 
