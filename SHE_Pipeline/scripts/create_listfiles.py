@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-07-02"
+__updated__ = "2021-12-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
