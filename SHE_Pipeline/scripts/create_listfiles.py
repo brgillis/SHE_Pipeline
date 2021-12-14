@@ -266,7 +266,7 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
             # List of IDs, so iterate over it and add to each list
             for obs_id in obs_id_or_list:
                 if obs_id in product_type_data.obs_id_dict:
-                    if not fileprod in product_type_data.obs_id_dict[obs_id]:
+                    if fileprod not in product_type_data.obs_id_dict[obs_id]:
                         product_type_data.obs_id_dict[obs_id].append(fileprod)
                 else:
                     product_type_data.obs_id_dict[obs_id] = [fileprod]
@@ -274,7 +274,7 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
         else:
             # Just one ID, so add it directly
             if obs_id_or_list in product_type_data.obs_id_dict:
-                if not fileprod in product_type_data.obs_id_dict[obs_id_or_list]:
+                if fileprod not in product_type_data.obs_id_dict[obs_id_or_list]:
                     product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
             else:
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
@@ -306,7 +306,7 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                     tile_ids.append(final_catalog_fileprod.product.Data.TileIndex)
         for tile_id in tile_ids:
             if tile_id in product_type_data.tile_id_dict:
-                if not fileprod in product_type_data.tile_id_dict[tile_id]:
+                if fileprod not in product_type_data.tile_id_dict[tile_id]:
                     product_type_data.tile_id_dict[tile_id].append(fileprod)
             else:
                 product_type_data.tile_id_dict[tile_id] = [fileprod]
@@ -367,7 +367,7 @@ for obs_id in observation_id_set:
         filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
         analysis_filename_dict[prod_key] = filename
 
-        if not obs_id in product_type_data.obs_id_dict:
+        if obs_id not in product_type_data.obs_id_dict:
             if prod_key != ProdKeys.SESEG:
                 # This product isn't present, so skip it and mark as invalid for the analysis pipeline
                 analysis_valid[obs_id] = False
@@ -483,7 +483,7 @@ for tile_id in tile_id_set:
 
     tile_valid = True
 
-    if not tile_id in product_type_data_dict[ProdKeys.MFC].tile_id_dict:
+    if tile_id not in product_type_data_dict[ProdKeys.MFC].tile_id_dict:
         continue
 
     reconciliation_filename_dict[ProdKeys.MFC] = product_type_data_dict[ProdKeys.MFC].tile_id_dict[tile_id][0].filename
@@ -495,7 +495,7 @@ for tile_id in tile_id_set:
 
         product_type_data = product_type_data_dict[prod_key]
 
-        if not tile_id in product_type_data.tile_id_dict:
+        if tile_id not in product_type_data.tile_id_dict:
             tile_valid = False
             logger.error(f"Product type {prod_key.value} not present for tile ID {tile_id}.")
             break
