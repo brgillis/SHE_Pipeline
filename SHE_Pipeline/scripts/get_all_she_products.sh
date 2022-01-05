@@ -1,7 +1,7 @@
 #/bin/bash
 
 DATASETRELEASE=SC8_MAIN_V0
-OBS_ID=10351 # When called at command-line, preface with OBS_ID=... to just query for a specific observation
+# OBS_ID=10351 # When called at command-line, preface with OBS_ID=... to just query for a specific observation
 
 QUERY="Header.ManualValidationStatus.ManualValidationStatus!=\"INVALID\"&&Header.DataSetRelease=$DATASETRELEASE"
 
