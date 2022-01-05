@@ -28,7 +28,7 @@ DATAPROD_RETRIEVAL_SCRIPT=$BASEDIR/$DATAPROD_RETRIEVAL_SCRIPT
 # Iterate over observation IDs
 for PICKED_OBS_ID in $OBS_ID; do
 
-  if [ $OBS_ID != all ]; then
+  if [ $PICKED_OBS_ID != all ]; then
     QUERY_FOR_STACK=$QUERY"&&Data.ObservationId==$PICKED_OBS_ID"
     QUERY_FOR_CALIB=$QUERY"&&Data.ObservationSequence.ObservationId==$PICKED_OBS_ID"
   else
