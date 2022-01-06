@@ -112,7 +112,7 @@ where ``<workdir>`` is the directory you wish to download data to, either ``<obs
 
 **Example**
 
-The following example will download SHE data for a single observation (with ``ObservationId`` 10351) to a desired directory:
+The following example will download SHE data for a single observation (with ``ObservationId`` 25463) to a desired directory:
 
 .. code:: bash
 
@@ -120,10 +120,10 @@ The following example will download SHE data for a single observation (with ``Ob
    vim $HOME/.password.txt # Enter the password via text editor
    mkdir -p $HOME/test_workdir
    cd $HOME/test_workdir
-   OBS_ID=10351 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_she_products.sh
+   OBS_ID=25463 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_she_products.sh
    shred -u $HOME/.password.txt # Delete the file using ``shred`` to make sure the password is completely deleted
 
-Similarly, the following code will download MER data for a single tile (with ``TileIndex`` 90346) to a desired directory:
+Similarly, the following code will download MER data for a single tile (with ``TileIndex`` 79170) to a desired directory:
 
 .. code:: bash
 
@@ -131,5 +131,5 @@ Similarly, the following code will download MER data for a single tile (with ``T
    vim $HOME/.password.txt # Enter the password via text editor
    mkdir -p $HOME/test_workdir
    cd $HOME/test_workdir
-   TILE_ID=90346 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_mer_products.sh
+   TILE_ID=79170 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_mer_products.sh
    shred -u $HOME/.password.txt # Delete the file using ``shred`` to make sure the password is completely deleted
