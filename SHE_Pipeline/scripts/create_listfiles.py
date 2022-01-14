@@ -10,7 +10,7 @@
     Must be run with E-Run.
 """
 
-__updated__ = "2021-07-02"
+__updated__ = "2022-01-14"
 
 # Copyright (C) 2012-2020 Euclid Science Ground Segment
 #
@@ -43,6 +43,7 @@ from SHE_PPT.products.tu_star_cat import dpdStarsCatalogProduct
 from SHE_PPT.products.vis_calibrated_frame import dpdVisCalibratedFrame
 from SHE_PPT.products.vis_stacked_frame import dpdVisStackedFrame
 from SHE_PPT.utility import get_nested_attr
+from ST_DM_MDBTools.Mdb import Mdb
 
 logger = getLogger(__name__)
 
@@ -60,7 +61,7 @@ ANALYSIS_VALIDATION_ISF_TAIL = "_isf.txt"
 RECONCILIATION_ISF_HEAD = "reconciliation_"
 RECONCILIATION_ISF_TAIL = "_isf.txt"
 
-MDB_FILENAME = "sample_mdb-SC8.xml"
+mdb_filename = "sample_mdb-SC8.xml"
 
 
 class ProdKeys(Enum):
@@ -115,8 +116,7 @@ ANALYSIS_ISF_PORTS = {ProdKeys.MFC  : "mer_final_catalog_listfile",
                       ProdKeys.TUO  : "tu_output_product",
                       }
 
-FIXED_ANALYSIS_ISF_FILENAMES = [f"mdb = {MDB_FILENAME}",
-                                "phz_output_cat = None",
+FIXED_ANALYSIS_ISF_FILENAMES = ["phz_output_cat = None",
                                 "ksb_training_data = test_ksb_training.xml",
                                 "lensmc_training_data = test_lensmc_training.xml",
                                 "momentsml_training_data = None",
@@ -209,13 +209,22 @@ all_filenames = os.listdir(ROOT_DIR)
 
 for filename in all_filenames:
 
-    if filename == MDB_FILENAME or filename[-4:] != ".xml":
+    if filename[-4:] != ".xml":
         continue
 
     try:
         product = read_xml_product(filename, workdir = ROOT_DIR)
     except Exception:
-        raise ValueError("Can't interpret file " + filename)
+
+        logger.info("Can't read XML product, trying if it's in MDB format...")
+
+        # Check if it's in MDB format
+        try:
+            Mdb(os.path.join(ROOT_DIR, filename))
+            mdb_filename = filename
+            logger.info(f"{filename} seems to be an MDB file.")
+        except Exception:
+            raise ValueError("Can't interpret file " + filename)
 
     identified_product = False
 
@@ -259,7 +268,7 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
             # List of IDs, so iterate over it and add to each list
             for obs_id in obs_id_or_list:
                 if obs_id in product_type_data.obs_id_dict:
-                    if not fileprod in product_type_data.obs_id_dict[obs_id]:
+                    if fileprod not in product_type_data.obs_id_dict[obs_id]:
                         product_type_data.obs_id_dict[obs_id].append(fileprod)
                 else:
                     product_type_data.obs_id_dict[obs_id] = [fileprod]
@@ -267,7 +276,7 @@ for prod_key, attr, is_list in ((ProdKeys.SESEG, "Data.ObservationId", False),
         else:
             # Just one ID, so add it directly
             if obs_id_or_list in product_type_data.obs_id_dict:
-                if not fileprod in product_type_data.obs_id_dict[obs_id_or_list]:
+                if fileprod not in product_type_data.obs_id_dict[obs_id_or_list]:
                     product_type_data.obs_id_dict[obs_id_or_list].append(fileprod)
             else:
                 product_type_data.obs_id_dict[obs_id_or_list] = [fileprod]
@@ -299,7 +308,7 @@ for prod_key, attr, is_tile in ((ProdKeys.MFC, "Data.TileIndex", True),
                     tile_ids.append(final_catalog_fileprod.product.Data.TileIndex)
         for tile_id in tile_ids:
             if tile_id in product_type_data.tile_id_dict:
-                if not fileprod in product_type_data.tile_id_dict[tile_id]:
+                if fileprod not in product_type_data.tile_id_dict[tile_id]:
                     product_type_data.tile_id_dict[tile_id].append(fileprod)
             else:
                 product_type_data.tile_id_dict[tile_id] = [fileprod]
@@ -360,7 +369,7 @@ for obs_id in observation_id_set:
         filename = product_type_data.filename_head + str(obs_id) + product_type_data.filename_tail
         analysis_filename_dict[prod_key] = filename
 
-        if not obs_id in product_type_data.obs_id_dict:
+        if obs_id not in product_type_data.obs_id_dict:
             if prod_key != ProdKeys.SESEG:
                 # This product isn't present, so skip it and mark as invalid for the analysis pipeline
                 analysis_valid[obs_id] = False
@@ -438,6 +447,8 @@ for obs_id in observation_id_set:
                 # Write the fixed product filenames to the ISF
                 for l in FIXED_ANALYSIS_ISF_FILENAMES:
                     fo.write(l + "\n")
+                # Write the MDB port
+                fo.write(f"mdb = {mdb_filename}\n", )
 
     logger.info(f"Finished writing Analysis listfiles and ISF for observation ID {obs_id}.")
 
@@ -474,7 +485,7 @@ for tile_id in tile_id_set:
 
     tile_valid = True
 
-    if not tile_id in product_type_data_dict[ProdKeys.MFC].tile_id_dict:
+    if tile_id not in product_type_data_dict[ProdKeys.MFC].tile_id_dict:
         continue
 
     reconciliation_filename_dict[ProdKeys.MFC] = product_type_data_dict[ProdKeys.MFC].tile_id_dict[tile_id][0].filename
@@ -486,7 +497,7 @@ for tile_id in tile_id_set:
 
         product_type_data = product_type_data_dict[prod_key]
 
-        if not tile_id in product_type_data.tile_id_dict:
+        if tile_id not in product_type_data.tile_id_dict:
             tile_valid = False
             logger.error(f"Product type {prod_key.value} not present for tile ID {tile_id}.")
             break
