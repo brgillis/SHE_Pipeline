@@ -13,6 +13,10 @@ if [ -z ${GET_SEG+x} ]; then
   GET_SEG=1
 fi
 
+if [ -z ${GET_CAT+x} ]; then
+  GET_CAT=1
+fi
+
 DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
 
 # Check some common locations
@@ -41,12 +45,13 @@ for PICKED_TILE_ID in $TILE_ID; do
   echo "Query: $QUERY_FOR_TILE"
 
   # Get the DpdMerFinalCatalog product and fits files
-  CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerFinalCatalog --query "'$QUERY_FOR_TILE'"'
-  echo "Command: $CMD"
-  eval $CMD
+  if [ $GET_CAT == 1 ]; then
+    CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerFinalCatalog --query "'$QUERY_FOR_TILE'"'
+    echo "Command: $CMD"
+    eval $CMD
+  fi
 
   # Get the DpdMerSegmentationMap product and fits files
-  echo $GET_SEG
   if [ $GET_SEG == 1 ]; then
     CMD='python "'$DATAPROD_RETRIEVAL_SCRIPT'" --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdMerSegmentationMap --query "'$QUERY_FOR_TILE'"'
     echo "Command: $CMD"
