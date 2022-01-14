@@ -216,7 +216,7 @@ for filename in all_filenames:
         product = read_xml_product(filename, workdir = ROOT_DIR)
     except Exception:
 
-        logger.warning("Can't read XML product, trying if it's in MDB format...")
+        logger.info("Can't read XML product, trying if it's in MDB format...")
 
         # Check if it's in MDB format
         try:
