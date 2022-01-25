@@ -44,7 +44,7 @@ default_workdir = "/home/" + os.environ['USER'] + "/Work/workspace"
 default_logdir = "logs"
 default_cluster_workdir = "/workspace/lodeen/workdir"
 
-pipeline_runner_version = "2.2.7"
+pipeline_runner_version = "2.2"
 
 default_server_config = f"/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/CONFIG/GENERIC/" \
                         f"{pipeline_runner_version}/ppo/lodeen-ial.properties"
