@@ -223,6 +223,7 @@ for filename in all_filenames:
             Mdb(os.path.join(ROOT_DIR, filename))
             mdb_filename = filename
             logger.info(f"{filename} seems to be an MDB file.")
+            continue
         except Exception:
             raise ValueError("Can't interpret file " + filename)
 
