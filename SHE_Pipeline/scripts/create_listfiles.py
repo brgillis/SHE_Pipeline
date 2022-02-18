@@ -374,7 +374,7 @@ for obs_id in observation_id_set:
             if prod_key != ProdKeys.SESEG:
                 # This product isn't present, so skip it and mark as invalid for the analysis pipeline
                 analysis_valid[obs_id] = False
-            logger.error(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
+            logger.warning(f"Product type {prod_key.value} not present for observation ID {obs_id}.")
             continue
 
         obs_fileprod_list = product_type_data.obs_id_dict[obs_id]
@@ -394,14 +394,15 @@ for obs_id in observation_id_set:
     if obs_id in product_type_data_dict[ProdKeys.SSSEG].obs_id_dict:
         analysis_filename_dict[ProdKeys.SSSEG] = product_type_data_dict[ProdKeys.SSSEG].obs_id_dict[obs_id][0].filename
     else:
-        logger.error("Stack reprojected segmentation map product not available; default filename will be used in ISFs.")
+        logger.warning(
+            "Stack reprojected segmentation map product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SSSEG] = (product_type_data_dict[ProdKeys.SSSEG].filename_head +
                                                   str(obs_id) + product_type_data_dict[ProdKeys.SSSEG].filename_tail)
 
     if obs_id in product_type_data_dict[ProdKeys.SVM].obs_id_dict:
         analysis_filename_dict[ProdKeys.SVM] = product_type_data_dict[ProdKeys.SVM].obs_id_dict[obs_id][0].filename
     else:
-        logger.error("Validated Shear Measurements product not available; default filename will be used in ISFs.")
+        logger.warning("Validated Shear Measurements product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SVM] = (product_type_data_dict[ProdKeys.SVM].filename_head["Analysis"] +
                                                 str(obs_id) + product_type_data_dict[ProdKeys.SVM].filename_tail[
                                                     "Analysis"])
@@ -409,7 +410,7 @@ for obs_id in observation_id_set:
     if obs_id in product_type_data_dict[ProdKeys.SLMC].obs_id_dict:
         analysis_filename_dict[ProdKeys.SLMC] = product_type_data_dict[ProdKeys.SLMC].obs_id_dict[obs_id][0].filename
     else:
-        logger.error("LensMC Chains product not available; default filename will be used in ISFs.")
+        logger.warning("LensMC Chains product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.SLMC] = (product_type_data_dict[ProdKeys.SLMC].filename_head["Analysis"] +
                                                  str(obs_id) + product_type_data_dict[ProdKeys.SLMC].filename_tail[
                                                      "Analysis"])
@@ -417,7 +418,7 @@ for obs_id in observation_id_set:
     if obs_id in product_type_data_dict[ProdKeys.TUO].obs_id_dict:
         analysis_filename_dict[ProdKeys.TUO] = product_type_data_dict[ProdKeys.TUO].obs_id_dict[obs_id][0].filename
     else:
-        logger.error("True Universe Output Product not available; default filename will be used in ISFs.")
+        logger.warning("True Universe Output Product not available; default filename will be used in ISFs.")
         analysis_filename_dict[ProdKeys.TUO] = (product_type_data_dict[ProdKeys.TUO].filename_head +
                                                 str(obs_id) + product_type_data_dict[ProdKeys.TUO].filename_tail)
 
@@ -500,7 +501,7 @@ for tile_id in tile_id_set:
 
         if tile_id not in product_type_data.tile_id_dict:
             tile_valid = False
-            logger.error(f"Product type {prod_key.value} not present for tile ID {tile_id}.")
+            logger.warning(f"Product type {prod_key.value} not present for tile ID {tile_id}.")
             break
 
         filename = product_type_data.filename_head + str(tile_id) + product_type_data.filename_tail
