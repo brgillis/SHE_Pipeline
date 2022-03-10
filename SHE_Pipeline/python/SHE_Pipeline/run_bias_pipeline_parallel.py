@@ -292,7 +292,7 @@ def check_args(args):
 
     logger.debug('# Entering SHE_Pipeline_RunBiasParallel check_args()')
 
-    pipeline = 'bias_measurement'
+    pipeline = 'calibration'
 
     if pipeline not in pipeline_info_dict:
         err_string = ("Unknown pipeline specified to be run: " + pipeline + ". Allowed pipelines are: ")
