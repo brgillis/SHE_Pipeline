@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+"""
+Created by: Bryan Gillis (b.gillis@roe.ac.uk)
+
+This is a script to search through MER products (either DpdMerFinalCatalog or DpdMerSegmentationMap) in the current directory to get a list of TileIndex values for tiles which overlap one of the ObservationIDs in the provided list. This is very rough and inflexible so far, and requires that it's run in the directory where the products are present and no .xml files other than MER products exist in the directory. Anyone who wants to use this more flexibly is welcome to contribute improvements.
+"""
+
+from SHE_PPT import file_io
+import numpy as np
+import os
+
+obs_ids = {10351, 10352, 10353, 10354, 10355, 10356, 10357, 10358, 10359, 10389, 10393, 10394, 10395, 10396, 10397, 10401, 10402, 10403,
+10404, 10405, 10406, 10409, 10410, 10411, 10413, 10417, 10418, 18347, 18628, 18649, 18650, 18653, 18675, 18676, 18691, 18695,
+18704, 18705, 18708, 18709, 18710, 25400, 25401, 25402, 25408, 25410, 25411, 25412, 25413, 25418, 25419, 25420, 25421, 25422,
+25423, 25630, 25631, 25632, 25633, 25640, 25641, 25642, 25643, 25644, 25645, 25655, 25656, 25657, 25658, 25659, 25660, 25664,
+25665, 25666, 25667, 25668, 25669, 25681, 25682, 25683, 25684, 25685, 25686, 25692, 25693, 25694, 25695, 25696, 25697, 25707,
+25708, 25709, 25710, 25711, 25712, 31953, 34923, 34924, 34925, 34926, 34927, 34928, 34929, 34930, 34931, 34932, 34933, 34934,
+34959, 40441, 40458, 40470, 40471, 40472, 40480, 40481, 40482, 40495, 40496}
+
+l_filenames = os.listdir()
+s_overlapping_tile_ids = set()
+
+for filename in l_filenames:
+  if filename[-4:] != ".xml":
+    continue
+  p = file_io.read_xml_product(filename)
+  overlap = False
+  for test_obs_id in p.Data.ObservationIdList:
+    if test_obs_id in obs_ids:
+      overlap = True
+  if overlap:
+    s_overlapping_tile_ids.add(p.Data.TileIndex)
+
+print(f"Overlapping tile IDs: {sorted(s_overlapping_tile_ids)}")
