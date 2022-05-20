@@ -20,4 +20,7 @@ __updated__ = "2021-07-14"
 # You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-__version__ = "8.3"
+# Get the version from the compiled file created by Elements
+from SHE_IAL_PIPELINES_VERSION import SHE_IAL_PIPELINES_VERSION_STRING
+
+__version__ = SHE_IAL_PIPELINES_VERSION_STRING
