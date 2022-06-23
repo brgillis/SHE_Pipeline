@@ -20,9 +20,9 @@ External Euclid Dependencies
 
 -  `ST_PipelineChecker 1.2.3 <https://gitlab.euclid-sgs.uk/sy-tools/st_pipelinechecker>`__
 -  `EL\_Utils 1.2.2 <https://gitlab.euclid-sgs.uk/EuclidLibs/EL_Utils>`__
--  `ST\_DataModelTools 9.0.1 <https://gitlab.euclid-sgs.uk/ST-DM/ST_DataModelTools>`__
--  `ST\_DataModelBindings 9.0.1 <https://gitlab.euclid-sgs.uk/ST-DM/ST_DataModelBindings>`__
--  `ST\_DataModel 9.0.1 <https://gitlab.euclid-sgs.uk/ST-DM/ST_DataModel>`__
+-  `ST\_DataModelTools 9.0.2 <https://gitlab.euclid-sgs.uk/ST-DM/ST_DataModelTools>`__
+-  `ST\_DataModelBindings 9.0.2<https://gitlab.euclid-sgs.uk/ST-DM/ST_DataModelBindings>`__
+-  `ST\_DataModel 9.0.2 <https://gitlab.euclid-sgs.uk/ST-DM/ST_DataModel>`__
 -  `Elements 6.0.1 <https://gitlab.euclid-sgs.uk/ST-TOOLS/Elements>`__
 
 Configuration
