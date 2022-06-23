@@ -11,7 +11,7 @@ Software identification
 -  Processing Element Name: PF-SHE
 -  Project Name: SHE\_IAL\_Pipelines
 -  Profile: develop
--  Version: 8.2 (10/11/2021)
+-  Version: 9.0 (23/06/2022)
 
 Contributors
 ------------

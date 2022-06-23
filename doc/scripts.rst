@@ -9,7 +9,7 @@ Main Scripts Available
 ----------------------
 
 -  `clone_workdir.sh <clone_workdir.sh_>`_ : Symbolically links the contents of a template work directory and its subdirectories to a target location.
--  `create_listfiles.py <create_listfiles.py_>`_ : Generates listfiles and ISFs for input to the SHE Analysis pipeline for data products found in a given directory.
+-  `create_listfiles <create_listfiles_>`_ : Generates listfiles and ISFs for input to the SHE Analysis pipeline for data products found in a given directory.
 -  `get_all_*_products.sh <get_all_*_products.sh_>`_ : Downloads a selection of data products from the EAS.
 
 Using the scripts
@@ -51,7 +51,7 @@ The following example will clone a template work directory for the SHE Shear Cal
 
 This requires that this project is installed in the standard location at ``$HOME/Work/Projects/SHE_IAL_Pipelines`` and that the SDC-UK WebDAV server is mounted and readable at the location ``/mnt/webdav/`` (see `instructions here <guide_webdav.html>`__). Modify these as appropriate for other locations.
 
-``create_listfiles.py``
+``create_listfiles``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This script searches through the current directory for all ``.xml`` data products, identifies them by type, sorts them according to the Observation, Pointing, and/or Tile they correspond to, and generates appropriate listfiles and ISFs to be used as input for the SHE Analysis pipeline.
@@ -63,7 +63,7 @@ To run the create_listfiles.py script on the contents of a directory, the follow
 .. code:: bash
 
    cd <workdir>
-   E-Run SHE_IAL_Pipelines 8.2 python $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/create_listfiles.py
+   E-Run SHE_IAL_Pipelines 8.2 python $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/create_listfiles
 
 where ``<workdir>>`` is the directory you wish to run this script on. Note that this script must be run via E-Run within an EDEN 2.1 environment.
 
