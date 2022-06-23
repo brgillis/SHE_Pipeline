@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import ssl
 import socket
 import sys
