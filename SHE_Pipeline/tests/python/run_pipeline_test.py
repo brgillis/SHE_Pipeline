@@ -97,6 +97,7 @@ class TestRunPipeline():
         self.workdir = os.path.split(qualified_data_images_filename)[0]
         self.logdir = os.path.join(self.workdir, "logs")
 
+    @pytest.mark.skip(reason="DataModel 9 compatible test data is not yet available")
     def test_dry_run_pipelines(self):
         """ Test that all versions are set up correctly
         """
