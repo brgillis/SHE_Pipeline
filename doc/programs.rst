@@ -25,7 +25,7 @@ To run the ``SHE_Pipeline_Run`` program with Elements use the following command:
 
 .. code:: bash
 
-    E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline <pipeline> --workdir <workdir> [--cluster] [--server_url <serverurl>] [--server_config <server_config>] [--isf <isf>] [--isf_args <isf_args>] [--config <config>] [--config_args <config_args>] [--plan_args <plan_args>] [--log-file <filename>] [--log-level <value>]
+    E-Run SHE_IAL_Pipelines 9.0 SHE_Pipeline_Run --pipeline <pipeline> --workdir <workdir> [--cluster] [--server_url <serverurl>] [--server_config <server_config>] [--isf <isf>] [--isf_args <isf_args>] [--config <config>] [--config_args <config_args>] [--plan_args <plan_args>] [--log-file <filename>] [--log-level <value>]
 
 with the following options:
 
@@ -143,8 +143,8 @@ N/A - The names of output files from the pipeline run are determined from the na
 
    workdir=/home/user/workspace/workdir
    logdir=logs
-   pkgRepository=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/opt/euclid/SHE_IAL_Pipelines/8.2/InstallArea/x86_64-conda_cos6-gcc73-o2g/auxdir/SHE_Shear_Analysis
-   pipelineDir=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/opt/euclid/SHE_IAL_Pipelines/8.2/InstallArea/x86_64-conda_cos6-gcc73-o2g/auxdir/SHE_Shear_Analysis
+   pkgRepository=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/opt/euclid/SHE_IAL_Pipelines/9.0/InstallArea/x86_64-conda_cos6-gcc73-o2g/auxdir/SHE_Shear_Analysis
+   pipelineDir=/cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-2.1/opt/euclid/SHE_IAL_Pipelines/9.0/InstallArea/x86_64-conda_cos6-gcc73-o2g/auxdir/SHE_Shear_Analysis
    edenVersion=Eden-2.1-dev
 
    ksb_training_data=test_ksb_training.xml
@@ -169,7 +169,7 @@ A call to SHE_Pipeline_run will thus look like:
 
 .. code:: bash
 
-   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run  --pipeline <pipeline> --workdir <workdir> [--isf <isf>] [--isf_args <isf_args>]
+   E-Run SHE_IAL_Pipelines 9.0 SHE_Pipeline_Run  --pipeline <pipeline> --workdir <workdir> [--isf <isf>] [--isf_args <isf_args>]
 
 Here, ``<isf>`` is the filename of the non-default ISF to use for input ports, and can be either absolute or relative to the work directory. ``<isf_args>`` is a list of paired items, where the first item of each pair is the name of the input port, and the second is the filename for it, e.g. ``--isf_args ksb_training_data my_ksb_training_data.xml lensmc_training_data my_lensmc_training_data.xml``.
 
@@ -199,7 +199,7 @@ To aid this without requiring the user to write a file, this program has the fun
 
 .. code:: bash
 
-   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline <pipeline> --workdir <workdir> --config <config> --config_args <config_args>
+   E-Run SHE_IAL_Pipelines 9.0 SHE_Pipeline_Run --pipeline <pipeline> --workdir <workdir> --config <config> --config_args <config_args>
 
 When ``--config_args`` is used, the helper script will override any arguments also present in the file provided to the ``--config`` argument, check all arguments for validity,  write a pipeline configuration file, and provide this file as input to the pipeline's ``pipeline_config`` input port. Each task within a SHE pipeline which makes use of any arguments passed this way is set up to read in this file and parse it for relevant arguments.
 
@@ -254,7 +254,7 @@ An example pipeline run can then be triggered through calling:
 
 .. code:: bash
 
-   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline calibration --workdir $HOME/test_workdir --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
+   E-Run SHE_IAL_Pipelines 9.0 SHE_Pipeline_Run --pipeline calibration --workdir $HOME/test_workdir --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
 
 This call uses default values for all input ports, which match the filenames provided in the template workdir, and default values for all pipeline configuration options. It overrides the default simulation plan with the arguments provided in the command-line, which tells the pipeline to run two batches of simulations, each simulating two galaxies. See documentation for the SHE Shear Calibration pipeline for further details on how the simulation plan and arguments for it functions.
 
@@ -262,7 +262,7 @@ This same pipeline run can also be triggered through the following command, whic
 
 .. code:: bash
 
-   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_Run --pipeline calibration --workdir $HOME/test_workdir --isf_args config_template AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf ksb_training_data test_ksb_training.xml lensmc_training_data test_lensmc_training.xml momentsml_training_data None regauss_training_data=test_regauss_training.xml mdb sample_mdb-SC8.xml --config_args SHE_CTE_CleanupBiasMeasurement_cleanup True SHE_CTE_EstimateShear_methods "KSB LensMC MomentsML REGAUSS" SHE_CTE_MeasureBias_webdav_archive False SHE_CTE_MeasureStatistics_webdav_archive False --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
+   E-Run SHE_IAL_Pipelines 9.0 SHE_Pipeline_Run --pipeline calibration --workdir $HOME/test_workdir --isf_args config_template AUX/SHE_GST_PrepareConfigs/SensitivityEp0Pp0Sp0Template.conf ksb_training_data test_ksb_training.xml lensmc_training_data test_lensmc_training.xml momentsml_training_data None regauss_training_data=test_regauss_training.xml mdb sample_mdb-SC8.xml --config_args SHE_CTE_CleanupBiasMeasurement_cleanup True SHE_CTE_EstimateShear_methods "KSB LensMC MomentsML REGAUSS" SHE_CTE_MeasureBias_webdav_archive False SHE_CTE_MeasureStatistics_webdav_archive False --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
 
 ``SHE_Pipeline_RunBiasParallel``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -295,4 +295,4 @@ See the `section for examples <she_pipeline_run_example_>`_ of the ``SHE_Pipelin
 
 .. code:: bash
 
-   E-Run SHE_IAL_Pipelines 8.2 SHE_Pipeline_RunBiasParallel --workdir $HOME/test_workdir --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
+   E-Run SHE_IAL_Pipelines 9.0 SHE_Pipeline_RunBiasParallel --workdir $HOME/test_workdir --plan_args MSEED_MIN 1 MSEED_MAX 2 NSEED_MIN 1 NSEED_MAX 2 NUM_GALAXIES 2
