@@ -1,5 +1,34 @@
 Changelog for SHE_Pipeline
 
+Changes in v9.1
+========================
+
+API Changes
+-----------
+
+Dependency Changes
+------------------
+- SHE_CTE 9.1
+- SHE_Validation 9.1
+- SHE_MER 9.1
+- SHE_PSFToolkit 9.2
+- SHE_GST 9.1
+
+Deprecated Features
+-------------------
+
+Bug Fixes
+---------
+
+New Features
+------------
+
+New config features
+-------------------
+
+Miscellaneous
+-------------
+
 Changes in v9.0
 ========================
 
