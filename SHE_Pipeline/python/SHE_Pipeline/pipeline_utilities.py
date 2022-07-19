@@ -28,13 +28,12 @@ import time
 from EL_PythonUtils.utilities import get_arguments_string
 from SHE_PPT.logging import getLogger
 
-
 # Creates directory structure
 dir_struct_tuple = namedtuple("dir_struct_tuple", "workdir logdir app_workdir app_logdir")
 
 
 def get_relpath(file_path, workdir):
-    """Removes workdir from path if necessary 
+    """Removes workdir from path if necessary
     @todo: should be in file_io?
 
 
@@ -56,7 +55,7 @@ def create_thread_dir_struct(args, workdir_root_list, number_threads, number_bat
     """ Used in check_args to create thread directories based on number
     threads
 
-    Takes basic workdir base(s) and creates directory structure based 
+    Takes basic workdir base(s) and creates directory structure based
     on threads from there, with data, cache and logdirs.
 
     @return: List of directories
@@ -251,7 +250,7 @@ def external_process_run(command, std_in='', raise_on_error=True, parse_std_out=
     @rtype:  list(str) or file or int
 
 
-    @obsolete? Not currently used.... 
+    @obsolete? Not currently used....
     """
     # @FIXME: What is reported as std_err is often std_out.
     # Why??
@@ -307,23 +306,23 @@ def external_process_run(command, std_in='', raise_on_error=True, parse_std_out=
             #
             std_err_init = [line.strip() for line in proc.stderr.readlines()]
             std_err = [line for line in std_err_init
-                      if 'ERROR' in str(line.upper()) or 'EXCEPTION' in str(line.upper())]
+                       if 'ERROR' in str(line.upper()) or 'EXCEPTION' in str(line.upper())]
             std_out += [line for line in std_err_init
-                       if not ('ERROR' in str(line.upper()) or
-                               'EXCEPTION' in str(line.upper()))]
+                        if not ('ERROR' in str(line.upper()) or
+                                'EXCEPTION' in str(line.upper()))]
         if not parse_std_out and not raise_on_error:
             return proc.wait()
-#    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
-#        with utils.noInterrupt():
-#            Logger.addMessage("KeyboardInterrupt - %s interrupted, "
-#              "waiting for process to end cleanly..." %
-#              os.path.basename(command.split()[0]))
-#            if parse_std_out:
-#                print(''.join(proc.stdout))
-#            if parse_std_err:
-#                print(''.join(proc.stderr))
-#            proc.wait()
-#        raise
+    #    except KeyboardInterrupt:#        # Block future keyboard interrupts until process has finished cleanly
+    #        with utils.noInterrupt():
+    #            Logger.addMessage("KeyboardInterrupt - %s interrupted, "
+    #              "waiting for process to end cleanly..." %
+    #              os.path.basename(command.split()[0]))
+    #            if parse_std_out:
+    #                print(''.join(proc.stdout))
+    #            if parse_std_err:
+    #                print(''.join(proc.stderr))
+    #            proc.wait()
+    #        raise
     except IOError as error:
         # Sometimes a KeyboardInterrupt is translated into an IOError - I think
         # this may just be due to a bug in PyFITS messing with signals, as only
@@ -387,7 +386,8 @@ def setup_function_args(argv, command_line_int_ref, exec_name):
 
     estshr_args = estshr_args_parser.parse_args(argv)
     exec_cmd = get_arguments_string(estshr_args, cmd=exec_name,
-                                    store_true=["profile", "debug", "dry_run", "webdav_archive", "store_measurements_only", "use_bias_only"])
+                                    store_true=["profile", "debug", "dry_run", "webdav_archive",
+                                                "store_measurements_only", "use_bias_only"])
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 

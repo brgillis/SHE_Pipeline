@@ -41,17 +41,17 @@ class MockArgs(object):
                  pipeline,
                  workdir,
                  logdir,
-                 isf = None,
-                 isf_args = None,
-                 config = None,
-                 config_args = None,
-                 serverurl = None,
-                 server_config = None,
-                 use_debug_server_config = False,
-                 cluster = False,
-                 dry_run = False,
-                 skip_file_setup = False,
-                 plan_args = None,
+                 isf=None,
+                 isf_args=None,
+                 config=None,
+                 config_args=None,
+                 serverurl=None,
+                 server_config=None,
+                 use_debug_server_config=False,
+                 cluster=False,
+                 dry_run=False,
+                 skip_file_setup=False,
+                 plan_args=None,
                  ):
 
         self.pipeline = pipeline
@@ -82,7 +82,7 @@ class MockArgs(object):
 
 class TestRunPipeline():
 
-    @pytest.fixture(autouse = True)
+    @pytest.fixture(autouse=True)
     def setup(self):
 
         # Download the mock workdir files from WebDAV
@@ -109,10 +109,10 @@ class TestRunPipeline():
             else:
                 skip_file_setup = True
 
-            test_args = MockArgs(pipeline = pipeline,
-                                 workdir = self.workdir,
-                                 logdir = self.logdir,
-                                 dry_run = True,
-                                 skip_file_setup = skip_file_setup)
+            test_args = MockArgs(pipeline=pipeline,
+                                 workdir=self.workdir,
+                                 logdir=self.logdir,
+                                 dry_run=True,
+                                 skip_file_setup=skip_file_setup)
 
             run_pipeline_from_args(test_args)
