@@ -53,6 +53,7 @@ New config features
 
 Miscellaneous
 -------------
+- Applied PEP8 autoformatting to all python files in project
 
 Changes in v8.3
 ========================
