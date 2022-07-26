@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <ns1:DpdSheBiasBins xmlns:ns1="http://euclid.esa.org/schema/dpd/she/biasbins">
+    <Header>
+        <ProductId>5f5be68f-4c77-4f87-a63c-3758eaad0c23</ProductId>
+        <ProductType>SHE</ProductType>
+        <SoftwareName>NA</SoftwareName>
+        <SoftwareRelease>0.0</SoftwareRelease>
+        <EuclidPipelineSoftwareRelease>0.0</EuclidPipelineSoftwareRelease>
+        <ProdSDC>SDC-IT</ProdSDC>
+        <DataSetRelease>NA</DataSetRelease>
+        <Purpose>UNKNOWN</Purpose>
+        <PlanId>c3c6f59e-71ee-4518-9b72-1874769f5bf3</PlanId>
+        <PPOId>9a2685eb-3bf6-4e20-95b1-92c65d0d3757</PPOId>
+        <PipelineDefinitionId>PipelineDefinitionId</PipelineDefinitionId>
+        <PipelineRun>NA</PipelineRun>
+        <ExitStatusCode>NA</ExitStatusCode>
+        <ManualValidationStatus>UNKNOWN</ManualValidationStatus>
+        <ExpirationDate>2021-06-11T17:16:41.542Z</ExpirationDate>
+        <ToBePublished>false</ToBePublished>
+        <Published>false</Published>
+        <Curator>Curator0</Curator>
+        <CreationDate>2021-06-11T17:16:41.542Z</CreationDate>
+    </Header>
+    <Data>
+    </Data>
+</ns1:DpdSheBiasBins>
