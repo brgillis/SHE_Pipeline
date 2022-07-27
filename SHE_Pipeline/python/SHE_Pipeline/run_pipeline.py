@@ -215,7 +215,7 @@ def check_args(args):
     # Check that pipeline specific args are only provided for the right pipeline
     if args.plan_args is None:
         args.plan_args = []
-    if len(args.plan_args) > 0 and not args.pipeline in {"bias_measurement", "calibration"}:
+    if len(args.plan_args) > 0 and args.pipeline not in {"bias_measurement", "calibration"}:
         raise ValueError("plan_args can only be provided for the Bias Measurement pipeline.")
     if not len(args.plan_args) % 2 == 0:
         raise ValueError("Invalid values passed to 'plan_args': Must be a set of paired arguments.")
@@ -281,11 +281,11 @@ def create_plan(args, return_table=False):
     simulation_plan_table = None
     try:
         simulation_plan_table = Table.read(qualified_plan_filename, format="fits")
-    except Exception as _:
+    except Exception:
         # Not a known table format, maybe an ascii table?
         try:
             simulation_plan_table = Table.read(qualified_plan_filename, format="ascii")
-        except IOError as _:
+        except IOError:
             pass
     # If it's still none, we couldn't identify it, so raise the initial exception
     if simulation_plan_table is None:
@@ -434,7 +434,7 @@ def create_isf(args,
                 # Find the qualified location of the file
                 try:
                     qualified_filename = find_file(filename, path=search_path)
-                except RuntimeError as _:
+                except RuntimeError:
                     raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
 
                 # Symlink the filename from the "data" directory within the workdir
@@ -443,14 +443,14 @@ def create_isf(args,
                     if not os.path.abspath(qualified_filename) == os.path.abspath(
                             os.path.join(args.workdir, new_filename)):
                         os.symlink(qualified_filename, os.path.join(args.workdir, new_filename))
-                except FileExistsError as _:
+                except FileExistsError:
                     try:
                         os.remove(os.path.join(args.workdir, new_filename))
                         try:
                             os.unlink(os.path.join(args.workdir, new_filename))
-                        except Exception as _:
+                        except Exception:
                             pass
-                    except Exception as _:
+                    except Exception:
                         pass
                     if not os.path.abspath(qualified_filename) == os.path.abspath(
                             os.path.join(args.workdir, new_filename)):
@@ -466,7 +466,7 @@ def create_isf(args,
                     try:
                         p = read_xml_product(qualified_filename)
                         data_filenames = p.get_all_filenames()
-                    except (SAXParseException, UnpicklingError) as _:
+                    except (SAXParseException, UnpicklingError):
                         logger.error("Cannot read file " + qualified_filename + ".")
                         raise
                 elif qualified_filename[-5:] == EXT_JSON:
@@ -478,7 +478,7 @@ def create_isf(args,
                             try:
                                 p = read_xml_product(qualified_subfilename)
                                 data_filenames += p.get_all_filenames()
-                            except (SAXParseException, UnpicklingError) as _:
+                            except (SAXParseException, UnpicklingError):
                                 logger.warn(
                                     "Cannot open subfile %s from %s. " % (qualified_subfilename, qualified_filename))
 
@@ -507,12 +507,12 @@ def create_isf(args,
                 # Find the qualified location of the data file
                 try:
                     qualified_data_filename = find_file(data_filename, path=data_search_path)
-                except RuntimeError as _:
+                except RuntimeError:
                     # Try searching for the file without the "data/" prefix
                     try:
                         qualified_data_filename = find_file(
                             data_filename.replace("data/", "", 1), path=data_search_path)
-                    except RuntimeError as _:
+                    except RuntimeError:
                         raise RuntimeError("Data file " + data_filename +
                                            " cannot be found in path " + data_search_path)
 
@@ -523,7 +523,7 @@ def create_isf(args,
                         os.remove(os.path.join(args.workdir, data_filename))
                         try:
                             os.unlink(os.path.join(args.workdir, data_filename))
-                        except Exception as _:
+                        except Exception:
                             pass
                     os.symlink(qualified_data_filename, os.path.join(args.workdir, data_filename))
 
@@ -637,7 +637,7 @@ def run_pipeline_from_args(args):
                          server_config=server_config,
                          local_run=local_run,
                          dry_run=args.dry_run)
-    except Exception as _:
+    except Exception:
         # Cleanup the ISF on non-exit exceptions
         try:
             os.remove(qualified_isf_filename)
