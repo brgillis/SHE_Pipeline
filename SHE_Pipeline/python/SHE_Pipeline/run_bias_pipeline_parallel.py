@@ -187,7 +187,7 @@ def she_estimate_shear(data_images, stacked_image,
 
 
 def she_measure_statistics(details_table, shear_estimates,
-                           pipeline_config, she_bias_statistics, workdir, logdir):
+                           pipeline_config, she_bias_statistics, bins_description, workdir, logdir):
     """ Runs the SHE_CTE_MeasureStatistics method on shear
     estimates to get shear bias statistics.
     """
@@ -203,7 +203,7 @@ def she_measure_statistics(details_table, shear_estimates,
                get_relpath(pipeline_config, workdir),
                get_relpath(she_bias_statistics, workdir),
                workdir, workdir, logdir,
-               get_relpath(bins_description,workdir))).split()
+               get_relpath(bins_description, workdir))).split()
 
     measure_stats_args = pu.setup_function_args(argv, meas_stats,
                                                 ERun_CTE + "SHE_CTE_MeasureStatistics")
@@ -270,7 +270,7 @@ def she_measure_bias(shear_bias_measurement_list, pipeline_config,
                get_relpath(pipeline_config, workdir),
                get_relpath(shear_bias_measurement_final, workdir),
                workdir, workdir, logdir,
-               get_relpath(bins_description,workdir))).split()
+               get_relpath(bins_description, workdir))).split()
 
     measure_bias_args = pu.setup_function_args(argv, meas_bias, ERun_CTE + "SHE_CTE_MeasureBias")
     try:
@@ -572,7 +572,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         # Find the qualified location of the file
         try:
             qualified_filename = find_file(filename, path=search_path)
-        except RuntimeError as _:
+        except RuntimeError:
             raise RuntimeError("Input file " + filename + " cannot be found in path " + search_path)
 
         # Symlink the filename from the "data" directory within the workdir
@@ -580,14 +580,14 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
         try:
             if not qualified_filename == os.path.join(workdir.workdir, new_filename):
                 os.symlink(qualified_filename, os.path.join(workdir.workdir, new_filename))
-        except FileExistsError as _:
+        except FileExistsError:
             try:
                 os.remove(os.path.join(workdir.workdir, new_filename))
                 try:
                     os.unlink(os.path.join(workdir.workdir, new_filename))
-                except Exception as _:
+                except Exception:
                     pass
-            except Exception as _:
+            except Exception:
                 pass
             if not qualified_filename == os.path.join(workdir.workdir, new_filename):
                 os.symlink(qualified_filename, os.path.join(workdir.workdir, new_filename))
@@ -614,7 +614,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             try:
                 p = read_xml_product(qualified_filename)
                 data_filenames = p.get_all_filenames()
-            except (SAXParseException, UnpicklingError, UnicodeDecodeError) as _:
+            except (SAXParseException, UnpicklingError, UnicodeDecodeError):
                 logger.error("Cannot read file " + qualified_filename + ".")
                 raise
         elif qualified_filename[-5:] == ".json":
@@ -624,7 +624,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                 try:
                     p = read_xml_product(qualified_subfilename)
                     data_filenames += p.get_all_filenames()
-                except (SAXParseException, UnpicklingError, UnicodeDecodeError) as _:
+                except (SAXParseException, UnpicklingError, UnicodeDecodeError):
                     logger.error("Cannot read file " + qualified_filename + ".")
                     raise
         else:
@@ -649,11 +649,11 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
             # Find the qualified location of the data file
             try:
                 qualified_data_filename = find_file(data_filename, path=data_search_path)
-            except RuntimeError as _:
+            except RuntimeError:
                 # Try searching for the file without the "data/" prefix
                 try:
                     qualified_data_filename = find_file(data_filename.replace("data/", "", 1), path=data_search_path)
-                except RuntimeError as _:
+                except RuntimeError:
                     raise RuntimeError("Data file " + data_filename + " cannot be found in path " + data_search_path)
 
             # Symlink the data file within the workdir
@@ -663,7 +663,7 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
                     os.remove(os.path.join(workdir.workdir, data_filename))
                     try:
                         os.unlink(os.path.join(workdir.workdir, data_filename))
-                    except Exception as _:
+                    except Exception:
                         pass
                 os.symlink(qualified_data_filename, os.path.join(workdir.workdir, data_filename))
 
@@ -699,15 +699,13 @@ def create_simulate_measure_inputs(args, config_filename, workdir, sim_config_li
 
     return simulate_inputs
 
-    
-
 
 def she_simulate_and_measure_bias_statistics(simulation_config,
                                              ksb_training_data,
                                              lensmc_training_data, momentsml_training_data,
-                                             regauss_training_data, pipeline_config, mdb, 
+                                             regauss_training_data, pipeline_config, mdb,
                                              bins_description, workdirTuple,
-                                             simulation_no, logdir, est_shear_only):
+                                             simulation_number, logdir, est_shear_only):
     """ Parallel processing parts of bias_measurement pipeline
 
     """
@@ -828,7 +826,7 @@ def run_pipeline_from_args(args):
     for i in range(len(args.isf_args) // 2):
         key = args.isf_args[2 * i]
         val = args.isf_args[2 * i + 1]
-        if not key in args_to_set:
+        if key not in args_to_set:
             raise ValueError("Unrecognized isf arg: " + str(key))
         args_to_set[key] = val
 
@@ -879,7 +877,7 @@ def run_pipeline_from_args(args):
                                                    simulate_measure_inputs.pipeline_config,
                                                    simulate_measure_inputs.mdb,
                                                    simulate_measure_inputs.bins_description,
-                                                   workdir, simulation_no, args.logdir, args.est_shear_only))
+                                                   workdir, simulation_number, args.logdir, args.est_shear_only))
 
     if simulate_and_measure_args_list:
         pool.map(simulate_and_measure_mapped, simulate_and_measure_args_list)
@@ -900,13 +898,13 @@ def run_pipeline_from_args(args):
 
     # Run final process
     shear_bias_measurement_final = os.path.join(args.workdir, 'shear_bias_measurements_final.xml')
-    
-    #symlink the bins description from the ISF into measure_bias's workdir so it can be used
+
+    # symlink the bins description from the ISF into measure_bias's workdir so it can be used
     qualified_bins = find_file(args_to_set["bins_description"])
     print(qualified_bins, type(qualified_bins))
     bins_desc = "data/bins.xml"
-    print(os.path.join(args.workdir,bins_desc), type(os.path.join(args.workdir,bins_desc)))
-    os.symlink(qualified_bins,os.path.join(args.workdir,bins_desc))
+    print(os.path.join(args.workdir, bins_desc), type(os.path.join(args.workdir, bins_desc)))
+    os.symlink(qualified_bins, os.path.join(args.workdir, bins_desc))
 
     logger.info("Running final she_measure_bias to calculate "
                 "final shear: output in %s" % shear_bias_measurement_final)

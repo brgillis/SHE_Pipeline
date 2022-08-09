@@ -101,9 +101,11 @@ def mainMethod(args):
     logger.debug('# Entering SHE_Pipeline_Run mainMethod()')
     logger.debug('#')
 
-    exec_cmd = get_arguments_string(args,
-                                    cmd="E-Run SHE_IAL_Pipelines " + SHE_Pipeline.__version__ + " SHE_Pipeline_RunBiasParallel",
-                                    store_true=["profile", "debug", "cluster"])
+    exec_cmd = get_arguments_string(
+        args,
+        cmd="E-Run SHE_IAL_Pipelines " + SHE_Pipeline.__version__ + " SHE_Pipeline_RunBiasParallel",
+        store_true=["profile", "debug", "cluster"],
+        )
     logger.info('Execution command for this step:')
     logger.info(exec_cmd)
 
