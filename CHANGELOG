@@ -22,6 +22,7 @@ Bug Fixes
 
 New Features
 ------------
+- SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
 
 New config features
 -------------------
