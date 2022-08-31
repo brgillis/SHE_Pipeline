@@ -23,6 +23,7 @@ Bug Fixes
 New Features
 ------------
 - SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
+- SHE_LensMC_Pipeline: PSF modeling and shape measurement using LensMC.
 
 New config features
 -------------------
