@@ -20,6 +20,8 @@ Deprecated Features
 Bug Fixes
 ---------
 
+- Fix import from PackageDef in SHE_LensMC_Pipeline
+
 New Features
 ------------
 - SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
