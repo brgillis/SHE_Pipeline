@@ -20,6 +20,8 @@ Deprecated Features
 Bug Fixes
 ---------
 
+- Remap exposure segmentation maps into a single one-dimensional listfile
+
 New Features
 ------------
 - SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
