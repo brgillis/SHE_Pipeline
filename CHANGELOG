@@ -16,6 +16,7 @@ Bug Fixes
 ---------
 
 - Fix import from PackageDef in SHE_LensMC_Pipeline
+- Add missing E-Run command to SHE_CTE_ShearEstimatesMerge pipeline task
 
 New Features
 ------------
