@@ -17,6 +17,8 @@ Bug Fixes
 
 - Fix import from PackageDef in SHE_LensMC_Pipeline
 - Add missing E-Run command to SHE_CTE_ShearEstimatesMerge pipeline task
+- Remap exposure segmentation maps into a single one-dimensional listfile
+
 
 New Features
 ------------
@@ -38,6 +40,12 @@ Dependency Changes
 - SHE_MER 9.1
 - SHE_PSFToolkit 9.2
 - SHE_GST 9.1
+
+Deprecated Features
+-------------------
+
+Bug Fixes
+---------
 
 New Features
 ------------
