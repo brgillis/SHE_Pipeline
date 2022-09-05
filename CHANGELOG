@@ -1,10 +1,35 @@
-Changelog for SHE_Pipeline
+Changelog for SHE_IAL_Pipelines
 
-Changes in v9.1
-========================
+Changes in v9.2
+===============
 
 API Changes
 -----------
+
+Dependency Changes
+------------------
+
+Deprecated Features
+-------------------
+
+Bug Fixes
+---------
+
+- Fix import from PackageDef in SHE_LensMC_Pipeline
+- Remap exposure segmentation maps into a single one-dimensional listfile
+
+New Features
+------------
+
+New config features
+-------------------
+
+Miscellaneous
+-------------
+
+
+Changes in v9.1
+===============
 
 Dependency Changes
 ------------------
@@ -20,18 +45,11 @@ Deprecated Features
 Bug Fixes
 ---------
 
-- Remap exposure segmentation maps into a single one-dimensional listfile
-
 New Features
 ------------
 - SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
 - SHE_LensMC_Pipeline: PSF modeling and shape measurement using LensMC.
 
-New config features
--------------------
-
-Miscellaneous
--------------
 
 Changes in v9.0
 ========================
