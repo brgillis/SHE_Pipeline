@@ -11,7 +11,7 @@ Software identification
 -  Processing Element Name: PF-SHE
 -  Project Name: SHE\_IAL\_Pipelines
 -  Profile: develop
--  Version: 9.1 (06/07/2022)
+-  Version: 9.2 (01/09/2022)
 
 Contributors
 ------------
@@ -22,6 +22,7 @@ Active Contributors
 -  Bryan Gillis (b.gillis@roe.ac.uk)
 -  Nick Cross (njc@roe.ac.uk)
 -  Gordon Gibb (Gordon.Gibb@ed.ac.uk)
+-  Richard Rollins (`@rrollins <https://gitlab.euclid-sgs.uk/rrollins>`_)
 
 Other Contributors
 ~~~~~~~~~~~~~~~~~~

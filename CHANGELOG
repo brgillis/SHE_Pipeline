@@ -1,18 +1,13 @@
-Changelog for SHE_Pipeline
+Changelog for SHE_IAL_Pipelines
 
-Changes in v9.1
-========================
+Changes in v9.2
+===============
 
 API Changes
 -----------
 
 Dependency Changes
 ------------------
-- SHE_CTE 9.1
-- SHE_Validation 9.1
-- SHE_MER 9.1
-- SHE_PSFToolkit 9.2
-- SHE_GST 9.1
 
 Deprecated Features
 -------------------
@@ -22,14 +17,30 @@ Bug Fixes
 
 New Features
 ------------
-- SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
-- SHE_LensMC_Pipeline: PSF modeling and shape measurement using LensMC.
 
 New config features
 -------------------
 
 Miscellaneous
 -------------
+
+
+Changes in v9.1
+===============
+
+Dependency Changes
+------------------
+- SHE_CTE 9.1
+- SHE_Validation 9.1
+- SHE_MER 9.1
+- SHE_PSFToolkit 9.2
+- SHE_GST 9.1
+
+New Features
+------------
+- SHE_PSF_Fitting_Pipeline: remap segmentation maps and fit PSF model to exposures.
+- SHE_LensMC_Pipeline: PSF modeling and shape measurement using LensMC.
+
 
 Changes in v9.0
 ========================
