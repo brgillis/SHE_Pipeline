@@ -5,6 +5,7 @@ Changes in v9.2
 
 API Changes
 -----------
+- SHE_PSF_Fitting_Pipeline no longer takes a VIS stacked frame as input
 
 Dependency Changes
 ------------------
