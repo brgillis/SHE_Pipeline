@@ -26,7 +26,7 @@ To run the clone_workdir.sh script, the following command can be called (assumin
 
 .. code:: bash
 
-   $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/clone_workdir.sh <template_workdir> <target_workdir>
+   $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/clone_workdir.sh <template_workdir> <target_workdir>
 
 with the following required positional arguments:
 
@@ -47,9 +47,9 @@ The following example will clone a template work directory for the SHE Shear Cal
 
 .. code:: bash
 
-   $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/clone_workdir.sh /mnt/webdav/PF-SHE/example_data/Shear_Cal_template_workdir/ $HOME/test_workdir
+   $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/clone_workdir.sh /mnt/webdav/PF-SHE/example_data/Shear_Cal_template_workdir/ $HOME/test_workdir
 
-This requires that this project is installed in the standard location at ``$HOME/Work/Projects/SHE_IAL_Pipelines`` and that the SDC-UK WebDAV server is mounted and readable at the location ``/mnt/webdav/`` (see `instructions here <guide_webdav.html>`__). Modify these as appropriate for other locations.
+This requires that this project is installed in the standard location at ``$HOME/Work/Projects/SHE_Pipeline`` and that the SDC-UK WebDAV server is mounted and readable at the location ``/mnt/webdav/`` (see `instructions here <guide_webdav.html>`__). Modify these as appropriate for other locations.
 
 ``create_listfiles``
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,7 +63,7 @@ To run the create_listfiles.py script on the contents of a directory, the follow
 .. code:: bash
 
    cd <workdir>
-   E-Run SHE_IAL_Pipelines 8.2 python $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/create_listfiles
+   E-Run SHE_Pipeline 8.2 python $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/create_listfiles
 
 where ``<workdir>>`` is the directory you wish to run this script on. Note that this script must be run via E-Run within an EDEN 2.1 environment.
 
@@ -106,7 +106,7 @@ To run one of these scripts to download data to a desired directory, a command s
 .. code:: bash
 
    cd <workdir>
-   [OBS_ID=<obs_id> OR TILE_ID=<tile_id>] $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/<script>
+   [OBS_ID=<obs_id> OR TILE_ID=<tile_id>] $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/<script>
 
 where ``<workdir>`` is the directory you wish to download data to, either ``<obs_id>`` is the ``ObservationId`` (in the case of SHE, SIM, and VIS data) you wish to get data for or ``<tile_id>`` is the TileIndex (in the case of MER and PHZ data) you wish to get data for, and ``<script>`` is the filename of the specific script you wish to run.
 
@@ -120,7 +120,7 @@ The following example will download SHE data for a single observation (with ``Ob
    vim $HOME/.password.txt # Enter the password via text editor
    mkdir -p $HOME/test_workdir
    cd $HOME/test_workdir
-   OBS_ID=25463 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_she_products.sh
+   OBS_ID=25463 $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/get_all_she_products.sh
    shred -u $HOME/.password.txt # Delete the file using ``shred`` to make sure the password is completely deleted
 
 Similarly, the following code will download MER data for a single tile (with ``TileIndex`` 79170) to a desired directory:
@@ -131,5 +131,5 @@ Similarly, the following code will download MER data for a single tile (with ``T
    vim $HOME/.password.txt # Enter the password via text editor
    mkdir -p $HOME/test_workdir
    cd $HOME/test_workdir
-   TILE_ID=79170 $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/get_all_mer_products.sh
+   TILE_ID=79170 $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/get_all_mer_products.sh
    shred -u $HOME/.password.txt # Delete the file using ``shred`` to make sure the password is completely deleted

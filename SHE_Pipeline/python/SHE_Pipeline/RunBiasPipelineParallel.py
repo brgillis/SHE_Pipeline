@@ -103,7 +103,7 @@ def mainMethod(args):
 
     exec_cmd = get_arguments_string(
         args,
-        cmd="E-Run SHE_IAL_Pipelines " + SHE_Pipeline.__version__ + " SHE_Pipeline_RunBiasParallel",
+        cmd="E-Run SHE_Pipeline " + SHE_Pipeline.__version__ + " SHE_Pipeline_RunBiasParallel",
         store_true=["profile", "debug", "cluster"],
         )
     logger.info('Execution command for this step:')

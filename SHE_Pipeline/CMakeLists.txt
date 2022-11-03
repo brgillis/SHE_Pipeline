@@ -1,9 +1,6 @@
 # Declare this directory as an Elements module
 elements_subdir(SHE_Pipeline)
 
-# Declare dependencies
-elements_depends_on_subdirs(ST_PipelineUnitTesting)
-
 # Instruction for Python module installation
 elements_install_python_modules()
 

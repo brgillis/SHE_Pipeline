@@ -21,6 +21,6 @@ __updated__ = "2021-07-14"
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 # Get the version from the compiled file created by Elements
-from SHE_IAL_PIPELINES_VERSION import SHE_IAL_PIPELINES_VERSION_STRING
+from SHE_PIPELINE_VERSION import SHE_PIPELINE_VERSION_STRING
 
-__version__ = SHE_IAL_PIPELINES_VERSION_STRING
+__version__ = SHE_PIPELINE_VERSION_STRING

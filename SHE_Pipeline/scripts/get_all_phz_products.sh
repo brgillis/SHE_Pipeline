@@ -13,7 +13,6 @@ fi
 echo "Query: $QUERY"
 
 # Get the DpdPhzpfOutputCatalog product and fits files
-CMD='python $HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdPhzPfOutputCatalog --query "'$QUERY'"'
+CMD='python $HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/dataProductRetrieval_SC8.py --username '`cat $HOME/.username.txt`' --password '`cat $HOME/.password.txt`' --project TEST --data_product DpdPhzPfOutputCatalog --query "'$QUERY'"'
 echo "Command: $CMD"
 eval $CMD
-

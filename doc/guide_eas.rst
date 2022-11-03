@@ -3,7 +3,7 @@
 Downloading Data from the EAS
 =============================
 
-This guide outlines the fundamentals of how to find products in the EAS and how to query for them. For repeated use, it’s best to write a script to handle queries and modify it as necessary for specific runs. This has already been done for various products in the SHE_IAL_Pipelines project, in the `get_all_*_products.sh scripts <scripts.html#get-all-products-sh>`__, which can be used as a base for writing scripts for other products.
+This guide outlines the fundamentals of how to find products in the EAS and how to query for them. For repeated use, it’s best to write a script to handle queries and modify it as necessary for specific runs. This has already been done for various products in the SHE_Pipeline project, in the `get_all_*_products.sh scripts <scripts.html#get-all-products-sh>`__, which can be used as a base for writing scripts for other products.
 
 Identifying Products in the EAS
 -------------------------------

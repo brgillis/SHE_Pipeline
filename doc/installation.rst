@@ -10,8 +10,8 @@ process:
 .. code:: bash
 
     cd ${HOME}/Work/Projects
-    git clone https://gitlab.euclid-sgs.uk/PF-SHE/SHE_IAL_Pipelines.git
-    cd SHE_IAL_Pipelines
+    git clone https://gitlab.euclid-sgs.uk/PF-SHE/SHE_Pipeline.git
+    cd SHE_Pipeline
     git checkout <desired branch or tag>
     make
     make test

@@ -22,8 +22,8 @@ DATAPROD_RETRIEVAL_SCRIPT=dataProductRetrieval_SC8.py
 # Check some common locations
 if [ -f "$(dirname $(realpath "$0"))/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
   BASEDIR=$(dirname $(realpath "$0"))
-elif [ -f "$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
-  BASEDIR=$HOME/Work/Projects/SHE_IAL_Pipelines/SHE_Pipeline/scripts
+elif [ -f "$HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
+  BASEDIR=$HOME/Work/Projects/SHE_Pipeline/SHE_Pipeline/scripts
 elif [ -f "$HOME/bin/$DATAPROD_RETRIEVAL_SCRIPT" ]; then
   BASEDIR=$HOME/bin
 else:

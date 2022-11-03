@@ -1,16 +1,18 @@
-Changelog for SHE_IAL_Pipelines
+Changelog for SHE_Pipeline
 
 Changes in v9.3
 ===============
 
 API Changes
 -----------
+- Rename project SHE_Pipeline
 
 Dependency Changes
 ------------------
 
 Deprecated Features
 -------------------
+- Pipeline definitions and their unit tests and documentation moved to SHE_IAL_Pipelines project
 
 Bug Fixes
 ---------
