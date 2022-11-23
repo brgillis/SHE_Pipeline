@@ -22,10 +22,6 @@ __updated__ = "2021-08-18"
 
 import SHE_CTE
 import SHE_GST
-import SHE_MER_RemapMosaic
-import SHE_PSFToolkit
 
 ERun_CTE = "E-Run SHE_CTE " + SHE_CTE.__version__ + " "
-ERun_MER = "E-Run SHE_MER " + SHE_MER_RemapMosaic.__version__ + " "
 ERun_GST = "E-Run SHE_GST " + SHE_GST.__version__ + " "
-ERun_PSF = "E-Run SHE_PSFToolkit " + SHE_PSFToolkit.__version__ + " "

@@ -9,6 +9,7 @@ API Changes
 
 Dependency Changes
 ------------------
+- Drop dependencies on SHE_MER, SHE_PSFToolkit and SHE_Validation
 
 Deprecated Features
 -------------------

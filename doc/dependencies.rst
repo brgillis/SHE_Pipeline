@@ -8,12 +8,7 @@ Internal Euclid Dependencies
 
 -  `SHE\_CTE 9.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_CTE>`__
 - `SHE\_GST 9.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_GST>`__
-- `SHE\_MER 9.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MER>`__
-- `SHE\_PSFToolkit 9.2 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PSFToolkit>`__
-- `SHE\_Validation 9.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_Validation>`__
--  `SHE\_LensMC 9.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_LensMC>`__
--  `SHE\_MomentsML 9.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_MomentsML>`__
--  `SHE\_PPT 9.2 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT>`__
+-  `SHE\_PPT 9.2.1 <https://gitlab.euclid-sgs.uk/PF-SHE/SHE_PPT>`__
 
 External Euclid Dependencies
 ----------------------------
